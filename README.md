@@ -65,5 +65,9 @@ npm run dev
 - MySQL 5.7+ 또는 8.0+
 - 포트 3000 사용 (변경 가능)
 
+## Restful API 명세
+- https://www.notion.so/API-20b90a69b6a58053b83fd268ba12c267
+
 ## 라이센스
 MIT License
+
