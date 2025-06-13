@@ -1,0 +1,1001 @@
+/* ProfessorAssignmentDetailPage.css */
+
+/* 브레드크럼 */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.breadcrumb-link {
+    color: var(--primary-color);
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.breadcrumb-link:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+}
+
+.breadcrumb-current {
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+.breadcrumb i {
+    font-size: 0.7rem;
+    color: #999;
+}
+
+/* 과제 상세 컨테이너 */
+.assignment-detail-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 200px);
+}
+
+/* 탭 네비게이션 */
+.assignment-detail-tabs {
+    display: flex;
+    background: white;
+    border-radius: 12px 12px 0 0;
+    box-shadow: var(--shadow);
+    margin-bottom: 0;
+    overflow: hidden;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 1rem 1.5rem;
+    border: none;
+    background: transparent;
+    color: #666;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-bottom: 3px solid transparent;
+}
+
+.tab-button:hover {
+    background-color: var(--neutral-light);
+    color: var(--primary-color);
+}
+
+.tab-button.active {
+    background-color: rgba(120, 34, 45, 0.05);
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* 탭 콘텐츠 */
+.assignment-detail-content {
+    flex: 1;
+    background: white;
+    border-radius: 0 0 12px 12px;
+    box-shadow: var(--shadow);
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+/* 과제 개요 섹션 */
+.assignment-overview-section {
+    animation: fadeIn 0.3s ease;
+}
+
+/* 과제 정보 배너 */
+.assignment-info-banner {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    position: relative;
+    overflow: hidden;
+}
+
+.assignment-info-banner::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transform: rotate(45deg);
+}
+
+.assignment-info-content {
+    flex: 1;
+    position: relative;
+    z-index: 1;
+}
+
+.assignment-title-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.assignment-title-section h1 {
+    margin: 0;
+    font-size: 2.2rem;
+    font-weight: 700;
+}
+
+.assignment-status-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.assignment-status-badge.status-expired {
+    background: rgba(239, 68, 68, 0.9);
+}
+
+.assignment-status-badge.status-urgent {
+    background: rgba(245, 158, 11, 0.9);
+}
+
+.assignment-status-badge.status-warning {
+    background: rgba(245, 158, 11, 0.7);
+}
+
+.assignment-status-badge.status-active {
+    background: rgba(16, 185, 129, 0.9);
+}
+
+.assignment-basic-info .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.assignment-basic-info .info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0.9;
+}
+
+.assignment-basic-info .info-item i {
+    width: 20px;
+    text-align: center;
+}
+
+.assignment-description {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.assignment-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    position: relative;
+    z-index: 1;
+}
+
+.assignment-actions .btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    white-space: nowrap;
+}
+
+.assignment-actions .btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.assignment-actions .btn.btn-warning {
+    background: rgba(245, 158, 11, 0.8);
+    border-color: rgba(245, 158, 11, 0.6);
+}
+
+/* 통계 그리드 */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.2s ease;
+    border-left: 4px solid transparent;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.stat-card.primary {
+    border-left-color: var(--primary-color);
+}
+
+.stat-card.success {
+    border-left-color: #10b981;
+}
+
+.stat-card.warning {
+    border-left-color: #f59e0b;
+}
+
+.stat-card.info {
+    border-left-color: #3b82f6;
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white !important;
+}
+
+.stat-card.primary .stat-icon {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+}
+
+.stat-card.success .stat-icon {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.stat-card.warning .stat-icon {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.stat-card.info .stat-icon {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.stat-content h3 {
+    margin: 0 0 0.25rem 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.stat-content p {
+    margin: 0 0 0.5rem 0;
+    color: #666;
+    font-weight: 500;
+}
+
+.stat-detail {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+/* 제출 현황 분석 */
+.submission-analysis {
+    margin-bottom: 2rem;
+}
+
+.analysis-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.analysis-card .card-header {
+    background: var(--neutral-light);
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--neutral-medium);
+}
+
+.analysis-card .card-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.analysis-card .card-body {
+    padding: 1.5rem;
+}
+
+.submission-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.chart-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.chart-bar {
+    flex: 1;
+    height: 24px;
+    background: var(--neutral-light);
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+}
+
+.chart-fill {
+    height: 100%;
+    border-radius: 12px;
+    transition: width 0.3s ease;
+}
+
+.chart-item.submitted .chart-fill {
+    background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+}
+
+.chart-item.not-submitted .chart-fill {
+    background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+}
+
+.chart-item span {
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
+    min-width: 200px;
+}
+
+/* 제출물 관리 섹션 */
+.submissions-management-section,
+.grading-management-section {
+    animation: fadeIn 0.3s ease;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--neutral-medium);
+}
+
+.section-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.section-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.filter-select {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--neutral-medium);
+    border-radius: 6px;
+    background: white;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* 제출물 테이블 */
+.submissions-table-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.submissions-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.submissions-table th,
+.submissions-table td {
+    padding: 1rem 0.75rem;
+    border-bottom: 1px solid var(--neutral-medium);
+    text-align: left;
+    vertical-align: middle;
+}
+
+.submissions-table th {
+    background: var(--neutral-light);
+    font-weight: 600;
+    color: var(--text-dark);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.submissions-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.submissions-table tbody tr:hover {
+    background-color: rgba(120, 34, 45, 0.05);
+}
+
+.submissions-table tbody tr.not-submitted-row {
+    background-color: rgba(239, 68, 68, 0.05);
+}
+
+.submissions-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.student-name {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.submission-time {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.file-name {
+    max-width: 200px;
+}
+
+.file-link {
+    color: var(--primary-color);
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: color 0.2s ease;
+}
+
+.file-link:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+}
+
+.file-link i {
+    color: #666;
+}
+
+/* 상태 뱃지 */
+.status-badge {
+    display: inline-block;
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.status-badge.submitted {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-badge.not-submitted {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.status-badge.late {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.score-display {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.not-graded {
+    color: #f59e0b;
+    font-style: italic;
+}
+
+/* 채점 관리 섹션 */
+.grading-stats {
+    display: flex;
+    gap: 2rem;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.grading-stat {
+    font-weight: 500;
+}
+
+.grading-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.grading-queue,
+.graded-list {
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 1.5rem;
+}
+
+.grading-queue h4,
+.graded-list h4 {
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--neutral-medium);
+}
+
+.queue-list,
+.graded-items {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.queue-item,
+.graded-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: var(--neutral-light);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.queue-item:hover,
+.graded-item:hover {
+    background-color: rgba(120, 34, 45, 0.05);
+}
+
+.queue-info,
+.graded-info {
+    flex: 1;
+}
+
+.student-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.student-info .student-name {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.student-info .student-id {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.submission-info,
+.feedback-preview {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.submission-date {
+    margin-left: 0.5rem;
+}
+
+.score-badge {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.feedback-preview p {
+    margin: 0;
+    font-style: italic;
+    color: #888;
+}
+
+.queue-actions,
+.graded-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* 채점 모달 */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+.grade-modal {
+    max-width: 700px;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--neutral-medium);
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: var(--primary-color);
+    font-size: 1.3rem;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: #666;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    background-color: var(--neutral-light);
+    color: var(--text-dark);
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1.5rem;
+    border-top: 1px solid var(--neutral-medium);
+    background-color: var(--neutral-light);
+}
+
+/* 채점 폼 */
+.grade-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.submission-info {
+    background: var(--neutral-light);
+    padding: 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.submission-info p {
+    margin: 0 0 0.5rem 0;
+}
+
+.submission-info p:last-child {
+    margin-bottom: 0;
+}
+
+.late-warning {
+    color: #f59e0b !important;
+    font-weight: 600 !important;
+}
+
+.grade-input-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.input-group label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+
+.score-input {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.score-input input {
+    padding: 0.75rem;
+    border: 2px solid var(--neutral-medium);
+    border-radius: 6px;
+    font-size: 1rem;
+    width: 100px;
+    text-align: center;
+}
+
+.score-input input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(120, 34, 45, 0.1);
+}
+
+.score-input span {
+    font-weight: 600;
+    color: #666;
+}
+
+.input-group textarea {
+    padding: 0.75rem;
+    border: 2px solid var(--neutral-medium);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    resize: vertical;
+    min-height: 100px;
+    font-family: inherit;
+}
+
+.input-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(120, 34, 45, 0.1);
+}
+
+/* 액션 버튼 */
+.action-buttons {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.action-buttons .btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+    min-width: auto;
+}
+
+/* 버튼 스타일 */
+.btn {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    border: 2px solid transparent;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: var(--neutral-medium);
+    color: var(--text-dark);
+}
+
+.btn-secondary:hover {
+    background: #d0d0d0;
+    transform: translateY(-1px);
+}
+
+.btn-warning {
+    background: #f59e0b;
+    color: white;
+}
+
+.btn-warning:hover {
+    background: #d97706;
+    transform: translateY(-1px);
+}
+
+.btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+}
+
+/* 로딩 및 에러 상태 */
+.loading-container,
+.error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    color: #666;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--neutral-medium);
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .grading-content {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .assignment-detail-tabs {
+        flex-wrap: wrap;
+    }
+    
+    .tab-button {
+        flex: 1 1 45%;
+        min-width: 120px;
+    }
+    
+    .assignment-info-banner {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .assignment-title-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .assignment-title-section h1 {
+        font-size: 1.8rem;
+    }
+    
+    .assignment-basic-info .info-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .section-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .submissions-table-container {
+        font-size: 0.8rem;
+    }
+    
+    .chart-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .chart-bar {
+        width: 100%;
+    }
+    
+    .chart-item span {
+        min-width: auto;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 1rem;
+    }
+    
+    .score-input {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

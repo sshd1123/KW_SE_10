@@ -1,0 +1,484 @@
+/* AnnouncementDetailPage.css - 고유 접두사 'adp-' 적용 */
+
+/* 메인 색상 변수 정의 */
+:root {
+    --adp-primary-color: #78222D;
+    --adp-primary-light: #A13747;
+    --adp-primary-dark: #5A1923;
+    --adp-secondary-color: #1E3A8A;
+    --adp-neutral-light: #F5F5F5;
+    --adp-neutral-medium: #E0E0E0;
+    --adp-text-dark: #333333;
+    --adp-text-light: #FFFFFF;
+    --adp-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --adp-transition: all 0.3s ease;
+  }
+  
+  /* 페이지 레이아웃 */
+  .adp-page {
+    min-height: 100vh;
+    background-color: var(--adp-neutral-light);
+  }
+  
+  .adp-main-layout {
+    display: flex;
+    min-height: calc(100vh - 60px);
+  }
+  
+  .adp-main-content {
+    flex: 1;
+    padding: 2rem;
+    margin-left: 250px;
+  }
+  
+  /* 공지사항 상세 컨테이너 */
+  .adp-announcement-detail-container {
+    max-width: 1200px;
+    max-height: 1000px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* 네비게이션 */
+  .adp-announcement-navigation {
+    margin-bottom: 1.5rem;
+  }
+  
+  .adp-back-button {
+    background: none;
+    border: none;
+    padding: 0.5rem 0;
+    color: var(--adp-primary-color);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s ease;
+  }
+  
+  .adp-back-button:hover {
+    color: var(--adp-primary-dark);
+  }
+  
+  .adp-back-button i {
+    margin-right: 0.5rem;
+  }
+  
+  /* 공지사항 상세 카드 */
+  .adp-announcement-detail-card {
+    margin-bottom: 1.5rem;
+    overflow: visible;
+    border: 1px solid var(--adp-neutral-medium);
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: var(--adp-shadow);
+  }
+  
+  .adp-card-header {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
+    border-bottom: 1px solid var(--adp-neutral-medium);
+  }
+  
+  .adp-card-body {
+    min-height: 300px;
+    padding: 1.5rem;
+  }
+  
+  .adp-announcement-card-body {
+    justify-content: flex-start !important;
+  }
+  
+  /* 공지사항 메타 정보 */
+  .adp-announcement-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .adp-announcement-category {
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  
+  .adp-category-admin {
+    background-color: #d4edda;
+    color: #155724;
+  }
+  
+  .adp-category-general {
+    background-color: #d1ecf1;
+    color: #0c5460;
+  }
+  
+  .adp-category-course {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+  
+  .adp-announcement-date {
+    color: #666;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+  }
+  
+  .adp-announcement-date i {
+    margin-right: 0.5rem;
+  }
+  
+  /* 공지사항 제목 */
+  h2.adp-announcement-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    color: var(--adp-text-dark);
+  }
+  
+  .adp-new-badge {
+    display: inline-block;
+    padding: 0.15rem 0.4rem;
+    margin-right: 0.75rem;
+    background-color: var(--adp-primary-color);
+    color: white;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+  
+  /* 공지사항 내용 */
+  .adp-announcement-content {
+    padding: 0 1.5rem;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--adp-text-dark);
+  }
+  
+  .adp-announcement-content p {
+    margin-bottom: 1.5rem;
+  }
+  
+  .adp-announcement-content p:last-child {
+    margin-bottom: 0;
+  }
+  
+  /* 첨부파일 */
+  .adp-announcement-attachments {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--adp-neutral-light);
+  }
+  
+  .adp-announcement-attachments h4 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: var(--adp-primary-color);
+  }
+  
+  .adp-attachments-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .adp-attachment-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    background-color: var(--adp-neutral-light);
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+    transition: background-color 0.2s ease;
+  }
+  
+  .adp-attachment-item:last-child {
+    margin-bottom: 0;
+  }
+  
+  .adp-attachment-item:hover {
+    background-color: var(--adp-neutral-medium);
+  }
+  
+  .adp-attachment-item i {
+    font-size: 1.2rem;
+    margin-right: 0.75rem;
+    color: var(--adp-primary-color);
+  }
+  
+  .adp-attachment-item a {
+    color: var(--adp-text-dark);
+    text-decoration: none;
+    font-weight: 500;
+    flex: 1;
+  }
+  
+  .adp-attachment-item a:hover {
+    text-decoration: underline;
+    color: var(--adp-primary-color);
+  }
+  
+  .adp-file-size {
+    color: #666;
+    font-size: 0.85rem;
+    margin-left: 0.75rem;
+  }
+  
+  /* 카드 푸터 */
+  .adp-card-footer {
+    padding: 1.5rem;
+    background-color: #f8f9fa;
+    border-bottom-left-radius: 14px;
+    border-bottom-right-radius: 14px;
+    border-top: 1px solid var(--adp-neutral-medium);
+  }
+  
+  .adp-announcement-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+  }
+  
+  /* 버튼 스타일 */
+  .adp-btn {
+    padding: 0.6rem 1.2rem;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+  
+  .adp-btn-primary {
+    background-color: var(--adp-primary-color);
+    color: white;
+  }
+  
+  .adp-btn-primary:hover {
+    background-color: var(--adp-primary-dark);
+  }
+  
+  .adp-btn-outline {
+    background-color: transparent;
+    border: 1px solid var(--adp-primary-color);
+    color: var(--adp-primary-color);
+  }
+  
+  .adp-btn-outline:hover {
+    background-color: var(--adp-primary-color);
+    color: white;
+  }
+  
+  .adp-btn i {
+    margin-right: 0.5rem;
+  }
+  
+  /* 관련 공지사항 */
+  .adp-related-announcements-card {
+    margin-bottom: 1.5rem;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: var(--adp-shadow);
+    border: 1px solid var(--adp-neutral-medium);
+  }
+  
+  .adp-related-announcements-card .adp-card-header {
+    border-bottom: 1px solid var(--adp-neutral-medium);
+  }
+  
+  .adp-related-announcements-card .adp-card-header h3 {
+    margin: 0;
+    color: var(--adp-primary-color);
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  
+  .adp-related-announcements-list {
+    padding: 0 1.5rem;
+  }
+  
+  .adp-related-announcement {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--adp-neutral-light);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .adp-related-announcement:hover {
+    background-color: var(--adp-neutral-light);
+  }
+  
+  .adp-related-announcement:last-child {
+    border-bottom: none;
+  }
+  
+  .adp-related-title {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    color: var(--adp-text-dark);
+  }
+  
+  .adp-mini-new-badge {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background-color: var(--adp-primary-color);
+    border-radius: 50%;
+    margin-right: 0.5rem;
+  }
+  
+  .adp-related-date {
+    color: #666;
+    font-size: 0.85rem;
+  }
+  
+  /* 로딩 및 에러 상태 */
+  .adp-loading-container,
+  .adp-error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 60vh;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .adp-loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--adp-neutral-medium);
+    border-top: 4px solid var(--adp-primary-color);
+    border-radius: 50%;
+    animation: adp-spin 1s linear infinite;
+  }
+  
+  @keyframes adp-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .adp-error-container h2 {
+    color: var(--adp-text-dark);
+    margin-bottom: 1rem;
+  }
+  
+  /* 반응형 디자인 */
+  @media (max-width: 1024px) {
+    .adp-main-content {
+      margin-left: 0;
+      padding: 1rem;
+    }
+  
+    .adp-announcement-detail-container {
+      max-width: 100%;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .adp-main-content {
+      padding: 0.5rem;
+    }
+  
+    .adp-announcement-meta {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+  
+    .adp-announcement-actions {
+      flex-direction: column;
+    }
+  
+    .adp-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  
+    .adp-related-announcement {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+  
+    .adp-related-date {
+      margin-top: 0.5rem;
+      margin-left: 0.5rem;
+    }
+  
+    .adp-card-header,
+    .adp-card-body,
+    .adp-card-footer {
+      padding: 1rem;
+    }
+  
+    .adp-announcement-content {
+      padding: 0;
+    }
+  
+    h2.adp-announcement-title {
+      font-size: 1.25rem;
+    }
+  
+    .adp-attachment-item {
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+  
+    .adp-file-size {
+      margin-left: 0;
+      width: 100%;
+      text-align: right;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .adp-announcement-detail-container {
+      margin: 0;
+    }
+  
+    .adp-back-button {
+      font-size: 0.85rem;
+      padding: 0.25rem 0;
+    }
+  
+    h2.adp-announcement-title {
+      font-size: 1.1rem;
+      line-height: 1.3;
+    }
+  
+    .adp-new-badge {
+      font-size: 0.7rem;
+      padding: 0.1rem 0.3rem;
+    }
+  
+    .adp-announcement-category {
+      font-size: 0.8rem;
+      padding: 0.2rem 0.6rem;
+    }
+  
+    .adp-announcement-date {
+      font-size: 0.8rem;
+    }
+  }
+  

@@ -1,0 +1,542 @@
+/* AssignmentSubmissionPage.css - 고유 접두사 'assp-' 적용 */
+
+/* 메인 색상 변수 정의 */
+:root {
+    --assp-primary-color: #78222D;
+    --assp-primary-light: #A13747;
+    --assp-primary-dark: #5A1923;
+    --assp-secondary-color: #1E3A8A;
+    --assp-neutral-light: #F5F5F5;
+    --assp-neutral-medium: #E0E0E0;
+    --assp-text-dark: #333333;
+    --assp-text-light: #FFFFFF;
+    --assp-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --assp-transition: all 0.3s ease;
+  }
+  
+  /* 페이지 레이아웃 */
+  .assp-page {
+    min-height: 100vh;
+    background-color: var(--assp-neutral-light);
+  }
+  
+  .assp-main-layout {
+    display: flex;
+    min-height: calc(100vh - 60px);
+  }
+  
+  .assp-main-content {
+    flex: 1;
+    padding: 2rem;
+    margin-left: 250px;
+  }
+  
+  /* 과제 제출 컨테이너 */
+  .assp-assignment-submission-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  
+  /* 카드 스타일 */
+  .assp-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: var(--assp-shadow);
+  }
+  
+  .assp-card-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--assp-neutral-medium);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .assp-card-header h3 {
+    margin: 0;
+    color: var(--assp-primary-color);
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  
+  .assp-card-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+  }
+  
+  .assp-breadcrumb {
+    color: #666;
+    font-size: 0.9rem;
+  }
+  
+  /* 과제 정보 카드 */
+  .assp-assignment-info-card {
+    margin-bottom: 0;
+  }
+  
+  .assp-assignment-details {
+    padding: 1rem;
+    width: 100%;
+  }
+  
+  .assp-assignment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+  
+  .assp-assignment-title {
+    font-size: 1.2rem;
+    margin: 0;
+    flex: 1;
+  }
+  
+  .assp-assignment-card-body {
+    justify-content: flex-start !important;
+    min-height: 0 !important;
+  }
+  
+  .assp-assignment-deadline {
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    margin-left: 1rem;
+  }
+  
+  .assp-assignment-deadline.assp-normal {
+    background-color: #d1ecf1;
+    color: #0c5460;
+  }
+  
+  .assp-assignment-deadline.assp-warning {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+  
+  .assp-assignment-deadline.assp-urgent {
+    background-color: #ffe9e9;
+    color: #d63939;
+  }
+  
+  .assp-assignment-deadline.assp-expired {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+  
+  .assp-assignment-description {
+    background-color: var(--assp-neutral-light);
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+  
+  .assp-assignment-description p {
+    margin: 0;
+  }
+  
+  .assp-assignment-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    border-top: 1px solid var(--assp-neutral-medium);
+    padding-top: 1rem;
+  }
+  
+  .assp-meta-item {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .assp-meta-label {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 0.3rem;
+  }
+  
+  .assp-meta-value {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  
+  /* 제출 카드 */
+  .assp-submission-card {
+    margin-bottom: 0;
+  }
+  
+  .assp-submission-form {
+    padding: 1rem;
+    width: 100%;
+  }
+  
+  .assp-form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .assp-form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+  
+  .assp-file-upload-container {
+    position: relative;
+    border: 2px dashed var(--assp-neutral-medium);
+    border-radius: 6px;
+    padding: 2rem 1rem;
+    text-align: center;
+    transition: all 0.2s ease;
+  }
+  
+  .assp-file-upload-container:hover {
+    border-color: var(--assp-primary-color);
+  }
+  
+  .assp-file-upload-container input[type="file"] {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  
+  /* 마감된 파일 업로드 영역 스타일 */
+  .assp-file-upload-container input[type="file"]:disabled {
+    cursor: not-allowed;
+  }
+  
+  .assp-file-upload-container:has(input[type="file"]:disabled) {
+    border-color: #ced4da;
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+  }
+  
+  /* 마감된 과제 비활성화 textarea */
+  .assp-submission-form textarea:disabled {
+    background-color: #f8f9fa;
+    border-color: #ced4da;
+    color: #6c757d;
+    cursor: not-allowed;
+  }
+  
+  /* 마감 색상 */
+  .assp-assignment-deadline.assp-expired {
+    background-color: #6c757d;
+    color: white;
+  }
+  
+  .assp-upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .assp-upload-placeholder i {
+    font-size: 3rem;
+    color: var(--assp-neutral-medium);
+    margin-bottom: 1rem;
+  }
+  
+  .assp-upload-placeholder span {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .assp-file-formats {
+    font-size: 0.8rem;
+    color: #666;
+  }
+  
+  .assp-selected-file {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .assp-selected-file i {
+    margin-right: 0.5rem;
+    color: var(--assp-primary-color);
+  }
+  
+  .assp-file-size {
+    color: #666;
+    font-size: 0.9rem;
+  }
+  
+  .assp-submission-form textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--assp-neutral-medium);
+    border-radius: 4px;
+    resize: vertical;
+    font-family: inherit;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+  }
+  
+  .assp-submission-form textarea:focus {
+    outline: none;
+    border-color: var(--assp-primary-color);
+  }
+  
+  .assp-submission-notice {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 0 4px 4px 0;
+  }
+  
+  .assp-submission-notice p {
+    margin: 0;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+  }
+  
+  .assp-submission-notice i {
+    margin-right: 0.5rem;
+    color: #856404;
+  }
+  
+  .assp-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+  }
+  
+  /* 버튼 스타일 */
+  .assp-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+  }
+  
+  .assp-btn-primary {
+    background-color: var(--assp-primary-color);
+    color: white;
+  }
+  
+  .assp-btn-primary:hover {
+    background-color: var(--assp-primary-dark);
+  }
+  
+  .assp-btn-primary:disabled {
+    background-color: #b68288;
+    cursor: not-allowed;
+  }
+  
+  .assp-btn-outline {
+    background-color: transparent;
+    border: 1px solid var(--assp-primary-color);
+    color: var(--assp-primary-color);
+  }
+  
+  .assp-btn-outline:hover {
+    background-color: var(--assp-primary-color);
+    color: white;
+  }
+  
+  .assp-spinner-border {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 0.2em solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: assp-spinner-border 0.75s linear infinite;
+    margin-right: 0.5rem;
+  }
+  
+  @keyframes assp-spinner-border {
+    to { transform: rotate(360deg); }
+  }
+  
+  /* 성공 페이지 */
+  .assp-submission-success {
+    text-align: center;
+    padding: 3rem 1rem;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: var(--assp-shadow);
+    margin: 2rem auto;
+    max-width: 600px;
+  }
+  
+  .assp-success-icon {
+    font-size: 5rem;
+    color: #28a745;
+    margin-bottom: 1.5rem;
+  }
+  
+  .assp-submission-success h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    color: var(--assp-primary-color);
+  }
+  
+  .assp-submission-success p {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 2rem;
+  }
+  
+  .assp-success-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+  }
+  
+  /* 마감된 과제 알림 스타일 */
+  .assp-expired-notice {
+    background-color: #f8d7da;
+    border-left: 4px solid #dc3545;
+    color: #721c24;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 0 4px 4px 0;
+    display: flex;
+    align-items: center;
+  }
+  
+  .assp-expired-notice i {
+    font-size: 1.5rem;
+    margin-right: 1rem;
+  }
+  
+  .assp-expired-notice p {
+    margin: 0;
+    font-weight: 500;
+  }
+  
+  /* 마감 상태 스타일 */
+  .assp-expired-status {
+    color: #dc3545 !important;
+    font-weight: 600;
+  }
+  
+  /* 로딩 및 에러 상태 */
+  .assp-loading-container,
+  .assp-error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 60vh;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .assp-loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--assp-neutral-medium);
+    border-top: 4px solid var(--assp-primary-color);
+    border-radius: 50%;
+    animation: assp-spin 1s linear infinite;
+  }
+  
+  @keyframes assp-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .assp-error-container h2 {
+    color: var(--assp-text-dark);
+    margin-bottom: 1rem;
+  }
+  
+  /* 반응형 디자인 */
+  @media (max-width: 1024px) {
+    .assp-main-content {
+      margin-left: 0;
+      padding: 1rem;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .assp-main-content {
+      padding: 0.5rem;
+    }
+  
+    .assp-assignment-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .assp-assignment-deadline {
+      margin-left: 0;
+      margin-top: 0.5rem;
+    }
+  
+    .assp-assignment-meta {
+      grid-template-columns: 1fr;
+    }
+  
+    .assp-meta-item {
+      margin-bottom: 0.5rem;
+    }
+  
+    .assp-form-actions {
+      flex-direction: column;
+    }
+  
+    .assp-btn {
+      width: 100%;
+      margin-bottom: 0.5rem;
+    }
+  
+    .assp-success-actions {
+      flex-direction: column;
+    }
+  
+    .assp-card-header,
+    .assp-card-body {
+      padding: 1rem;
+    }
+  
+    .assp-submission-form {
+      padding: 0;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .assp-assignment-submission-container {
+      gap: 1rem;
+    }
+  
+    .assp-assignment-title {
+      font-size: 1.1rem;
+    }
+  
+    .assp-upload-placeholder i {
+      font-size: 2rem;
+    }
+  
+    .assp-upload-placeholder span {
+      font-size: 1rem;
+    }
+  }
+  

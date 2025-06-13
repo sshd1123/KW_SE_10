@@ -1,0 +1,82 @@
+:root {
+    --primary-color: #78222D;
+    --neutral-light: #F5F5F5;
+    --neutral-medium: #E0E0E0;
+  }
+  
+  .grades-summary {
+    padding: 0.5rem;
+  }
+  
+  .grade-chart-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .grade-chart {
+    width: 120px;
+    height: 120px;
+    position: relative;
+    border-radius: 50%;
+    background: conic-gradient(var(--primary-color) 0% 76%, var(--neutral-medium) 76% 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .grade-chart::before {
+    content: "";
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    background-color: white;
+    border-radius: 50%;
+  }
+  
+  .grade-value {
+    position: relative;
+    z-index: 2;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+  }
+  
+  .grades-summary-brief {
+    display: flex;
+    justify-content: space-around;
+    margin: 0.5rem 0;
+    padding: 0.75rem;
+    background-color: var(--neutral-light);
+    border-radius: 6px;
+  }
+  
+  .grade-stat-item {
+    text-align: center;
+    padding: 0 0.5rem;
+  }
+  
+  .grade-stat-label {
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 0.25rem;
+  }
+  
+  .grade-stat-value {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary-color);
+  }
+  
+  @media (max-width: 768px) {
+    .grades-summary-brief {
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+  
+    .grade-stat-item {
+      flex: 0 0 50%;
+      margin-bottom: 0.5rem;
+    }
+  }
+  

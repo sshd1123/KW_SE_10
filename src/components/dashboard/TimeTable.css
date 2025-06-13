@@ -1,0 +1,263 @@
+:root {
+    --primary-color: #78222D;
+    --neutral-light: #F5F5F5;
+    --neutral-medium: #E0E0E0;
+    --text-dark: #333333;
+}
+
+.timetable-container {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: auto; /* 가로 스크롤 허용 */
+    -webkit-overflow-scrolling: touch; /* 모바일 스크롤 개선 */
+}
+
+.timetable-controls {
+    margin-bottom: 1rem;
+    text-align: right;
+}
+
+.timetable-btn {
+    background-color: white;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    border-radius: 4px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.timetable-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.timetable {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    min-width: 800px; /* 전체 너비 증가 */
+}
+
+.timetable-header {
+    display: flex;
+    background-color: var(--neutral-light);
+    border-bottom: 2px solid var(--neutral-medium);
+}
+
+.timetable-cell {
+    flex: 1;
+    border: 1px solid var(--neutral-medium);
+    padding: 0.75rem 0.5rem; /* 패딩 증가 */
+    height: 60px; /* 높이 대폭 증가 */
+    min-width: 0;
+    text-align: center;
+    vertical-align: middle;
+    box-sizing: border-box;
+}
+
+.timetable-cell.has-course {
+    background-color: rgba(120, 34, 45, 0.1);
+    overflow: hidden;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.timetable-cell.has-course:hover {
+    background-color: rgba(120, 34, 45, 0.2);
+    transform: scale(1.02);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.timetable-day-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1rem; /* 폰트 크기 증가 */
+    color: var(--primary-color);
+    background-color: var(--neutral-light);
+    border: 1px solid var(--neutral-medium);
+    padding: 0.75rem; /* 패딩 증가 */
+    text-align: center;
+    min-height: 60px; /* 높이 증가 */
+    box-sizing: border-box;
+}
+
+.timetable-time-label {
+    flex: 0 0 120px; /* 너비 대폭 증가 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem; /* 폰트 크기 증가 */
+    font-weight: 500;
+    background-color: var(--neutral-light);
+    border: 1px solid var(--neutral-medium);
+    padding: 0.5rem; /* 패딩 증가 */
+    text-align: center;
+    min-width: 120px; /* 최소 너비 증가 */
+    box-sizing: border-box;
+}
+
+.timetable-row {
+    display: flex;
+    min-height: 60px; /* 높이 증가 */
+}
+
+.timetable-course-info {
+    font-size: 0.85rem; /* 폰트 크기 증가 */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: center;
+    text-align: center;
+    padding: 0.5rem; /* 패딩 증가 */
+    line-height: 1.3;
+}
+
+.timetable-course-name,
+.timetable-course-room {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.timetable-course-name {
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 0.25rem; /* 마진 증가 */
+    line-height: 1.3;
+    font-size: 0.9rem; /* 강의명 폰트 크기 증가 */
+}
+
+.timetable-course-room {
+    font-size: 0.75rem; /* 강의실 폰트 크기 증가 */
+    color: #666;
+    line-height: 1.2;
+}
+
+.period-number {
+    font-weight: 600;
+    font-size: 0.9rem; /* 폰트 크기 증가 */
+    color: var(--primary-color);
+    line-height: 1.3;
+    margin-bottom: 0.15rem;
+}
+
+.period-time {
+    font-size: 0.75rem; /* 폰트 크기 증가 */
+    color: #666;
+    line-height: 1.2;
+}
+
+/* ==================== Responsive Design ==================== */
+@media (max-width: 768px) {
+    .timetable {
+        min-width: 700px; /* 모바일에서도 충분한 너비 */
+    }
+
+    .timetable-cell {
+        height: 50px; /* 모바일에서 높이 */
+        padding: 0.5rem 0.25rem;
+        font-size: 0.8rem;
+    }
+
+    .timetable-time-label {
+        flex: 0 0 100px; /* 모바일에서 시간 라벨 너비 */
+        font-size: 0.75rem;
+        min-width: 100px;
+        padding: 0.4rem;
+    }
+
+    .timetable-day-label {
+        font-size: 0.85rem;
+        padding: 0.5rem 0.25rem;
+        min-height: 50px;
+    }
+
+    .timetable-course-info {
+        font-size: 0.75rem;
+        padding: 0.25rem;
+    }
+
+    .timetable-course-name {
+        font-size: 0.8rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .timetable-course-room {
+        font-size: 0.7rem;
+    }
+
+    .period-number {
+        font-size: 0.8rem;
+        margin-bottom: 0.1rem;
+    }
+
+    .period-time {
+        font-size: 0.7rem;
+    }
+
+    .timetable-row {
+        min-height: 50px;
+    }
+}
+
+@media (max-width: 480px) {
+    .timetable {
+        min-width: 600px;
+    }
+    
+    .timetable-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .timetable-time-label {
+        flex: 0 0 80px;
+        min-width: 80px;
+        font-size: 0.7rem;
+        padding: 0.3rem;
+    }
+    
+    .timetable-day-label {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.2rem;
+        min-height: 45px;
+    }
+    
+    .timetable-cell {
+        height: 45px;
+        padding: 0.3rem 0.15rem;
+    }
+    
+    .timetable-course-info {
+        font-size: 0.7rem;
+        padding: 0.2rem;
+    }
+    
+    .timetable-course-name {
+        font-size: 0.75rem;
+        margin-bottom: 0.15rem;
+    }
+    
+    .timetable-course-room {
+        font-size: 0.65rem;
+    }
+    
+    .period-number {
+        font-size: 0.75rem;
+        margin-bottom: 0.1rem;
+    }
+    
+    .period-time {
+        font-size: 0.65rem;
+    }
+
+    .timetable-row {
+        min-height: 45px;
+    }
+}

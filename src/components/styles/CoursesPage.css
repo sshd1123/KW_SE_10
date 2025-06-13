@@ -1,0 +1,701 @@
+/* CoursesPage.css - 고유 접두사 'cp-' 적용 및 여백 제거 */
+
+/* 메인 색상 변수 정의 */
+:root {
+    --cp-primary-color: #78222D;
+    --cp-primary-light: #A13747;
+    --cp-primary-dark: #5A1923;
+    --cp-secondary-color: #1E3A8A;
+    --cp-neutral-light: #F5F5F5;
+    --cp-neutral-medium: #E0E0E0;
+    --cp-text-dark: #333333;
+    --cp-text-light: #FFFFFF;
+    --cp-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --cp-transition: all 0.3s ease;
+  }
+  
+  /* 페이지 레이아웃 - 여백 완전 제거 */
+  .cp-page {
+    min-height: 100vh;
+    background-color: var(--cp-neutral-light);
+    margin: 0;
+    padding: 0;
+    width: 100%;
+  }
+  
+  .cp-main-layout {
+    display: flex;
+    min-height: calc(100vh - 60px);
+    margin: 0;
+    padding: 0;
+    width: 100%;
+  }
+  
+  .cp-main-content {
+    flex: 1;
+    padding: 1rem; /* 기존 2rem에서 1rem으로 축소 */
+    margin-left: 0; /* 사이드바 여백 제거 */
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* 웰컴 배너 - 전체 너비 사용 */
+  .cp-welcome-banner {
+    background: linear-gradient(135deg, var(--cp-primary-color), var(--cp-primary-light));
+    color: var(--cp-text-light);
+    padding: 1.5rem; /* 기존 2rem에서 1.5rem으로 축소 */
+    border-radius: 8px;
+    margin-bottom: 1rem; /* 기존 2rem에서 1rem으로 축소 */
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .cp-welcome-banner h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 2rem;
+    font-weight: 600;
+  }
+  
+  .cp-welcome-banner p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 1.1rem;
+  }
+  
+  /* 전체 컨테이너 - 여백 제거 */
+  .cp-courses-container {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* 상단 행 - 내 강의 목록 + 강의 통계 */
+  .cp-top-row {
+    display: flex;
+    gap: 1rem; /* 기존 1.5rem에서 1rem으로 축소 */
+    margin-bottom: 1rem; /* 기존 1.5rem에서 1rem으로 축소 */
+    width: 100%;
+  }
+  
+  .cp-course-list-container {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .cp-course-stats-container {
+    flex: 0 0 250px;
+    min-width: 320px;
+  }
+  
+  /* 하단 행 - 다가오는 마감일 */
+  .cp-bottom-row {
+    width: 100%;
+  }
+  
+  /* 카드 기본 스타일 */
+  .cp-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: var(--cp-shadow);
+    overflow: hidden;
+    height: 100%;
+    margin-bottom: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .cp-card-header {
+    padding: 1rem; /* 기존 1.5rem에서 1rem으로 축소 */
+    border-bottom: 1px solid var(--cp-neutral-medium);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .cp-card-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--cp-primary-color);
+  }
+  
+  .cp-card-body {
+    padding: 1rem; /* 기존 1.5rem에서 1rem으로 축소 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+  }
+  
+  /* 내 강의 목록 스타일 */
+  .cp-course-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  
+  .cp-course-search {
+    position: relative;
+    flex: 1;
+    min-width: 100px;
+  }
+  
+  .cp-course-card-header {
+    flex-direction: row !important;
+  }
+  
+  .cp-search-input {
+    width: 75%;
+    padding: 0.75rem 2.5rem 0.75rem 1rem;
+    border: 1px solid var(--cp-neutral-medium);
+    border-radius: 4px;
+    font-size: 0.95rem;
+  }
+  
+  .cp-search-input:focus {
+    outline: none;
+    border-color: var(--cp-primary-color);
+    box-shadow: 0 0 0 2px rgba(120, 34, 45, 0.1);
+  }
+  
+  .cp-course-search-icon {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+    pointer-events: none;
+  }
+  
+  .cp-course-filters {
+    display: flex;
+    flex-direction: row;
+    gap: 0.75rem;
+  }
+  
+  .cp-filter-select,
+  .cp-sort-select {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--cp-neutral-medium);
+    border-radius: 4px;
+    font-size: 0.95rem;
+    background-color: white;
+    min-width: 120px;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+    padding-right: 2.5rem;
+  }
+  
+  /* 강의 목록 수평 스크롤 */
+  .cp-courses-grid-wrapper {
+    position: relative;
+    overflow: hidden;
+    padding: 0 40px;
+  }
+  
+  .cp-courses-grid {
+    display: flex;
+    gap: 1.25rem;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 10px 0;
+  }
+  
+  .cp-courses-grid::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .cp-courses-grid .course-card {
+    flex: 0 0 320px;
+    min-width: 320px;
+  }
+  
+  .cp-courses-card-body {
+    justify-content: center;
+    margin-top: 20px !important;
+    margin-bottom: 20px !important;
+    margin: 5px;
+    position: relative;
+  }
+  
+  /* 좌우 스크롤 버튼 */
+  .cp-scroll-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    background-color: white;
+    border: 1px solid var(--cp-neutral-medium);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 2;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .cp-scroll-button:hover {
+    background-color: var(--cp-primary-color);
+    color: white;
+    border-color: var(--cp-primary-color);
+  }
+  
+  .cp-scroll-button.cp-prev {
+    left: 0;
+  }
+  
+  .cp-scroll-button.cp-next {
+    right: 0;
+  }
+  
+  .cp-scroll-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: var(--cp-neutral-light);
+  }
+  
+  .cp-scroll-button:disabled:hover {
+    background-color: var(--cp-neutral-light);
+    color: inherit;
+    border-color: var(--cp-neutral-medium);
+  }
+  
+  /* 강의 통계 스타일 */
+  .cp-status-card-body {
+    justify-content: center !important;
+    gap: 10px;
+    min-height: 0 !important;
+  }
+  
+  .cp-stats-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.25rem;
+  }
+  
+  .cp-stats-item:last-child {
+    margin-bottom: 0;
+  }
+  
+  .cp-stats-label {
+    flex: 0 0 40%;
+    font-size: 0.9rem;
+  }
+  
+  .cp-stats-bar {
+    flex: 1;
+    height: 8px;
+    background-color: var(--cp-neutral-light);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 0 0.75rem;
+  }
+  
+  .cp-progress-bar {
+    height: 100%;
+    background-color: var(--cp-primary-color);
+  }
+  
+  .cp-stats-value {
+    flex: 0 0 15%;
+    text-align: right;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  
+  /* 원형 프로그레스 바 스타일 */
+  .cp-stats-circular-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 1.5rem 0;
+  }
+  
+  .cp-stats-circular-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .cp-stats-circular-item .cp-stats-label {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+  }
+  
+  .cp-circular-progress-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto;
+  }
+  
+  .cp-circular-progress {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  
+  .cp-circular-progress::before {
+    content: '';
+    position: absolute;
+    width: 80%;
+    height: 80%;
+    background-color: white;
+    border-radius: 50%;
+  }
+  
+  .cp-circular-progress-inner {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .cp-progress-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--cp-primary-color);
+  }
+  
+  .cp-progress-unit {
+    font-size: 0.8rem;
+    color: #666;
+  }
+  
+  /* 다가오는 마감일 스타일 */
+  .cp-deadline-card-body {
+    justify-content: center !important;
+    margin-top: 20px !important;
+    margin-bottom: 20px !important;
+    margin: 5px;
+  }
+  
+  .cp-deadline-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+  
+  .cp-deadline-card {
+    background-color: var(--cp-neutral-light);
+    border-radius: 6px;
+    border-left: 4px solid var(--cp-primary-color);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+  
+  .cp-deadline-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+  
+  .cp-deadline-card:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--cp-primary-color);
+  }
+  
+  .cp-deadline-card:active {
+    transform: translateY(0);
+  }
+  
+  .cp-deadline-header {
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.03);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  
+  .cp-deadline-course {
+    font-weight: 600;
+    color: var(--cp-primary-color);
+  }
+  
+  .cp-deadline-date {
+    font-size: 0.9rem;
+    color: #666;
+  }
+  
+  .cp-deadline-date i {
+    margin-right: 0.5rem;
+  }
+  
+  .cp-deadline-content {
+    padding: 1rem;
+    flex: 1;
+  }
+  
+  .cp-deadline-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+  }
+  
+  .cp-deadline-description {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #555;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .cp-deadline-footer {
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  
+  .cp-deadline-status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  
+  /* 마감일 상태별 스타일 */
+  .cp-deadline-normal {
+    background-color: #d1ecf1;
+    color: #0c5460;
+  }
+  
+  .cp-deadline-urgent {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+  
+  .cp-deadline-today {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+  
+  .cp-deadline-expired {
+    background-color: #6c757d;
+    color: white;
+    text-decoration: line-through;
+  }
+  
+  .cp-deadline-status.completed {
+    background-color: #d4edda;
+    color: #155724;
+  }
+  
+  .cp-deadline-status.late {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+  
+  /* 버튼 스타일 */
+  .cp-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .cp-btn-primary {
+    background-color: var(--cp-primary-color);
+    color: white;
+  }
+  
+  .cp-btn-primary:hover {
+    background-color: var(--cp-primary-dark);
+  }
+  
+  .cp-btn-outline {
+    padding: 0.4rem 0.75rem;
+    background-color: transparent;
+    border: 1px solid var(--cp-primary-color);
+    color: var(--cp-primary-color);
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .cp-btn-outline:hover {
+    background-color: var(--cp-primary-color);
+    color: white;
+  }
+  
+  .cp-btn-sm {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+  }
+  
+  /* 빈 메시지 */
+  .cp-empty-message {
+    text-align: center;
+    color: #6c757d;
+    padding: 2rem;
+  }
+  
+  /* 로딩 및 에러 상태 */
+  .cp-loading-container,
+  .cp-error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 60vh;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .cp-loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--cp-neutral-medium);
+    border-top: 4px solid var(--cp-primary-color);
+    border-radius: 50%;
+    animation: cp-spin 1s linear infinite;
+  }
+  
+  @keyframes cp-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .cp-error-container h2 {
+    color: var(--cp-text-dark);
+    margin-bottom: 1rem;
+  }
+  
+  /* 반응형 디자인 */
+  @media (max-width: 1100px) {
+    .cp-top-row {
+      flex-direction: column;
+    }
+  
+    .cp-course-stats-container {
+      min-width: 100%;
+    }
+  
+    .cp-deadline-cards {
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+  }
+  
+  @media (max-width: 1024px) {
+    .cp-main-content {
+      margin-left: 0;
+      padding: 0.5rem;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .cp-main-content {
+      padding: 0.25rem;
+    }
+  
+    .cp-welcome-banner {
+      padding: 1rem;
+    }
+  
+    .cp-card-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .cp-course-controls {
+      width: 100%;
+      flex-direction: column;
+      align-items: stretch;
+    }
+  
+    .cp-course-filters {
+      width: 100%;
+      justify-content: space-between;
+    }
+  
+    .cp-filter-select,
+    .cp-sort-select {
+      flex: 1;
+      min-width: 0;
+    }
+  
+    .cp-deadline-cards {
+      grid-template-columns: 1fr;
+    }
+  
+    .cp-deadline-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .cp-deadline-date {
+      margin-top: 0.5rem;
+    }
+  
+    .cp-deadline-footer {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .cp-deadline-status {
+      margin-bottom: 0.5rem;
+    }
+  
+    .cp-btn-outline {
+      width: 100%;
+    }
+  
+    .cp-stats-circular-container {
+      flex-direction: column;
+      gap: 2rem;
+    }
+  
+    .cp-circular-progress-container {
+      width: 100px;
+      height: 100px;
+    }
+  
+    .cp-progress-value {
+      font-size: 1.4rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .cp-welcome-banner h2 {
+      font-size: 1.5rem;
+    }
+  
+    .cp-card-header,
+    .cp-card-body {
+      padding: 1rem;
+    }
+  }
+  

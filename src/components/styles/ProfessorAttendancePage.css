@@ -1,0 +1,837 @@
+/* ProfessorAttendancePage.css */
+
+/* 출석 관리 메인 카드 */
+.attendance-management-card {
+    margin-bottom: 0;
+}
+
+/* 헤더 액션 영역 */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* 필터 및 검색 영역 */
+.attendance-filters {
+    background-color: var(--neutral-light);
+    border-bottom: 1px solid var(--neutral-medium);
+    padding: 1.5rem;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    align-items: end;
+    margin-bottom: 1rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+
+.filter-select {
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--neutral-medium);
+    border-radius: 4px;
+    background-color: white;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* 검색 그룹 */
+.search-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.search-container {
+    position: relative;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.6rem 2.5rem 0.6rem 1rem;
+    border: 1px solid var(--neutral-medium);
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(120, 34, 45, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+    pointer-events: none;
+}
+
+/* 일괄 출석 처리 영역 */
+.bulk-attendance-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: rgba(120, 34, 45, 0.05);
+    border-radius: 6px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.bulk-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.attendance-rate-display {
+    font-weight: 600;
+    color: var(--primary-color);
+    background-color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    border: 1px solid var(--neutral-medium);
+}
+
+.bulk-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.bulk-buttons .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* 선택 정보 */
+.selection-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    background-color: rgba(13, 110, 253, 0.1);
+    border-radius: 4px;
+    border-left: 4px solid #0d6efd;
+}
+
+.selection-info span {
+    font-weight: 600;
+    color: #0d6efd;
+}
+
+/* 출석 콘텐츠 영역 */
+.attendance-content {
+    padding: 0;
+    overflow: visible;
+    max-height: none;
+}
+
+/* 출석 테이블 */
+.attendance-table-container {
+    overflow-x: auto;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.attendance-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.attendance-table th,
+.attendance-table td {
+    padding: 0.75rem 0.5rem;
+    border-bottom: 1px solid var(--neutral-medium);
+    text-align: left;
+    vertical-align: middle;
+}
+
+.attendance-table th {
+    background-color: var(--neutral-light);
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.attendance-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.attendance-table tbody tr:hover {
+    background-color: rgba(120, 34, 45, 0.05);
+}
+
+/* 특수 컬럼 스타일 */
+.student-name {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.course-name {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.check-time {
+    font-family: monospace;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+/* 출석률 표시 */
+.attendance-rate {
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    display: inline-block;
+    min-width: 45px;
+}
+
+.attendance-rate.excellent {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.attendance-rate.good {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.attendance-rate.warning {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* 상태 뱃지 */
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    min-width: 60px;
+}
+
+.status-present {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-late {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-absent {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.status-excused {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.status-unmarked {
+    background-color: #e2e3e5;
+    color: #383d41;
+}
+
+/* 비고 입력 */
+.note-cell {
+    min-width: 150px;
+}
+
+.note-input {
+    width: 100%;
+    padding: 0.4rem;
+    border: 1px solid var(--neutral-medium);
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.note-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* 출석 버튼들 */
+.attendance-buttons {
+    display: flex;
+    gap: 0.25rem;
+    justify-content: center;
+    min-width: 160px;
+}
+
+.attendance-btn {
+    width: 32px;
+    height: 32px;
+    border: 2px solid;
+    border-radius: 50%;
+    background-color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+}
+
+.attendance-btn:hover {
+    transform: scale(1.1);
+}
+
+.attendance-btn.present {
+    border-color: #28a745;
+    color: #28a745;
+}
+
+.attendance-btn.present:hover,
+.attendance-btn.present.active {
+    background-color: #28a745;
+    color: white;
+}
+
+.attendance-btn.late {
+    border-color: #ffc107;
+    color: #ffc107;
+}
+
+.attendance-btn.late:hover,
+.attendance-btn.late.active {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.attendance-btn.absent {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.attendance-btn.absent:hover,
+.attendance-btn.absent.active {
+    background-color: #dc3545;
+    color: white;
+}
+
+.attendance-btn.excused {
+    border-color: #17a2b8;
+    color: #17a2b8;
+}
+
+.attendance-btn.excused:hover,
+.attendance-btn.excused.active {
+    background-color: #17a2b8;
+    color: white;
+}
+
+/* 통계 카드 아이콘 색상 */
+.stat-icon.present i {
+    color: #28a745;
+}
+
+.stat-icon.late i {
+    color: #ffc107;
+}
+
+.stat-icon.absent i {
+    color: #dc3545;
+}
+
+.stat-icon.excused i {
+    color: #17a2b8;
+}
+
+/* 버튼 색상 변형 */
+.btn-success {
+    background-color: #28a745;
+    color: white;
+    border: 1px solid #28a745;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    color: #212529;
+    border: 1px solid #ffc107;
+}
+
+.btn-warning:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+    border: 1px solid #dc3545;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+/* 빈 메시지 */
+.no-students-message {
+    text-align: center;
+    padding: 3rem;
+    color: #6c757d;
+}
+
+.no-students-message p {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+/* 모달 스타일 */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+.stats-modal {
+    max-width: 800px;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--neutral-medium);
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: var(--primary-color);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: #666;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    background-color: var(--neutral-light);
+    color: var(--text-dark);
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1.5rem;
+    border-top: 1px solid var(--neutral-medium);
+    background-color: var(--neutral-light);
+}
+
+/* 통계 모달 스타일 */
+.stats-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.stats-overview h4 {
+    margin: 0 0 1.5rem 0;
+    color: var(--primary-color);
+    text-align: center;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    padding: 1.5rem;
+    background-color: var(--neutral-light);
+    border-radius: 8px;
+    border-left: 4px solid;
+}
+
+.stat-item.present {
+    border-left-color: #28a745;
+}
+
+.stat-item.late {
+    border-left-color: #ffc107;
+}
+
+.stat-item.absent {
+    border-left-color: #dc3545;
+}
+
+.stat-item.excused {
+    border-left-color: #17a2b8;
+}
+
+.stat-item .stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin-right: 1rem;
+    font-size: 1.5rem;
+}
+
+.stat-item.present .stat-icon {
+    background-color: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+}
+
+.stat-item.late .stat-icon {
+    background-color: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+}
+
+.stat-item.absent .stat-icon {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+.stat-item.excused .stat-icon {
+    background-color: rgba(23, 162, 184, 0.1);
+    color: #17a2b8;
+}
+
+.stat-data {
+    flex: 1;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.stat-item.present .stat-number {
+    color: #28a745;
+}
+
+.stat-item.late .stat-number {
+    color: #ffc107;
+}
+
+.stat-item.absent .stat-number {
+    color: #dc3545;
+}
+
+.stat-item.excused .stat-number {
+    color: #17a2b8;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
+}
+
+/* 출석률 차트 */
+.attendance-rate-chart {
+    text-align: center;
+}
+
+.attendance-rate-chart h4 {
+    margin: 0 0 1.5rem 0;
+    color: var(--primary-color);
+}
+
+.rate-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.rate-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: conic-gradient(
+        var(--primary-color) 0deg,
+        var(--primary-color) calc(var(--rate, 0) * 3.6deg),
+        var(--neutral-medium) calc(var(--rate, 0) * 3.6deg),
+        var(--neutral-medium) 360deg
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.rate-circle::before {
+    content: '';
+    position: absolute;
+    width: 90px;
+    height: 90px;
+    background-color: white;
+    border-radius: 50%;
+}
+
+.rate-percentage {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    position: relative;
+    z-index: 1;
+}
+
+.rate-details p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* 체크박스 스타일 */
+input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+    .filter-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 992px) {
+    .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .header-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+        width: 100%;
+    }
+    
+    .filter-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .bulk-attendance-actions {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .bulk-buttons {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+    
+    .selection-info {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .attendance-filters {
+        padding: 1rem;
+    }
+    
+    .attendance-table-container {
+        max-height: 400px;
+    }
+    
+    .attendance-table {
+        font-size: 0.8rem;
+    }
+    
+    .attendance-table th,
+    .attendance-table td {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    /* 모바일에서 일부 컬럼 숨기기 */
+    .attendance-table th:nth-child(4),
+    .attendance-table td:nth-child(4),
+    .attendance-table th:nth-child(7),
+    .attendance-table td:nth-child(7) {
+        display: none;
+    }
+    
+    .attendance-buttons {
+        min-width: 120px;
+    }
+    
+    .attendance-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 1rem;
+    }
+    
+    .modal-footer {
+        flex-direction: column;
+    }
+    
+    .modal-footer .btn {
+        width: 100%;
+    }
+    
+    .bulk-info {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: flex-start;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .stat-item {
+        padding: 1rem;
+    }
+    
+    .stat-item .stat-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .attendance-table th:nth-child(5),
+    .attendance-table td:nth-child(5),
+    .attendance-table th:nth-child(8),
+    .attendance-table td:nth-child(8) {
+        display: none;
+    }
+    
+    .attendance-buttons {
+        flex-direction: column;
+        min-width: 32px;
+        gap: 0.125rem;
+    }
+    
+    .attendance-btn {
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+        font-size: 0.6rem;
+    }
+    
+    .bulk-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .bulk-buttons .btn {
+        width: 100%;
+        margin-bottom: 0.25rem;
+    }
+    
+    .rate-circle {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .rate-circle::before {
+        width: 75px;
+        height: 75px;
+    }
+    
+    .rate-percentage {
+        font-size: 1.2rem;
+    }
+}

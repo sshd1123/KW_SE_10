@@ -1,0 +1,1121 @@
+@import url(https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css);
+
+/* ==================== CSS Variables ==================== */
+:root {
+    --primary-color: #78222D;
+    --primary-light: #9d2838;
+    --primary-dark: #5c1a22;
+    --neutral-light: #F5F5F5;
+    --neutral-medium: #E0E0E0;
+    --text-dark: #333333;
+    --text-light: #ffffff;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
+    --border-radius: 8px;
+    --border-radius-small: 4px;
+}
+
+/* ==================== Global Animations ==================== */
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body,
+html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* ==================== Base Layout ==================== */
+.student-dashboard {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--neutral-light);
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+.dashboard-main {
+    display: flex;
+    flex: 1;
+    margin-top: var(--header-height);
+    min-height: calc(100vh - var(--header-height));
+}
+
+/* ==================== Loading Components ==================== */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: var(--neutral-light);
+}
+
+.loading-spinner {
+    border: 4px solid var(--neutral-medium);
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+/* ==================== Header ==================== */
+.dashboard-header {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow);
+    z-index: 10;
+    position: sticky;
+    top: 0;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+.header-logo {
+    height: 36px;
+    margin-right: 1rem;
+    transition: var(--transition);
+}
+
+.header-logo:hover {
+    transform: scale(1.05);
+}
+
+.header-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* ==================== Notification ==================== */
+.notification-icon {
+    position: relative;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: var(--border-radius-small);
+    transition: var(--transition);
+}
+
+.notification-icon:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.notification-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #f44336;
+    color: var(--text-light);
+    border-radius: 50%;
+    font-size: 0.7rem;
+    font-weight: 600;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+}
+
+/* ==================== User Dropdown ==================== */
+.user-dropdown {
+    position: relative;
+}
+
+.user-dropdown-toggle {
+    display: flex;
+    align-items: center;
+    background: transparent;
+    border: none;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: var(--border-radius-small);
+    transition: var(--transition);
+}
+
+.user-dropdown-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.user-name {
+    font-weight: 600;
+    margin-right: 0.5rem;
+}
+
+.user-role {
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 0.2rem 0.5rem;
+    border-radius: var(--border-radius-small);
+    font-size: 0.75rem;
+    margin-right: 0.5rem;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: var(--text-light);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    width: 200px;
+    z-index: 100;
+    margin-top: 0.5rem;
+    animation: slideIn 0.2s ease;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    color: var(--text-dark);
+    text-decoration: none;
+    transition: var(--transition);
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+}
+
+.dropdown-item:hover {
+    background-color: var(--neutral-light);
+}
+
+.dropdown-item i {
+    margin-right: 0.75rem;
+    width: 16px;
+    text-align: center;
+}
+
+.logout-button {
+    color: #f44336;
+}
+
+.dropdown-divider {
+    margin: 0.5rem 0;
+    border: none;
+    border-top: 1px solid var(--neutral-medium);
+}
+
+/* ==================== Sidebar ==================== */
+.dashboard-sidebar {
+    width: 260px;
+    background-color: #ffffff;
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+}
+
+/* Student Sidebar Specific */
+.dashboard-sidebar.student-sidebar {
+    background-color: #ffffff;
+    color: #333333;
+}
+
+.sidebar-profile {
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--neutral-medium);
+    animation: slideIn 0.5s ease;
+}
+
+.profile-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-right: 1rem;
+    box-shadow: 0 2px 8px rgba(120, 34, 45, 0.2);
+}
+
+.profile-info {
+    flex: 1;
+}
+
+.profile-name {
+    margin: 0 0 0.25rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333333;
+}
+
+.profile-details {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #666;
+    line-height: 1.4;
+}
+
+/* ==================== Sidebar Navigation ==================== */
+.sidebar-nav {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 0;
+}
+
+.sidebar-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-nav li {
+    margin-bottom: 0.25rem;
+}
+
+.sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    width: 100%;
+    text-align: left;
+    background: #ffffff;
+    border: none;
+    color: #333333;
+    cursor: pointer;
+    transition: var(--transition);
+    border-radius: 0;
+    position: relative;
+    font-size: 0.95rem;
+}
+
+.sidebar-nav-item:hover {
+    background-color: var(--neutral-light);
+    transform: translateX(2px);
+}
+
+.sidebar-nav-item.active {
+    background-color: var(--primary-color);
+    color: #ffffff;
+}
+
+/* Student Sidebar Navigation */
+.dashboard-sidebar.student-sidebar .sidebar-nav-item {
+    background: #ffffff;
+    color: #333333;
+    border: none;
+}
+
+.dashboard-sidebar.student-sidebar .sidebar-nav-item:hover,
+.dashboard-sidebar.student-sidebar .sidebar-nav-item.active {
+    background: var(--primary-color);
+    color: #ffffff;
+}
+
+.sidebar-nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: var(--primary-dark);
+}
+
+.sidebar-nav-item i {
+    margin-right: 1rem;
+    width: 20px;
+    text-align: center;
+    transition: var(--transition);
+}
+
+.sidebar-nav-item:hover i {
+    transform: scale(1.1);
+}
+
+/* ==================== Sidebar Footer ==================== */
+.sidebar-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--neutral-medium);
+}
+
+.help-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.75rem;
+    background-color: transparent;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    border-radius: var(--border-radius-small);
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 500;
+}
+
+.help-button:hover {
+    background-color: var(--primary-color);
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(120, 34, 45, 0.2);
+}
+
+.help-button i {
+    margin-right: 0.5rem;
+}
+
+/* ==================== Main Content ==================== */
+.dashboard-content {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+    background-color: var(--neutral-light);
+    animation: fadeIn 0.6s ease;
+}
+
+/* ==================== Welcome Banner ==================== */
+.welcome-banner {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+    color: var(--text-light);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.welcome-banner::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    animation: fadeIn 1s ease;
+}
+
+.welcome-banner h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.8rem;
+    font-weight: 700;
+    position: relative;
+    z-index: 1;
+}
+
+.welcome-banner p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+/* ==================== Dashboard Grid ==================== */
+.dashboard-row {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    align-items: flex-start;
+    /* 카드들이 위쪽으로 정렬되도록 */
+}
+
+.dashboard-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ==================== Card Components ==================== */
+.card {
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    transition: var(--transition);
+    height: auto;
+    /* 자동 높이 */
+    min-height: fit-content;
+    /* 콘텐츠에 맞는 최소 높이 */
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    background-color: var(--text-light);
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--neutral-medium);
+}
+
+.card-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    min-height: auto;
+    /* 자동 높이 */
+}
+
+.card-content {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: visible;
+    /* 스크롤 제거 */
+    max-height: none;
+    /* 최대 높이 제한 제거 */
+    min-height: auto;
+    /* 자동 높이 */
+}
+
+/* 특정 카드들에 대한 개별 설정 */
+.assignments-card .card-content {
+    padding: 0.5rem 0.75rem;
+    max-height: none;
+    /* 과제 카드도 높이 제한 제거 */
+    overflow-y: visible;
+}
+
+/* 시간표 카드 특별 처리 */
+.timetable-card .card-body {
+    padding: 0.25rem;
+}
+
+.timetable-card .card-content {
+    max-height: none;
+    overflow: visible;
+    padding: 0.25rem;
+}
+
+.card-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--neutral-medium);
+    background-color: var(--neutral-light);
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* ==================== Button Styles ==================== */
+.btn {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    border: none;
+    border-radius: var(--border-radius-small);
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.btn:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(120, 34, 45, 0.3);
+}
+
+.btn-outline {
+    background-color: var(--text-light);
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+}
+
+.btn-outline:hover {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    border-color: var(--primary-color);
+}
+
+.btn-sm {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+}
+
+/* ==================== Course Components ==================== */
+.courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+    align-items: start;
+    /* 카드들이 위쪽으로 정렬 */
+}
+
+.empty-message {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    background-color: var(--neutral-light);
+    border-radius: var(--border-radius-small);
+    border: 2px dashed var(--neutral-medium);
+    min-height: 120px;
+    /* 빈 메시지에 최소 높이 설정 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ==================== Assignment Components ==================== */
+.assignment-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    /* 과제 아이템들 사이 간격 */
+}
+
+.assignment-item {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--neutral-medium);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: var(--transition);
+    border-radius: var(--border-radius-small);
+    margin-bottom: 0;
+    /* 마진 제거하고 gap으로 처리 */
+}
+
+.assignment-item:hover {
+    background-color: var(--neutral-light);
+    transform: translateX(2px);
+}
+
+.assignment-item:last-child {
+    border-bottom: none;
+}
+
+.assignment-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.assignment-course {
+    font-size: 0.75rem;
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.assignment-title {
+    font-size: 0.9rem;
+    margin: 0 0 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+}
+
+.assignment-deadline {
+    font-size: 0.75rem;
+    color: #666;
+    display: flex;
+    align-items: center;
+}
+
+.assignment-deadline i {
+    margin-right: 0.25rem;
+}
+
+.assignment-status {
+    padding: 0.2rem 0.4rem;
+    border-radius: var(--border-radius-small);
+    font-size: 0.7rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Assignment Status Colors */
+.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-in-progress {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.status-completed {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-late {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.status-expired {
+    background-color: #6c757d;
+    color: var(--text-light);
+}
+
+/* ==================== Timetable Styles ==================== */
+.timetable-container {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: auto;
+    /* 가로 스크롤 허용 */
+}
+
+.timetable-controls {
+    margin-bottom: 1rem;
+    text-align: right;
+}
+
+.timetable-btn {
+    background-color: #ffffff;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    border-radius: var(--border-radius-small);
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.timetable-btn:hover {
+    background-color: var(--primary-color);
+    color: #ffffff;
+}
+
+.timetable {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    min-width: 700px;
+    /* 최소 너비 설정 */
+}
+
+.timetable-header {
+    display: flex;
+    background-color: var(--neutral-light);
+    border-bottom: 2px solid var(--neutral-medium);
+}
+
+.timetable-cell {
+    flex: 1;
+    border: 1px solid var(--neutral-medium);
+    padding: 0.5rem 0.25rem;
+    height: 40px;
+    min-width: 0;
+    text-align: center;
+    vertical-align: middle;
+    box-sizing: border-box;
+}
+
+.timetable-cell.has-course {
+    background-color: rgba(120, 34, 45, 0.1);
+    overflow: hidden;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.timetable-cell.has-course:hover {
+    background-color: rgba(120, 34, 45, 0.2);
+    transform: scale(1.02);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.timetable-day-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--primary-color);
+    background-color: var(--neutral-light);
+    border: 1px solid var(--neutral-medium);
+    padding: 0.5rem;
+    text-align: center;
+    min-height: 40px;
+    box-sizing: border-box;
+}
+
+.timetable-time-label {
+    flex: 0 0 90px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background-color: var(--neutral-light);
+    border: 1px solid var(--neutral-medium);
+    padding: 0.25rem;
+    text-align: center;
+    min-width: 90px;
+    box-sizing: border-box;
+}
+
+.timetable-row {
+    display: flex;
+    min-height: 40px;
+}
+
+.timetable-course-info {
+    font-size: 0.7rem;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: center;
+    text-align: center;
+    padding: 0.25rem;
+}
+
+.timetable-course-name {
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 0.15rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+}
+
+.timetable-course-room {
+    font-size: 0.65rem;
+    color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.1;
+}
+
+.period-number {
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: var(--primary-color);
+    line-height: 1.2;
+}
+
+.period-time {
+    font-size: 0.65rem;
+    color: #666;
+    line-height: 1.1;
+    margin-top: 0.1rem;
+}
+
+/* ==================== Grades Components ==================== */
+.grades-chart-container {
+    width: 100%;
+    margin-bottom: 1rem;
+    padding: 0.5rem 0;
+    background-color: #ffffff;
+    border-radius: var(--border-radius);
+    min-height: 200px;
+    /* 차트를 위한 최소 높이 */
+}
+
+.empty-chart-message {
+    text-align: center;
+    color: #6c757d;
+    padding: 2rem 0;
+    font-size: 0.9rem;
+    font-style: italic;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 졸업 요건 카드 특별 처리 */
+.graduation-requirements-card .card-content {
+    padding: 0.5rem;
+    min-height: 250px;
+    /* 졸업 요건 카드 최소 높이 */
+}
+
+/* ==================== Utility Classes ==================== */
+.mt-2 {
+    margin-top: 1rem !important;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-muted {
+    color: #6c757d;
+}
+
+/* ==================== Responsive Design ==================== */
+@media (max-width: 1200px) {
+    .dashboard-content {
+        padding: 1rem;
+    }
+
+    .dashboard-row {
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-main {
+        flex-direction: column;
+    }
+
+    .dashboard-sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        top: 0;
+    }
+
+    .sidebar-profile {
+        padding: 1rem;
+    }
+
+    .dashboard-row {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .dashboard-content {
+        padding: 1rem;
+    }
+
+    .welcome-banner {
+        padding: 1.5rem;
+    }
+
+    .welcome-banner h2 {
+        font-size: 1.5rem;
+    }
+
+    .card {
+        margin-bottom: 1rem;
+    }
+
+    .card-footer {
+        justify-content: center;
+    }
+
+    .courses-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .timetable {
+        min-width: 600px;
+        /* 모바일에서 최소 너비 줄임 */
+    }
+
+    .timetable-cell {
+        height: 35px;
+        padding: 0.2rem;
+        font-size: 0.7rem;
+    }
+
+    .timetable-time-label {
+        flex: 0 0 70px;
+        font-size: 0.65rem;
+        min-width: 70px;
+    }
+
+    .timetable-day-label {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.2rem;
+    }
+
+    .timetable-course-info {
+        font-size: 0.65rem;
+        padding: 0.1rem;
+    }
+
+    .timetable-course-name {
+        font-size: 0.65rem;
+        margin-bottom: 0.1rem;
+    }
+
+    .timetable-course-room {
+        font-size: 0.6rem;
+    }
+
+    .period-number {
+        font-size: 0.65rem;
+    }
+
+    .period-time {
+        font-size: 0.6rem;
+    }
+
+    .assignment-item {
+        padding: 0.5rem 0.75rem;
+    }
+
+    /* Mobile Sidebar Fix */
+    .dashboard-sidebar.student-sidebar .sidebar-nav-item {
+        background: #ffffff;
+        color: #333333;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-content {
+        padding: 0.75rem;
+    }
+
+    .welcome-banner {
+        padding: 1rem;
+    }
+
+    .welcome-banner h2 {
+        font-size: 1.3rem;
+    }
+
+    .card-content {
+        max-height: none;
+        /* 모바일에서도 높이 제한 제거 */
+        min-height: auto;
+    }
+
+    .btn {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    /* 모바일에서 카드들이 적절한 높이를 갖도록 */
+    .assignment-list {
+        min-height: auto;
+    }
+
+    .courses-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    /* 모바일 시간표 스타일 */
+    .timetable {
+        min-width: 500px;
+    }
+
+    .timetable-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .timetable-time-label {
+        flex: 0 0 60px;
+        min-width: 60px;
+        font-size: 0.6rem;
+    }
+
+    .timetable-day-label {
+        font-size: 0.7rem;
+        padding: 0.3rem 0.1rem;
+    }
+
+    .timetable-cell {
+        height: 30px;
+        padding: 0.1rem;
+    }
+
+    .timetable-course-info {
+        font-size: 0.6rem;
+    }
+
+    .timetable-course-name {
+        font-size: 0.6rem;
+    }
+
+    .timetable-course-room {
+        font-size: 0.55rem;
+    }
+}
+
+/* ==================== Additional Sidebar Fixes ==================== */
+.sidebar-nav ul li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.sidebar-nav-item span {
+    font-size: 0.95rem;
+    font-weight: 500;
+}

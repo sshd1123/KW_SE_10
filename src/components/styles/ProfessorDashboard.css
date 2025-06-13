@@ -1,0 +1,704 @@
+/* ProfessorDashboard.css */
+@import url(https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css);
+
+/* 기본 변수들은 StudentDashboard.css와 동일 */
+:root {
+    --primary-color: #78222D;
+    --primary-light: #A13747;
+    --primary-dark: #5A1923;
+    --secondary-color: #1E3A8A;
+    --neutral-light: #F5F5F5;
+    --neutral-medium: #E0E0E0;
+    --text-dark: #333333;
+    --text-light: #FFFFFF;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
+}
+
+.professor-dashboard {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--neutral-light);
+}
+
+/* 교수 사이드바 스타일 */
+.professor-sidebar {
+    width: 260px;
+    background-color: #ffffff;
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+}
+
+.professor-sidebar .sidebar-profile {
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--neutral-medium);
+    animation: slideIn 0.5s ease;
+}
+
+.professor-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-right: 1rem;
+    box-shadow: 0 2px 8px rgba(120, 34, 45, 0.2);
+}
+
+.professor-sidebar .profile-role {
+    display: inline-block;
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+.professor-sidebar .profile-details {
+        margin: 0;
+    font-size: 0.8rem;
+    color: #666;
+    line-height: 1.4;
+}
+
+.professor-sidebar .sidebar-nav-item {
+    color: rgba(255, 255, 255, 0.9);
+    border-radius: 0;
+}
+
+.professor-sidebar .sidebar-nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-light);
+}
+
+.professor-sidebar .sidebar-nav-item.active {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: var(--text-light);
+    border-left: 4px solid var(--text-light);
+}
+
+.professor-sidebar .help-button {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: var(--text-light);
+}
+
+.professor-sidebar .help-button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 통계 카드 컨테이너 */
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+.stat-card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background-color: var(--primary-color);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background-color: rgba(120, 34, 45, 0.1);
+    border-radius: 12px;
+    margin-right: 1rem;
+}
+
+.stat-icon i {
+    font-size: 1.8rem;
+    color: var(--primary-color);
+}
+
+.stat-info {
+    flex: 1;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
+}
+
+/* 강의 목록 스타일 */
+.courses-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.course-item {
+    padding: 1rem;
+    background-color: var(--neutral-light);
+    border-radius: 6px;
+    border-left: 4px solid var(--primary-color);
+    transition: var(--transition);
+}
+
+.course-item:hover {
+    background-color: #f0f0f0;
+    transform: translateX(2px);
+}
+
+.course-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.course-name {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--text-dark);
+}
+
+.course-code {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.course-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.course-details p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #666;
+    display: flex;
+    align-items: center;
+}
+
+.course-details i {
+    width: 16px;
+    margin-right: 0.5rem;
+    color: var(--primary-color);
+}
+
+/* 공지사항 스타일 */
+.announcement-item {
+    padding: 1rem;
+    border-bottom: 1px solid var(--neutral-medium);
+    transition: var(--transition);
+}
+
+.announcement-item:hover {
+    background-color: var(--neutral-light);
+}
+
+.announcement-item:last-child {
+    border-bottom: none;
+}
+
+.announcement-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+}
+
+.announcement-course {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.announcement-date {
+    color: #666;
+}
+
+.announcement-title {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--text-dark);
+}
+
+/* 과제 목록 스타일 */
+.assignments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.assignment-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: var(--neutral-light);
+    border-radius: 6px;
+    transition: var(--transition);
+}
+
+.assignment-item:hover {
+    background-color: #f0f0f0;
+}
+
+.assignment-info {
+    flex: 1;
+}
+
+.assignment-course {
+    font-size: 0.8rem;
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.assignment-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    color: var(--text-dark);
+}
+
+.assignment-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.assignment-meta span {
+    display: flex;
+    align-items: center;
+}
+
+.assignment-meta i {
+    margin-right: 0.25rem;
+    color: var(--primary-color);
+}
+
+.assignment-actions {
+    margin-left: 1rem;
+}
+
+/* 성적 관리 스타일 */
+.grade-summary {
+    padding: 1rem;
+}
+
+.grade-progress {
+    margin-bottom: 1.5rem;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.progress-label {
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.progress-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.progress-bar-container {
+    height: 8px;
+    background-color: var(--neutral-medium);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: var(--primary-color);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.grade-stats {
+    display: flex;
+    justify-content: space-around;
+    gap: 1rem;
+}
+
+.grade-stat-item {
+    text-align: center;
+    flex: 1;
+    padding: 1rem;
+    background-color: var(--neutral-light);
+    border-radius: 6px;
+}
+
+.grade-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.25rem;
+}
+
+.grade-stat-label {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
+}
+
+/* 공통 카드 스타일 */
+.card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.card-header {
+    background-color: white;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--neutral-medium);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+}
+
+.card-content {
+    flex: 1;
+    padding: 1rem 1.5rem;
+    overflow-y: auto;
+    max-height: 300px;
+}
+
+.card-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--neutral-medium);
+    background-color: var(--neutral-light);
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* 버튼 스타일 */
+.btn {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    border: none;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+}
+
+.btn-outline {
+    background-color: transparent;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+}
+
+.btn-outline:hover {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+}
+
+.btn-sm {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+}
+
+.btn i {
+    margin-right: 0.5rem;
+}
+
+/* 빈 메시지 스타일 */
+.empty-message {
+    text-align: center;
+    color: #6c757d;
+    padding: 2rem 0;
+    font-style: italic;
+}
+
+/* 대시보드 레이아웃 */
+.dashboard-main {
+    display: flex;
+    flex: 1;
+}
+
+.dashboard-content {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+    background-color: var(--neutral-light);
+}
+
+.welcome-banner {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+    color: var(--text-light);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow);
+}
+
+.welcome-banner h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+.welcome-banner p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 1rem;
+}
+
+.dashboard-row {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.dashboard-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 로딩 및 오류 스타일 */
+.loading-container,
+.error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: var(--neutral-light);
+}
+
+.loading-spinner {
+    border: 4px solid var(--neutral-medium);
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.error-container p {
+    margin-bottom: 1rem;
+    color: #666;
+}
+
+.error-container button {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.error-container button:hover {
+    background-color: var(--primary-dark);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+    .stats-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 992px) {
+    .dashboard-row {
+        flex-direction: column;
+    }
+    
+    .stats-container {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-main {
+        flex-direction: column;
+    }
+    
+    .professor-sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+    
+    .stats-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .stat-icon i {
+        font-size: 1.5rem;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+    }
+    
+    .course-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .assignment-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .assignment-actions {
+        margin-left: 0;
+        width: 100%;
+    }
+    
+    .assignment-actions .btn {
+        width: 100%;
+    }
+    
+    .grade-stats {
+        flex-direction: column;
+    }
+    
+    .card-content {
+        max-height: 250px;
+    }
+    
+    .welcome-banner h2 {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-content {
+        padding: 1rem;
+    }
+    
+    .welcome-banner {
+        padding: 1rem;
+    }
+    
+    .card-content {
+        padding: 0.75rem 1rem;
+    }
+    
+    .card-header,
+    .card-footer {
+        padding: 0.75rem 1rem;
+    }
+    
+    .stat-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .stat-icon {
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+    }
+}
