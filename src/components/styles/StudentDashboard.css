@@ -499,9 +499,33 @@ html {
     margin-bottom: 1.5rem;
     transition: var(--transition);
     height: auto;
-    /* 자동 높이 */
     min-height: fit-content;
-    /* 콘텐츠에 맞는 최소 높이 */
+}
+
+.timetable-card {
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    transition: var(--transition);
+    height: auto;
+    min-height: fit-content;
+}
+
+.graduation-requirements-card {
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    transition: var(--transition);
+    height: auto;
+    min-height: fit-content;
 }
 
 .card:hover {
@@ -737,10 +761,12 @@ html {
 /* ==================== Timetable Styles ==================== */
 .timetable-container {
     width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    min-width: 1200px;
     margin: 0;
     padding: 0;
     overflow-x: auto;
-    /* 가로 스크롤 허용 */
 }
 
 .timetable-controls {
@@ -782,7 +808,7 @@ html {
     flex: 1;
     border: 1px solid var(--neutral-medium);
     padding: 0.5rem 0.25rem;
-    height: 40px;
+    height: 80px;
     min-width: 0;
     text-align: center;
     vertical-align: middle;
@@ -814,11 +840,13 @@ html {
     padding: 0.5rem;
     text-align: center;
     min-height: 40px;
+    flex: 1;
+    min-width: 150px;
     box-sizing: border-box;
 }
 
 .timetable-time-label {
-    flex: 0 0 90px;
+    flex: 0 0 150px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -829,7 +857,8 @@ html {
     border: 1px solid var(--neutral-medium);
     padding: 0.25rem;
     text-align: center;
-    min-width: 90px;
+    min-width: 150px;
+    max-width: 150px;
     box-sizing: border-box;
 }
 
@@ -902,13 +931,6 @@ html {
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-/* 졸업 요건 카드 특별 처리 */
-.graduation-requirements-card .card-content {
-    padding: 0.5rem;
-    min-height: 250px;
-    /* 졸업 요건 카드 최소 높이 */
 }
 
 /* ==================== Utility Classes ==================== */

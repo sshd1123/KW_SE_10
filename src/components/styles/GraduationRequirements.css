@@ -1,14 +1,3 @@
-/* GraduationRequirements.css (간단한 버전) */
-
-.graduation-requirements-simple {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.5rem;
-    padding: 1.5rem;
-    height: 100%;
-}
-
 /* 원형 진행률 */
 .graduation-progress-container {
     display: flex;

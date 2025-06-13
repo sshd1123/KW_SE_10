@@ -128,6 +128,21 @@ const StudentDashboard = () => {
           </div>
 
           <div className="dashboard-row">
+          <div className="dashboard-col">
+              <div className="timetable-card">
+                <div className="card-header">
+                  <h3>시간표</h3>
+                </div>
+                <div className="card-body">
+                  <div className="card-content">
+                    <TimeTable courses={studentData.courses || []} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="dashboard-row">
             <div className="dashboard-col">
               <div className="card">
                 <div className="card-header">
@@ -233,20 +248,7 @@ const StudentDashboard = () => {
 
           <div className="dashboard-row">
             <div className="dashboard-col">
-              <div className="card">
-                <div className="card-header">
-                  <h3>시간표</h3>
-                </div>
-                <div className="card-body">
-                  <div className="card-content">
-                    <TimeTable courses={studentData.courses || []} />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="dashboard-col">
-              <div className="card">
+              <div className="graduation-requirements-card">
                 <div className="card-header">
                   <h3>졸업 요건</h3>
                 </div>
