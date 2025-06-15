@@ -6,6 +6,9 @@ const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const path = require('path');
+const userRouter = require('./routes/users');
+const coursesRouter = require('./routes/course');
+const { createSession, requireAuth } = require('./middlewares/auth');
 
 // 데이터베이스 연결 import
 const { query, testConnection, pool, transaction } = require('./config/database');
@@ -48,10 +51,15 @@ app.use(session({
   cookie: {
     secure: false,
     httpOnly: true,
+    sameSite: 'lax',
+    path: '/',
     maxAge: 24 * 60 * 60 * 1000 // 24시간
   },
   name: 'sessionId'
 }));
+
+app.use('/api/users', userRouter);
+app.use('/api/courses', coursesRouter);
 
 // 서버 시작시 데이터베이스 연결 테스트 (개발용 이후 주석 처리)
 (async () => {
@@ -65,7 +73,7 @@ app.use(session({
 
 // 테스트 페이지 라우트 (개발용 이후 주석 처리)
 app.get('/test', (req, res) => {
-  res.sendFile(path.join(__dirname, 'test.html'));
+  res.sendFile(path.join(__dirname, 'test', 'test.html'));
 });
 
 // 기본 라우트
@@ -103,8 +111,17 @@ app.get('/api', async (req, res) => {
 
 // 회원가입 라우터 - 중앙화된 에러 처리 적용
 app.post('/api/auth/register', asyncErrorCatcher(async (req, res) => {
-  const { email, password, name } = req.body;
+  const { email, password, name, role } = req.body;
   
+  const allowedRoles = ['student', 'professor', 'admin'];
+  const finalRole = allowedRoles.includes(role) ? role : 'student';
+
+  if (finalRole === 'admin' && email !== 'admin@example.com') {
+    const error = new Error('관리자로 등록할 수 없습니다.');
+    error.status = 403;
+    throw error;
+  }
+
   // 입력 검증
   if (!email || !password || !name) {
     const error = new Error('모든 필드를 입력해주세요.');
@@ -123,20 +140,21 @@ app.post('/api/auth/register', asyncErrorCatcher(async (req, res) => {
   
   // 새 사용자 생성 
   // 참고: 실제로는 password를 bcrypt로 해싱해야 함
+  // TODO: tb_users name 컬럼 추가 이후 name 필드, 값 복원
   const result = await req.db.query(
     'INSERT INTO tb_users (login_id, password_hash, role) VALUES (?, ?, ?)',
-    [email, password, 'student'] // role 컬럼에 맞는 유효한 값 사용
+    [email, password, finalRole] 
   );
   
   res.status(201).json({
     success: true,
-    message: '회원가입이 완료되었습니다.',
+    message: `${finalRole} 회원가입이 완료되었습니다.`,
     data: {
       user: {
         user_id: result.insertId,
         login_id: email,
         name: name, // tb_user에 name 컬럼 추가 필요
-        role: 'student' // 학생으로 등록
+        role: finalRole
       }
     }
   });
@@ -144,9 +162,10 @@ app.post('/api/auth/register', asyncErrorCatcher(async (req, res) => {
 
 // 로그인 라우터 - 글로벌 에러 핸들러 적용
 app.post('/api/auth/login', asyncErrorCatcher(async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, rememberMe } = req.body;
   
   // 실제 테이블 구조에 맞게 수정
+  // TODO: tb_users name 컬럼 추가 이후 name 컬럼 SELECT 하도록 변경
   const users = await req.db.query(
     'SELECT user_id, login_id, role FROM tb_users WHERE login_id = ? AND password_hash = ?',
     [email, password] // 실제로는 bcrypt.compare() 사용
@@ -155,18 +174,12 @@ app.post('/api/auth/login', asyncErrorCatcher(async (req, res) => {
   if (users.length > 0) {
     const user = users[0];
     
-    // 세션에 사용자 정보 저장
-    req.session.user = {
-      user_id: user.user_id,
-      login_id: user.login_id,
-      email: user.login_id, // 호환성을 위해
-      role: user.role
-    };
+    const sessionUser = createSession(req, user, rememberMe);
     
     res.json({
       success: true,
       message: '로그인 성공',
-      data: { user: req.session.user }
+      data: { user: sessionUser }
     });
   } else {
     const error = new Error('이메일 또는 비밀번호가 올바르지 않습니다.');
@@ -224,6 +237,50 @@ app.post('/api/auth/logout', asyncErrorCatcher(async (req, res) => {
     });
   });
 }));
+
+
+// 패스워드 변경 라우터 - 중앙화된 에러 처리 및 인증 적용
+app.post('/api/auth/change-password', requireAuth, asyncErrorCatcher(async (req, res) => {
+  const { currentPassword, newPassword, confirmNewPassword } = req.body;
+  const userId = req.user.id;
+
+  // 입력 값 유효성 검사
+  if (!currentPassword || !newPassword || !confirmNewPassword) {
+    const error = new Error('모든 필드를 입력해주세요.');
+    error.status = 400;
+    throw error;
+  }
+
+  if (newPassword !== confirmNewPassword) {
+    const error = new Error('새 비밀번호와 확인 비밀번호가 일치하지 않습니다.');
+    error.status = 400;
+    throw error;
+  }
+
+  // 현재 비밀번호 확인 (실제로는 bcrypt.compare()를 사용하여 해시된 비밀번호를 비교)
+  const [user] = await req.db.query(
+    'SELECT password_hash FROM tb_users WHERE user_id = ?',
+    [userId]
+  );
+
+  if (!user || user.password_hash !== currentPassword) {
+    const error = new Error('현재 비밀번호가 올바르지 않습니다.');
+    error.status = 401;
+    throw error;
+  }
+
+  // 새 비밀번호로 업데이트 (실제로는 newPassword를 bcrypt로 해싱하여 저장)
+  await req.db.query(
+    'UPDATE tb_users SET password_hash = ? WHERE user_id = ?',
+    [newPassword, userId]
+  );
+
+  res.json({
+    success: true,
+    message: '비밀번호가 성공적으로 변경되었습니다.'
+  });
+}));
+
 
 // 404 핸들러 적용
 app.use(notFoundHandler);

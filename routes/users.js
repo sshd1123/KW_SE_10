@@ -94,6 +94,7 @@ router.put('/:id', requireAuth, requireOwnerOrAdmin, async (req, res, next) => {
 router.delete('/:id', requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const userId = parseInt(req.params.id);
+    const { query } = req.db;
     
     // 본인 계정은 삭제할 수 없음
     if (req.user.id == userId) {
@@ -101,11 +102,19 @@ router.delete('/:id', requireAuth, requireAdmin, async (req, res, next) => {
       return next(new AppError('본인 계정은 삭제할 수 없습니다.', 400));
     }
     
-    // TODO: 실제 사용자 삭제 로직
-    
+    // 사용자 존재 여부 확인
+    const existing = await query('SELECT * FROM tb_users WHERE user_id = ?', [userId]);
+    if (existing.length === 0) {
+      const AppError = require('../utils/AppError');
+      return next(new AppError('존재하지 않는 사용자입니다.', 404));
+    }
+
+    // 삭제 수행
+    const result = await query('DELETE FROM tb_users WHERE user_id = ?', [userId]);
+
     res.json({
       success: true,
-      message: '사용자가 삭제되었습니다.'
+      message: `사용자 ${userId}가 삭제되었습니다.`
     });
   } catch (error) {
     next(error);
@@ -145,5 +154,31 @@ router.patch('/:id/role', requireAuth, requireAdmin, async (req, res, next) => {
     next(error);
   }
 });
+
+// 사용자 승인 (관리자만)
+router.patch('/:id/approve', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const { query } = req.db;
+
+    const result = await query(
+      'UPDATE tb_users SET is_approved = TRUE WHERE user_id = ?',
+      [userId]
+    );
+
+    if (result.affectedRows === 0) {
+      const AppError = require('../utils/AppError');
+      return next(new AppError('존재하지 않는 사용자입니다.', 404));
+    }
+
+    res.json({
+      success: true,
+      message: `사용자 ID ${userId} 승인 완료`
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 
 module.exports = router; 

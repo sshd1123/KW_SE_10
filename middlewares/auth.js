@@ -127,9 +127,9 @@ const logout = (req, res, next) => {
 const createSession = (req, user, rememberMe = false) => {
   // 세션에 저장할 사용자 정보 (비밀번호 제외)
   const sessionUser = {
-    id: user.id,
-    email: user.email,
-    name: user.name,
+    id: user.user_id,
+    email: user.email || user.login_id,
+    name: user.name || null, // TODO: tb_users name 컬럼 추가 이후 '||null' 부분 삭제
     role: user.role || 'user'
   };
 
