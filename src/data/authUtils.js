@@ -2,6 +2,7 @@
 import users from './dummyUsers';
 import studentData from './dummyStudentData';
 import professorData from './dummyProfessorData';
+import announcementData from './dummyAnnouncementData';
 
 // 로그인 처리 함수
 export const login = (username, password) => {
@@ -43,12 +44,88 @@ export const getDashboardData = () => {
     const user = getCurrentUser();
     if (!user) return null;
 
+    let baseData = null;
+    
     switch (user.role) {
         case 'student':
-            return studentData[user.id] || null;
+            baseData = studentData[user.id] || null;
+            break;
         case 'professor':
-            return professorData[user.id] || null;
+            baseData = professorData[user.id] || null;
+            break;
         default:
             return null;
     }
+
+    if (!baseData) return null;
+
+    // 공지사항 데이터 병합
+    const mergedData = {
+        ...baseData,
+        announcements: []
+    };
+
+    // 사용자 역할에 따라 공지사항 필터링
+    if (user.role === 'student') {
+        // 학생: 수강 중인 강의의 공지사항만
+        const enrolledCourseIds = baseData.courses?.map(course => course.id) || [];
+        mergedData.announcements = announcementData.filter(announcement => 
+            enrolledCourseIds.includes(announcement.courseId)
+        );
+    } else if (user.role === 'professor') {
+        // 교수: 담당 강의의 공지사항만
+        const teachingCourseIds = baseData.courses?.map(course => course.id) || [];
+        mergedData.announcements = announcementData.filter(announcement => 
+            teachingCourseIds.includes(announcement.courseId)
+        );
+    }
+
+    return mergedData;
+};
+
+// 특정 강의의 공지사항 가져오기
+export const getCourseAnnouncements = (courseId) => {
+    return announcementData.filter(announcement => announcement.courseId === courseId);
+};
+
+// 특정 공지사항 가져오기
+export const getAnnouncement = (announcementId) => {
+    return announcementData.find(announcement => 
+        announcement.id === announcementId || 
+        String(announcement.id) === String(announcementId)
+    );
+};
+
+// 공지사항 생성/수정/삭제 함수들
+export const createAnnouncement = (announcementData) => {
+    // 실제로는 API 호출이지만, 여기서는 로컬 데이터 조작
+    const newAnnouncement = {
+        ...announcementData,
+        id: Date.now().toString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        views: 0
+    };
+    
+    // 실제 구현에서는 서버로 전송
+    console.log('새 공지사항 생성:', newAnnouncement);
+    return newAnnouncement;
+};
+
+export const updateAnnouncement = (announcementId, updates) => {
+    // 실제로는 API 호출
+    const updatedAnnouncement = {
+        ...updates,
+        id: announcementId,
+        updatedAt: new Date().toISOString()
+    };
+    
+    console.log('공지사항 수정:', updatedAnnouncement);
+    return updatedAnnouncement;
+};
+
+export const deleteAnnouncement = (announcementId) => {
+    // 실제로는 API 호출
+    console.log('공지사항 삭제:', announcementId);
+    return true;
 };

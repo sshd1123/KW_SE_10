@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './TimeTable.css';
 
-const TimeTable = ({ courses }) => {
+const TimeTable = ({ courses = [], userRole = 'student' }) => {
   const navigate = useNavigate();
   const [showAllPeriods, setShowAllPeriods] = useState(false);
 
@@ -24,28 +24,31 @@ const TimeTable = ({ courses }) => {
 
   const allDays = ['월', '화', '수', '목', '금', '토'];
 
+  // 입력 데이터를 schedule 형식으로 변환
   const processedCourses = courses.map(course => {
     if (course.schedule) {
       return course;
     }
     const schedule = [];
-    const timeSchedules = course.time.split(',').map(s => s.trim());
-    timeSchedules.forEach(timeItem => {
-      const match = timeItem.match(/([월화수목금토])\s+(\d+:\d+)[-~](\d+:\d+)/);
-      if (match) {
-        schedule.push({
-          day: match[1],
-          startTime: match[2],
-          endTime: match[3]
-        });
-      }
-    });
+    if (course.time) {
+      const timeSchedules = course.time.split(',').map(s => s.trim());
+      timeSchedules.forEach(timeItem => {
+        const match = timeItem.match(/([월화수목금토])\s+(\d+:\d+)[-~](\d+:\d+)/);
+        if (match) {
+          schedule.push({
+            day: match[1],
+            startTime: match[2],
+            endTime: match[3]
+          });
+        }
+      });
+    }
     return { ...course, schedule: schedule };
   });
 
   const getDisplayDays = () => {
     const displayDays = ['월', '화', '수', '목', '금'];
-    const hasSaturdayClass = processedCourses.some(course => 
+    const hasSaturdayClass = processedCourses.some(course =>
       course.schedule.some(item => item.day === '토')
     );
     if (hasSaturdayClass) {
@@ -99,15 +102,30 @@ const TimeTable = ({ courses }) => {
   const timetable = buildTimeTable();
 
   const handleCourseClick = (course) => {
-    if (course) {
-      const encodedCourseId = encodeURIComponent(course.id);
+    if (!course) return;
+
+    const encodedCourseId = encodeURIComponent(course.id);
+
+    if (userRole === 'student') {
       navigate(`/student/course/${encodedCourseId}`);
+    } else if (userRole === 'professor') {
+      navigate(`/professor/course/${encodedCourseId}`);
     }
   };
 
   const toggleAllPeriods = () => {
     setShowAllPeriods(!showAllPeriods);
   };
+
+  // 디버깅 로그 (개발 모드에서만)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('TimeTable 디버그:', {
+      userRole,
+      inputCourses: courses,
+      processedCourses,
+      timetable
+    });
+  }
 
   return (
     <div className="timetable-container">
@@ -116,7 +134,7 @@ const TimeTable = ({ courses }) => {
           {showAllPeriods ? '기본 시간표' : '전체 시간표'}
         </button>
       </div>
-      
+
       <div className="timetable">
         <div className="timetable-header">
           <div className="timetable-time-label">교시</div>
@@ -124,7 +142,7 @@ const TimeTable = ({ courses }) => {
             <div key={day} className="timetable-day-label">{day}</div>
           ))}
         </div>
-        
+
         {displayPeriods.map(period => (
           <div key={period.period} className="timetable-row">
             <div className="timetable-time-label">
@@ -134,7 +152,7 @@ const TimeTable = ({ courses }) => {
             {days.map(day => {
               const course = timetable[day][period.period];
               return (
-                <div 
+                <div
                   key={`${day}-${period.period}`}
                   className={`timetable-cell ${course ? 'has-course' : ''}`}
                   onClick={() => handleCourseClick(course)}
@@ -143,6 +161,9 @@ const TimeTable = ({ courses }) => {
                     <div className="timetable-course-info">
                       <div className="timetable-course-name">{course.name}</div>
                       <div className="timetable-course-room">{course.room}</div>
+                      {userRole === 'student' && course.professor && (
+                        <div className="timetable-course-professor">{course.professor}</div>
+                      )}
                     </div>
                   )}
                 </div>

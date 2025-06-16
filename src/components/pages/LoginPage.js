@@ -24,7 +24,7 @@ const LoginPage = () => {
                         </div>
 
                         <div className="auth-links">
-                            <a href="/forgot-password" className="forgot-password-link">비밀번호 찾기</a>
+                            <a href="/register" className="forgot-password-link">회원가입</a>
                         </div>
                     </div>
                 </div>

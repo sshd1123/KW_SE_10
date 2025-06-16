@@ -37,13 +37,14 @@
     margin-left: 0; /* 사이드바 여백 제거 */
     width: 100%;
     box-sizing: border-box;
+    min-width: 0;
   }
   
   /* 웰컴 배너 - 전체 너비 사용 */
   .cp-welcome-banner {
     background: linear-gradient(135deg, var(--cp-primary-color), var(--cp-primary-light));
     color: var(--cp-text-light);
-    padding: 1.5rem; /* 기존 2rem에서 1.5rem으로 축소 */
+    padding: 1rem; /* 기존 2rem에서 1.5rem으로 축소 */
     border-radius: 8px;
     margin-bottom: 1rem; /* 기존 2rem에서 1rem으로 축소 */
     text-align: center;
@@ -98,11 +99,12 @@
     background-color: white;
     border-radius: 8px;
     box-shadow: var(--cp-shadow);
-    overflow: hidden;
+    overflow: auto;
     height: 100%;
     margin-bottom: 1rem;
     width: 100%;
     box-sizing: border-box;
+    min-width: 0;
   }
   
   .cp-card-header {
@@ -197,7 +199,8 @@
   .cp-courses-grid-wrapper {
     position: relative;
     overflow: hidden;
-    padding: 0 40px;
+    padding: 0;
+    width: 100%;
   }
   
   .cp-courses-grid {

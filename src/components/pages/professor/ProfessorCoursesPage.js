@@ -14,7 +14,27 @@ const ProfessorCoursesPage = () => {
     const [activeSection, setActiveSection] = useState('overview');
     const [showNewCourseModal, setShowNewCourseModal] = useState(false);
     const [showEditCourseModal, setShowEditCourseModal] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filter, setFilter] = useState('all');
+    const [sortBy, setSortBy] = useState('name');
+    const [scrollPosition, setScrollPosition] = useState(0);
     const navigate = useNavigate();
+
+    const handleScrollLeft = () => {
+        const container = document.querySelector('.pc-courses-grid');
+        if (container) {
+            container.scrollLeft -= 340;
+            setScrollPosition(container.scrollLeft - 340);
+        }
+    };
+
+    const handleScrollRight = () => {
+        const container = document.querySelector('.pc-courses-grid');
+        if (container) {
+            container.scrollLeft += 340;
+            setScrollPosition(container.scrollLeft + 340);
+        }
+    };
 
     useEffect(() => {
         const user = getCurrentUser();
@@ -39,6 +59,55 @@ const ProfessorCoursesPage = () => {
 
         setLoading(false);
     }, [navigate]);
+
+    useEffect(() => {
+        const container = document.querySelector('.pc-courses-grid');
+        if (container) {
+            const handleScroll = () => {
+                setScrollPosition(container.scrollLeft);
+            };
+            container.addEventListener('scroll', handleScroll);
+            return () => container.removeEventListener('scroll', handleScroll);
+        }
+    }, [professorData]);
+
+    const getFilteredCourses = () => {
+        if (!professorData || !professorData.courses) return [];
+
+        let filtered = [...professorData.courses];
+
+        if (searchTerm.trim() !== '') {
+            const term = searchTerm.toLowerCase();
+            filtered = filtered.filter(course =>
+                course.name.toLowerCase().includes(term) ||
+                course.id.toLowerCase().includes(term)
+            );
+        }
+
+        if (filter !== 'all') {
+            if (filter === 'active') {
+                filtered = filtered.filter(course => course.status === 'active');
+            } else if (filter === 'completed') {
+                filtered = filtered.filter(course => course.status === 'completed');
+            }
+        }
+
+        filtered.sort((a, b) => {
+            if (sortBy === 'name') return a.name.localeCompare(b.name);
+            if (sortBy === 'enrollment') return b.enrolled - a.enrolled;
+            if (sortBy === 'day') {
+                const dayOrder = { '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6, '일': 7 };
+                const aDayMatch = a.time?.match(/([월화수목금토일])/);
+                const bDayMatch = b.time?.match(/([월화수목금토일])/);
+                const aDay = aDayMatch ? dayOrder[aDayMatch[1]] : 8;
+                const bDay = bDayMatch ? dayOrder[bDayMatch[1]] : 8;
+                return aDay - bDay;
+            }
+            return 0;
+        });
+
+        return filtered;
+    };
 
     const handleCourseSelect = (course) => {
         setSelectedCourse(course);
@@ -65,6 +134,45 @@ const ProfessorCoursesPage = () => {
         return professorData.materials.filter(material => material.courseId === courseId);
     };
 
+    const getUpcomingDeadlines = () => {
+        if (!professorData || !professorData.assignments) return [];
+
+        const today = new Date();
+        return professorData.assignments
+            .filter(assignment => {
+                const deadlineDate = new Date(assignment.deadline);
+                const diffTime = deadlineDate - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                return diffDays >= 0 && diffDays <= 7;
+            })
+            .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
+            .slice(0, 6);
+    };
+
+    const getDeadlineStatus = (deadline) => {
+        const today = new Date();
+        const deadlineDate = new Date(deadline);
+        const diffTime = deadlineDate - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays < 0) return 'pc-deadline-expired';
+        if (diffDays === 0) return 'pc-deadline-today';
+        if (diffDays <= 3) return 'pc-deadline-urgent';
+        return 'pc-deadline-normal';
+    };
+
+    const formatDeadline = (deadline) => {
+        const today = new Date();
+        const deadlineDate = new Date(deadline);
+        const diffTime = deadlineDate - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays < 0) return `마감됨 (${deadline})`;
+        if (diffDays === 0) return `오늘 마감 (${deadline})`;
+        if (diffDays === 1) return `내일 마감 (${deadline})`;
+        return `${diffDays}일 남음 (${deadline})`;
+    };
+
     const handleCourseDetailClick = (course) => {
         navigate(`/professor/course/${encodeURIComponent(course.id)}`);
     };
@@ -73,357 +181,27 @@ const ProfessorCoursesPage = () => {
         navigate(`/professor/assignment/${assignment.id}`);
     };
 
-    const renderCourseOverview = () => {
-        if (!selectedCourse) return null;
-
-        const students = getStudentsForCourse(selectedCourse.id);
-        const assignments = getAssignmentsForCourse(selectedCourse.id);
-        const announcements = getAnnouncementsForCourse(selectedCourse.id);
-        const materials = getMaterialsForCourse(selectedCourse.id);
-
-        return (
-            <div className="course-overview">
-                <div className="overview-stats">
-                    <div className="stat-card">
-                        <div className="stat-icon">
-                            <i className="fas fa-users"></i>
-                        </div>
-                        <div className="stat-content">
-                            <h3>{students.length}</h3>
-                            <p>수강 학생</p>
-                        </div>
-                    </div>
-                    <div className="stat-card">
-                        <div className="stat-icon">
-                            <i className="fas fa-tasks"></i>
-                        </div>
-                        <div className="stat-content">
-                            <h3>{assignments.length}</h3>
-                            <p>진행 중인 과제</p>
-                        </div>
-                    </div>
-                    <div className="stat-card">
-                        <div className="stat-icon">
-                            <i className="fas fa-bullhorn"></i>
-                        </div>
-                        <div className="stat-content">
-                            <h3>{announcements.length}</h3>
-                            <p>공지사항</p>
-                        </div>
-                    </div>
-                    <div className="stat-card">
-                        <div className="stat-icon">
-                            <i className="fas fa-folder"></i>
-                        </div>
-                        <div className="stat-content">
-                            <h3>{materials.length}</h3>
-                            <p>강의 자료</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="overview-content">
-                    <div className="overview-left">
-                        <div className="card">
-                            <div className="card-header">
-                                <h3>최근 활동</h3>
-                            </div>
-                            <div className="pcourses-card-body">
-                                <div className="recent-activity-list">
-                                    <div className="recent-activity-item">
-                                        <i className="fas fa-upload"></i>
-                                        <div className="recent-activity-content">
-                                            <p>새로운 강의 자료 업로드</p>
-                                            <span className="recent-activity-time">2시간 전</span>
-                                        </div>
-                                    </div>
-                                    <div className="recent-activity-item">
-                                        <i className="fas fa-tasks"></i>
-                                        <div className="recent-activity-content">
-                                            <p>과제 제출 마감일 연장</p>
-                                            <span className="recent-activity-time">1일 전</span>
-                                        </div>
-                                    </div>
-                                    <div className="recent-activity-item">
-                                        <i className="fas fa-bullhorn"></i>
-                                        <div className="recent-activity-content">
-                                            <p>새로운 공지사항 게시</p>
-                                            <span className="recent-activity-time">3일 전</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="overview-right">
-                        <div className="card">
-                            <div className="card-header">
-                                <h3>강의 정보</h3>
-                                <button
-                                    className="btn btn-secondary btn-sm"
-                                    onClick={() => setShowEditCourseModal(true)}
-                                >
-                                    <i className="fas fa-edit"></i> 수정
-                                </button>
-                            </div>
-                            <div className="card-body">
-                                <div className="course-info-grid">
-                                    <div className="info-item">
-                                        <label>강의실</label>
-                                        <span>{selectedCourse.room}</span>
-                                    </div>
-                                    <div className="info-item">
-                                        <label>학점</label>
-                                        <span>{selectedCourse.credits}학점</span>
-                                    </div>
-                                    <div className="info-item">
-                                        <label>수강인원</label>
-                                        <span>{selectedCourse.enrolled}/{selectedCourse.capacity}명</span>
-                                    </div>
-                                    <div className="info-item">
-                                        <label>강의시간</label>
-                                        <span>{selectedCourse.time}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="card">
-                            <div className="card-header">
-                                <h3>수강률 현황</h3>
-                            </div>
-                            <div className="card-body">
-                                <div className="enrollment-progress">
-                                    <div className="progress-bar">
-                                        <div
-                                            className="progress-fill"
-                                            style={{
-                                                width: `${(selectedCourse.enrolled / selectedCourse.capacity) * 100}%`
-                                            }}
-                                        ></div>
-                                    </div>
-                                    <p>
-                                        {selectedCourse.enrolled}명 / {selectedCourse.capacity}명
-                                        ({Math.round((selectedCourse.enrolled / selectedCourse.capacity) * 100)}%)
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
-    const renderStudentsList = () => {
-        const students = getStudentsForCourse(selectedCourse.id);
+    const ProfessorCourseCard = ({ course }) => {
+        const formatSchedule = () => {
+            if (Array.isArray(course.schedule) && course.schedule.length > 0) {
+                return course.schedule
+                    .map(s => `${s.day} ${s.startTime}-${s.endTime}`)
+                    .join(', ');
+            }
+            return course.time || '시간 미정';
+        };
 
         return (
-            <div className="students-section">
-                <div className="section-header">
-                    <h3>수강 학생 목록</h3>
-                    <div className="section-actions">
-                        <button className="btn btn-secondary btn-sm">
-                            <i className="fas fa-download"></i> 출석부 다운로드
-                        </button>
-                        <button className="btn btn-primary btn-sm">
-                            <i className="fas fa-plus"></i> 학생 추가
-                        </button>
-                    </div>
+            <div className="pc-course-card" onClick={() => handleCourseDetailClick(course)}>
+                <div className="pc-course-card-header">
+                    <span className="pc-course-id">{course.id}</span>
+                    <span className="pc-course-credits">{course.credits}학점</span>
                 </div>
-
-                <div className="students-table-container">
-                    <table className="students-table">
-                        <thead>
-                            <tr>
-                                <th>학번</th>
-                                <th>이름</th>
-                                <th>학과</th>
-                                <th>출석률</th>
-                                <th>중간고사</th>
-                                <th>기말고사</th>
-                                <th>액션</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {students.map(student => (
-                                <tr key={student.id}>
-                                    <td>{student.id}</td>
-                                    <td className="student-name">{student.name}</td>
-                                    <td>{student.department}</td>
-                                    <td>
-                                        <span className={`attendance-rate ${student.attendance >= 90 ? 'excellent' :
-                                            student.attendance >= 80 ? 'good' : 'warning'
-                                            }`}>
-                                            {student.attendance}%
-                                        </span>
-                                    </td>
-                                    <td>{student.midterm || '-'}</td>
-                                    <td>{student.final || '-'}</td>
-                                    <td>
-                                        <div className="action-buttons">
-                                            <button className="btn btn-sm btn-secondary">
-                                                <i className="fas fa-eye"></i>
-                                            </button>
-                                            <button className="btn btn-sm btn-primary">
-                                                <i className="fas fa-edit"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        );
-    };
-
-    const renderAssignmentsList = () => {
-        const assignments = getAssignmentsForCourse(selectedCourse.id);
-
-        return (
-            <div className="assignments-section">
-                <div className="section-header">
-                    <h3>과제 관리</h3>
-                    <button className="btn btn-primary btn-sm">
-                        <i className="fas fa-plus"></i> 새 과제
-                    </button>
-                </div>
-
-                <div className="assignments-grid">
-                    {assignments.map(assignment => (
-                        <div key={assignment.id} className="assignment-card">
-                            <div className="assignment-header">
-                                <h4
-                                    onClick={() => handleAssignmentClick(assignment)}
-                                    style={{ cursor: 'pointer' }}
-                                >
-                                    {assignment.title}
-                                </h4>
-                                <span className="assignment-score">{assignment.maxScore}점</span>
-                            </div>
-                            <p className="assignment-description">{assignment.description}</p>
-                            <div className="assignment-info">
-                                <div className="assignment-deadline">
-                                    <i className="fas fa-calendar"></i>
-                                    마감: {new Date(assignment.deadline).toLocaleDateString()}
-                                </div>
-                                <div className="assignment-submissions">
-                                    <i className="fas fa-users"></i>
-                                    제출: {assignment.submissions}명
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        );
-    };
-
-    const renderAnnouncementsList = () => {
-        const announcements = getAnnouncementsForCourse(selectedCourse.id);
-
-        return (
-            <div className="announcements-section">
-                <div className="section-header">
-                    <h3>공지사항</h3>
-                    <button className="btn btn-primary btn-sm">
-                        <i className="fas fa-plus"></i> 새 공지
-                    </button>
-                </div>
-
-                <div className="announcements-list">
-                    {announcements.map(announcement => (
-                        <div key={announcement.id} className="announcement-item">
-                            <div className="announcement-header">
-                                <h4>{announcement.title}</h4>
-                                <span className="announcement-date">
-                                    {new Date(announcement.date).toLocaleDateString()}
-                                </span>
-                            </div>
-                            <p className="announcement-content">{announcement.content}</p>
-                            <div className="announcement-actions">
-                                <button className="btn btn-secondary btn-sm">
-                                    <i className="fas fa-edit"></i> 수정
-                                </button>
-                                <button className="btn btn-danger btn-sm">
-                                    <i className="fas fa-trash"></i> 삭제
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        );
-    };
-
-    const renderCourseDetail = () => {
-        if (!selectedCourse) {
-            return (
-                <div className="no-course-selected">
-                    <i className="fas fa-book-open"></i>
-                    <h3>강의를 선택해주세요</h3>
-                    <p>왼쪽에서 관리할 강의를 선택하세요.</p>
-                </div>
-            );
-        }
-
-        return (
-            <div className="course-detail">
-                <div className="course-detail-header">
-                    <div className="course-header-left">
-                        <h1>{selectedCourse.name}</h1>
-                        <p className="course-code">{selectedCourse.id}</p>
-                        <div className="course-meta">
-                            <span><i className="fas fa-calendar"></i> {selectedCourse.time}</span>
-                            <span><i className="fas fa-map-marker-alt"></i> {selectedCourse.room}</span>
-                            <span><i className="fas fa-users"></i> {selectedCourse.enrolled}/{selectedCourse.capacity}명</span>
-                        </div>
-                    </div>
-                    <div className="course-header-right">
-                        <button
-                            className="btn btn-secondary"
-                            onClick={() => setShowEditCourseModal(true)}
-                        >
-                            <i className="fas fa-edit"></i> 강의 정보 수정
-                        </button>
-                    </div>
-                </div>
-
-                <div className="course-detail-nav">
-                    <button
-                        className={`nav-tab ${activeSection === 'overview' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('overview')}
-                    >
-                        <i className="fas fa-chart-pie"></i> 개요
-                    </button>
-                    <button
-                        className={`nav-tab ${activeSection === 'students' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('students')}
-                    >
-                        <i className="fas fa-users"></i> 수강생
-                    </button>
-                    <button
-                        className={`nav-tab ${activeSection === 'assignments' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('assignments')}
-                    >
-                        <i className="fas fa-tasks"></i> 과제
-                    </button>
-                    <button
-                        className={`nav-tab ${activeSection === 'announcements' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('announcements')}
-                    >
-                        <i className="fas fa-bullhorn"></i> 공지사항
-                    </button>
-                </div>
-
-                <div className="course-detail-content">
-                    {activeSection === 'overview' && renderCourseOverview()}
-                    {activeSection === 'students' && renderStudentsList()}
-                    {activeSection === 'assignments' && renderAssignmentsList()}
-                    {activeSection === 'announcements' && renderAnnouncementsList()}
+                <h3 className="pc-course-name">{course.name}</h3>
+                <div className="pc-course-details">
+                    <p><i className="fas fa-users"></i> {course.enrolled}/{course.capacity}명</p>
+                    <p><i className="fas fa-clock"></i> {formatSchedule()}</p>
+                    <p><i className="fas fa-map-marker-alt"></i> {course.room}</p>
                 </div>
             </div>
         );
@@ -431,27 +209,63 @@ const ProfessorCoursesPage = () => {
 
     if (loading) {
         return (
-            <div className="loading-container">
-                <div className="loading-spinner"></div>
-                <p>강의 정보를 불러오는 중입니다...</p>
+            <div className="pc-page">
+                <Header username={userData?.name || '교수님'} role="교수" />
+                <div className="pc-main-layout">
+                    <ProfessorSidebar
+                        activeTab={activeTab}
+                        setActiveTab={setActiveTab}
+                        professorName={userData?.name || ''}
+                        professorId={userData?.professorId || ''}
+                        department={userData?.department || ''}
+                    />
+                    <main className="pc-main-content">
+                        <div className="pc-loading-container">
+                            <div className="pc-loading-spinner"></div>
+                            <p>강의 정보를 불러오는 중입니다...</p>
+                        </div>
+                    </main>
+                </div>
             </div>
         );
     }
 
     if (!professorData) {
         return (
-            <div className="error-container">
-                <p>교수 데이터를 불러올 수 없습니다. 다시 로그인해주세요.</p>
-                <button onClick={() => navigate('/login')}>로그인 페이지로 이동</button>
+            <div className="pc-page">
+                <Header username={userData?.name || '교수님'} role="교수" />
+                <div className="pc-main-layout">
+                    <ProfessorSidebar
+                        activeTab={activeTab}
+                        setActiveTab={setActiveTab}
+                        professorName={userData?.name || ''}
+                        professorId={userData?.professorId || ''}
+                        department={userData?.department || ''}
+                    />
+                    <main className="pc-main-content">
+                        <div className="pc-error-container">
+                            <h2>교수 데이터를 불러올 수 없습니다. 다시 로그인해주세요.</h2>
+                            <button className="pc-btn pc-btn-primary" onClick={() => navigate('/login')}>
+                                로그인 페이지로 이동
+                            </button>
+                        </div>
+                    </main>
+                </div>
             </div>
         );
     }
 
+    const filteredCourses = getFilteredCourses();
+    const upcomingDeadlines = getUpcomingDeadlines();
+    const totalStudents = professorData.courses?.reduce((sum, course) => sum + (course.enrolled || 0), 0) || 0;
+    const totalAssignments = professorData.assignments?.length || 0;
+    const totalAnnouncements = professorData.announcements?.length || 0;
+
     return (
-        <div className="professor-dashboard">
+        <div className="pc-page">
             <Header username={userData?.name || '교수님'} role="교수" />
 
-            <div className="dashboard-main">
+            <div className="pc-main-layout">
                 <ProfessorSidebar
                     activeTab={activeTab}
                     setActiveTab={setActiveTab}
@@ -460,65 +274,186 @@ const ProfessorCoursesPage = () => {
                     department={userData?.department || ''}
                 />
 
-                <div className="dashboard-content">
-                    <div className="welcome-banner">
+                <main className="pc-main-content">
+                    <div className="pc-welcome-banner">
                         <h2>강의 관리</h2>
-                        <p>{professorData.personal?.department || ''} / 사번: {userData?.professorId}</p>
+                        <p>
+                            {professorData.personal?.department || userData?.department || ''} / 
+                            사번: {userData?.professorId} / 총 {filteredCourses.length}개 강의 담당
+                        </p>
                     </div>
 
-                    <div className="courses-management-container">
-                        {/* 강의 목록 사이드바 */}
-                        <div className="courses-sidebar">
-                            <div className="card">
-                                <div className="card-header">
-                                    <h3>담당 강의</h3>
-                                    <button
-                                        className="btn btn-primary btn-sm"
-                                        onClick={() => setShowNewCourseModal(true)}
-                                    >
-                                        <i className="fas fa-plus"></i> 새 강의
-                                    </button>
-                                </div>
-                                <div className="courses-list-body">
-                                    <div className="courses-list">
-                                        {professorData.courses && professorData.courses.length > 0 ? (
-                                            professorData.courses.map((course, index) => (
-                                                <div
-                                                    key={index}
-                                                    className={`course-list-item ${selectedCourse?.id === course.id ? 'selected' : ''}`}
-                                                    onClick={() => handleCourseSelect(course)}
-                                                    onDoubleClick={() => handleCourseDetailClick(course)}
+                    <div className="pc-courses-container">
+                        <div className="pc-top-row">
+                            <div className="pc-course-list-container">
+                                <div className="pc-card">
+                                    <div className="pc-card-header pc-course-card-header">
+                                        <h3>담당 강의 목록</h3>
+                                        <div className="pc-course-controls">
+                                            <div className="pc-course-search">
+                                                <input
+                                                    type="text"
+                                                    className="pc-search-input"
+                                                    placeholder="강의명, 강의코드로 검색..."
+                                                    value={searchTerm}
+                                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                                />
+                                                <i className="fas fa-search pc-course-search-icon"></i>
+                                            </div>
+                                            <div className="pc-course-filters">
+                                                <select
+                                                    className="pc-filter-select"
+                                                    value={filter}
+                                                    onChange={(e) => setFilter(e.target.value)}
                                                 >
-                                                    <div className="course-list-header">
-                                                        <h4 className="course-list-name">{course.name}</h4>
-                                                        <span className="course-list-code">{course.id}</span>
-                                                    </div>
-                                                    <div className="course-list-info">
-                                                        <span><i className="fas fa-users"></i> {course.enrolled}/{course.capacity}</span>
-                                                        <span><i className="fas fa-credit-card"></i> {course.credits}학점</span>
-                                                    </div>
-                                                    <div className="course-list-time">
-                                                        <i className="fas fa-clock"></i> {course.time}
-                                                    </div>
+                                                    <option value="all">전체</option>
+                                                    <option value="active">진행중</option>
+                                                    <option value="completed">완료</option>
+                                                </select>
+                                                <select
+                                                    className="pc-sort-select"
+                                                    value={sortBy}
+                                                    onChange={(e) => setSortBy(e.target.value)}
+                                                >
+                                                    <option value="name">강의명순</option>
+                                                    <option value="enrollment">수강인원순</option>
+                                                    <option value="day">요일순</option>
+                                                </select>
+                                            </div>
+                                            <button
+                                                className="pc-btn pc-btn-primary pc-btn-sm"
+                                                onClick={() => setShowNewCourseModal(true)}
+                                            >
+                                                <i className="fas fa-plus"></i> 새 강의
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="pc-card-body pc-courses-card-body">
+                                        {filteredCourses.length > 0 ? (
+                                            <div className="pc-courses-grid-wrapper">
+                                                <button
+                                                    className="pc-scroll-button pc-prev"
+                                                    onClick={handleScrollLeft}
+                                                    disabled={scrollPosition <= 0}
+                                                >
+                                                    <i className="fas fa-chevron-left"></i>
+                                                </button>
+                                                <div className="pc-courses-grid">
+                                                    {filteredCourses.map((course) => (
+                                                        <ProfessorCourseCard key={course.id} course={course} />
+                                                    ))}
                                                 </div>
-                                            ))
+                                                <button
+                                                    className="pc-scroll-button pc-next"
+                                                    onClick={handleScrollRight}
+                                                >
+                                                    <i className="fas fa-chevron-right"></i>
+                                                </button>
+                                            </div>
                                         ) : (
-                                            <div className="no-courses">
-                                                <i className="fas fa-book"></i>
-                                                <p>담당 강의가 없습니다.</p>
+                                            <div className="pc-empty-message">
+                                                검색 조건에 맞는 강의가 없습니다.
                                             </div>
                                         )}
                                     </div>
                                 </div>
                             </div>
+
+                            <div className="pc-course-stats-container">
+                                <div className="pc-card">
+                                    <div className="pc-card-header">
+                                        <h3>강의 통계</h3>
+                                    </div>
+                                    <div className="pc-card-body pc-status-card-body">
+                                        <div className="pc-stats-circular-container">
+                                            <div className="pc-stats-circular-item">
+                                                <div className="pc-stats-label">총 수강생</div>
+                                                <div className="pc-circular-progress-container">
+                                                    <div
+                                                        className="pc-circular-progress"
+                                                        style={{
+                                                            background: `conic-gradient(var(--pc-primary-color) 0deg ${(totalStudents / 200) * 360}deg, #e9ecef ${(totalStudents / 200) * 360}deg 360deg)`
+                                                        }}
+                                                    >
+                                                        <div className="pc-circular-progress-inner">
+                                                            <div className="pc-progress-value">{totalStudents}</div>
+                                                            <div className="pc-progress-unit">명</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="pc-stats-item">
+                                            <div className="pc-stats-label">진행 중인 과제</div>
+                                            <div className="pc-stats-bar">
+                                                <div
+                                                    className="pc-progress-bar"
+                                                    style={{ width: `${Math.min((totalAssignments / 20) * 100, 100)}%` }}
+                                                ></div>
+                                            </div>
+                                            <div className="pc-stats-value">{totalAssignments}</div>
+                                        </div>
+                                        <div className="pc-stats-item">
+                                            <div className="pc-stats-label">게시한 공지</div>
+                                            <div className="pc-stats-bar">
+                                                <div
+                                                    className="pc-progress-bar"
+                                                    style={{ width: `${Math.min((totalAnnouncements / 30) * 100, 100)}%` }}
+                                                ></div>
+                                            </div>
+                                            <div className="pc-stats-value">{totalAnnouncements}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        {/* 강의 상세 정보 */}
-                        <div className="course-detail-section">
-                            {renderCourseDetail()}
+                        <div className="pc-bottom-row">
+                            <div className="pc-card">
+                                <div className="pc-card-header">
+                                    <h3>다가오는 과제 마감일</h3>
+                                </div>
+                                <div className="pc-card-body pc-deadline-card-body">
+                                    {upcomingDeadlines.length > 0 ? (
+                                        <div className="pc-deadline-cards">
+                                            {upcomingDeadlines.map((assignment) => (
+                                                <div
+                                                    key={assignment.id}
+                                                    className={`pc-deadline-card ${getDeadlineStatus(assignment.deadline)}`}
+                                                    onClick={() => handleAssignmentClick(assignment)}
+                                                >
+                                                    <div className="pc-deadline-header">
+                                                        <div className="pc-deadline-course">{assignment.course}</div>
+                                                        <div className="pc-deadline-date">
+                                                            <i className="fas fa-clock"></i>
+                                                            {formatDeadline(assignment.deadline)}
+                                                        </div>
+                                                    </div>
+                                                    <div className="pc-deadline-content">
+                                                        <h4 className="pc-deadline-title">{assignment.title}</h4>
+                                                        <p className="pc-deadline-description">{assignment.description}</p>
+                                                    </div>
+                                                    <div className="pc-deadline-footer">
+                                                        <span className="pc-deadline-submissions">
+                                                            제출: {assignment.submissions || 0}명
+                                                        </span>
+                                                        <button className="pc-btn-outline pc-btn-sm">
+                                                            과제 관리
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="pc-empty-message">
+                                            다가오는 과제 마감일이 없습니다.
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </main>
             </div>
         </div>
     );

@@ -34,14 +34,14 @@ const ProfessorCourseDetailPage = () => {
 
         setUserData(user);
         setProfessorData(dashboardData);
-        
+
         // URL에서 courseId로 해당 강의 찾기
         const course = dashboardData.courses?.find(c => c.id === decodeURIComponent(courseId));
         if (!course) {
             navigate('/professor/courses');
             return;
         }
-        
+
         setCourseData(course);
         setLoading(false);
     }, [navigate, courseId]);
@@ -68,32 +68,36 @@ const ProfessorCourseDetailPage = () => {
 
     const getAttendanceStats = (students) => {
         if (!students.length) return { excellent: 0, good: 0, warning: 0 };
-        
+
         const stats = { excellent: 0, good: 0, warning: 0 };
         students.forEach(student => {
             if (student.attendance >= 90) stats.excellent++;
             else if (student.attendance >= 80) stats.good++;
             else stats.warning++;
         });
-        
+
         return stats;
     };
 
     const getGradeDistribution = (students) => {
         if (!students.length) return {};
-        
+
         const distribution = { 'A': 0, 'B': 0, 'C': 0, 'D': 0, 'F': 0 };
         students.forEach(student => {
             if (student.midterm) {
-                const grade = student.midterm >= 90 ? 'A' : 
-                             student.midterm >= 80 ? 'B' : 
-                             student.midterm >= 70 ? 'C' : 
-                             student.midterm >= 60 ? 'D' : 'F';
+                const grade = student.midterm >= 90 ? 'A' :
+                    student.midterm >= 80 ? 'B' :
+                        student.midterm >= 70 ? 'C' :
+                            student.midterm >= 60 ? 'D' : 'F';
                 distribution[grade]++;
             }
         });
-        
+
         return distribution;
+    };
+
+    const handleCreateAnnouncement = () => {
+        navigate(`/professor/course/${courseData.id}/announcement/create`);
     };
 
     const renderOverviewSection = () => {
@@ -137,7 +141,7 @@ const ProfessorCourseDetailPage = () => {
                         </div>
                     </div>
                     <div className="course-actions">
-                        <button 
+                        <button
                             className="btn btn-secondary"
                             onClick={() => setShowEditModal(true)}
                         >
@@ -216,15 +220,15 @@ const ProfessorCourseDetailPage = () => {
                         <div className="card-body">
                             <div className="attendance-chart">
                                 <div className="attendance-item excellent">
-                                    <div className="attendance-bar" style={{width: `${(attendanceStats.excellent / students.length) * 100}%`}}></div>
+                                    <div className="attendance-bar" style={{ width: `${(attendanceStats.excellent / students.length) * 100}%` }}></div>
                                     <span>우수 (90% 이상): {attendanceStats.excellent}명</span>
                                 </div>
                                 <div className="attendance-item good">
-                                    <div className="attendance-bar" style={{width: `${(attendanceStats.good / students.length) * 100}%`}}></div>
+                                    <div className="attendance-bar" style={{ width: `${(attendanceStats.good / students.length) * 100}%` }}></div>
                                     <span>양호 (80-89%): {attendanceStats.good}명</span>
                                 </div>
                                 <div className="attendance-item warning">
-                                    <div className="attendance-bar" style={{width: `${(attendanceStats.warning / students.length) * 100}%`}}></div>
+                                    <div className="attendance-bar" style={{ width: `${(attendanceStats.warning / students.length) * 100}%` }}></div>
                                     <span>주의 (80% 미만): {attendanceStats.warning}명</span>
                                 </div>
                             </div>
@@ -241,9 +245,9 @@ const ProfessorCourseDetailPage = () => {
                                     <div key={grade} className="grade-item">
                                         <div className="grade-label">{grade}</div>
                                         <div className="grade-bar">
-                                            <div 
-                                                className="grade-fill" 
-                                                style={{width: `${students.length > 0 ? (count / students.length) * 100 : 0}%`}}
+                                            <div
+                                                className="grade-fill"
+                                                style={{ width: `${students.length > 0 ? (count / students.length) * 100 : 0}%` }}
                                             ></div>
                                         </div>
                                         <div className="grade-count">{count}명</div>
@@ -290,13 +294,13 @@ const ProfessorCourseDetailPage = () => {
 
     const renderStudentsSection = () => {
         const students = getStudentsForCourse(courseData.id);
-        
+
         return (
             <div className="students-management-section">
                 <div className="section-header">
                     <h3>수강생 관리</h3>
                     <div className="section-actions">
-                        <button 
+                        <button
                             className="btn btn-secondary"
                             onClick={() => setShowAddStudentModal(true)}
                         >
@@ -327,17 +331,16 @@ const ProfessorCourseDetailPage = () => {
                             {students.map(student => {
                                 const total = (student.midterm || 0) + (student.final || 0);
                                 const grade = total >= 90 ? 'A' : total >= 80 ? 'B' : total >= 70 ? 'C' : total >= 60 ? 'D' : 'F';
-                                
+
                                 return (
                                     <tr key={student.id}>
                                         <td>{student.id}</td>
                                         <td className="student-name">{student.name}</td>
                                         <td>{student.department}</td>
                                         <td>
-                                            <span className={`attendance-badge ${
-                                                student.attendance >= 90 ? 'excellent' : 
+                                            <span className={`attendance-badge ${student.attendance >= 90 ? 'excellent' :
                                                 student.attendance >= 80 ? 'good' : 'warning'
-                                            }`}>
+                                                }`}>
                                                 {student.attendance}%
                                             </span>
                                         </td>
@@ -371,14 +374,14 @@ const ProfessorCourseDetailPage = () => {
 
     const renderAssignmentsSection = () => {
         const assignments = getAssignmentsForCourse(courseData.id);
-        
+
         return (
             <div className="assignments-management-section">
                 <div className="section-header">
                     <h3>과제 관리</h3>
-                    <button 
+                    <button
                         className="btn btn-primary"
-                        onClick={() => setShowAddAssignmentModal(true)}
+                        onClick={() => navigate(`/professor/course/${courseData.id}/assignment/create`)}
                     >
                         <i className="fas fa-plus"></i> 새 과제 등록
                     </button>
@@ -392,7 +395,7 @@ const ProfessorCourseDetailPage = () => {
                                 <span className="assignment-score">{assignment.maxScore}점</span>
                             </div>
                             <p className="assignment-description">{assignment.description}</p>
-                            
+
                             <div className="assignment-meta">
                                 <div className="assignment-deadline">
                                     <i className="fas fa-calendar"></i>
@@ -406,13 +409,13 @@ const ProfessorCourseDetailPage = () => {
 
                             <div className="assignment-progress">
                                 <div className="progress-bar">
-                                    <div 
+                                    <div
                                         className="progress-fill"
-                                        style={{width: `${(assignment.submissions / courseData.enrolled) * 100}%`}}
+                                        style={{ width: `${(assignment.submissions / courseData.enrolled) * 100}%` }}
                                     ></div>
                                 </div>
                                 <span className="progress-text">
-                                    {assignment.submissions}/{courseData.enrolled} 
+                                    {assignment.submissions}/{courseData.enrolled}
                                     ({Math.round((assignment.submissions / courseData.enrolled) * 100)}%)
                                 </span>
                             </div>
@@ -434,22 +437,27 @@ const ProfessorCourseDetailPage = () => {
 
     const renderAnnouncementsSection = () => {
         const announcements = getAnnouncementsForCourse(courseData.id);
-        
+
         return (
-            <div className="announcements-management-section">
+            <div className="announcements-section">
                 <div className="section-header">
-                    <h3>공지사항 관리</h3>
-                    <button 
-                        className="btn btn-primary"
-                        onClick={() => setShowAddAnnouncementModal(true)}
+                    <h3>공지사항</h3>
+                    <button
+                        className="btn btn-primary btn-sm"
+                        onClick={() => navigate(`/professor/course/${courseData.id}/announcement/create`)}
                     >
-                        <i className="fas fa-plus"></i> 새 공지 작성
+                        <i className="fas fa-plus"></i> 새 공지
                     </button>
                 </div>
 
                 <div className="announcements-list">
                     {announcements.map(announcement => (
-                        <div key={announcement.id} className="announcement-card">
+                        <div
+                            key={announcement.id}
+                            className="announcement-item"
+                            onClick={() => navigate(`/professor/course/${courseData.id}/announcement/${announcement.id}`)}
+                            style={{ cursor: 'pointer' }}
+                        >
                             <div className="announcement-header">
                                 <h4>{announcement.title}</h4>
                                 <span className="announcement-date">
@@ -458,7 +466,10 @@ const ProfessorCourseDetailPage = () => {
                             </div>
                             <p className="announcement-content">{announcement.content}</p>
                             <div className="announcement-actions">
-                                <button className="btn btn-secondary btn-sm">
+                                <button
+                                    className="btn btn-secondary btn-sm"
+                                    onClick={() => navigate(`/professor/course/${courseData.id}/announcement/${announcement.id}/edit`)}
+                                >
                                     <i className="fas fa-edit"></i> 수정
                                 </button>
                                 <button className="btn btn-danger btn-sm">
@@ -495,16 +506,16 @@ const ProfessorCourseDetailPage = () => {
     return (
         <div className="professor-dashboard">
             <Header username={userData?.name || '교수님'} role="교수" />
-            
+
             <div className="dashboard-main">
-                <ProfessorSidebar 
-                    activeTab={activeTab} 
+                <ProfessorSidebar
+                    activeTab={activeTab}
                     setActiveTab={setActiveTab}
                     professorName={userData?.name || ''}
                     professorId={userData?.professorId || ''}
                     department={userData?.department || ''}
                 />
-                
+
                 <div className="dashboard-content">
                     <div className="breadcrumb">
                         <span onClick={() => navigate('/professor/courses')} className="breadcrumb-link">
@@ -517,25 +528,25 @@ const ProfessorCourseDetailPage = () => {
                     <div className="course-detail-container">
                         {/* 탭 네비게이션 */}
                         <div className="course-detail-tabs">
-                            <button 
+                            <button
                                 className={`tab-button ${activeSection === 'overview' ? 'active' : ''}`}
                                 onClick={() => setActiveSection('overview')}
                             >
                                 <i className="fas fa-chart-pie"></i> 개요
                             </button>
-                            <button 
+                            <button
                                 className={`tab-button ${activeSection === 'students' ? 'active' : ''}`}
                                 onClick={() => setActiveSection('students')}
                             >
                                 <i className="fas fa-users"></i> 수강생
                             </button>
-                            <button 
+                            <button
                                 className={`tab-button ${activeSection === 'assignments' ? 'active' : ''}`}
                                 onClick={() => setActiveSection('assignments')}
                             >
                                 <i className="fas fa-tasks"></i> 과제
                             </button>
-                            <button 
+                            <button
                                 className={`tab-button ${activeSection === 'announcements' ? 'active' : ''}`}
                                 onClick={() => setActiveSection('announcements')}
                             >

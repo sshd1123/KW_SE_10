@@ -63,8 +63,6 @@
 
 /* 공지사항 컨테이너 */
 .ap-announcements-container {
-    display: grid;
-    grid-template-columns: 3fr 1fr;
     gap: 1rem;
     margin: 0;
     padding: 0;

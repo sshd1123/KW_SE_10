@@ -234,18 +234,6 @@ const CourseRegistrationPage = () => {
                         </div>
                         <div className="crp-card-body crp-period-card-body">
                             <div className="crp-period-info">
-                                <div className="crp-period-phases">
-                                    {registrationPeriod.phases.map((phase, index) => (
-                                        <div
-                                            key={index}
-                                            className={`crp-phase-item ${phase.name === registrationPeriod.currentPhase ? 'current' : ''}`}
-                                        >
-                                            <div className="crp-phase-name">{phase.name}</div>
-                                            <div className="crp-phase-date">{phase.date}</div>
-                                            <div className="crp-phase-target">{phase.target}</div>
-                                        </div>
-                                    ))}
-                                </div>
                                 <div className="crp-credit-info">
                                     <div className="crp-credit-item">
                                         <span>신청 학점</span>
@@ -398,7 +386,7 @@ const CourseRegistrationPage = () => {
                                                                 {isFull ? '마감' : '신청'}
                                                             </button>
                                                             <button className="crp-btn crp-btn-outline crp-detail-btn">
-                                                                상세보기
+                                                                강의 계획서
                                                             </button>
                                                         </div>
 

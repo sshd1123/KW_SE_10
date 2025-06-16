@@ -17,24 +17,26 @@ const professorData = {
         // 교수 기능 - 강의 관리
         courses: [
             {
-                id: "I020-2-0123-01", // 인공지능융합대학 2학년 대상 과목
-                name: "자바프로그래밍",
-                semesterId: "2025-1",
+                id: "I020-2-0156-02", // 인공지능융합대학 2학년 대상 과목
+                name: "데이터베이스",
+                professor: "박교수",
                 credits: 3,
-                time: "월 10:30-12:00, 수 10:30-12:00",
-                room: "새빛관 401호",
-                enrolled: 42,
-                capacity: 50
+                schedule: [ // 새로운 형식
+                    { day: "월", startTime: "12:00", endTime: "13:15" },
+                    { day: "수", startTime: "10:30", endTime: "11:45" }
+                ],
+                room: "새빛관 302호"
             },
             {
-                id: "I020-4-0256-01", // 인공지능융합대학 4학년 대상 과목
-                name: "고급 소프트웨어 설계",
-                semesterId: "2025-1",
+                id: "I020-2-0123-01", // 인공지능융합대학 2학년 대상 과목
+                name: "자바프로그래밍",
+                professor: "이교수",
                 credits: 3,
-                time: "화 15:00-16:30, 목 15:00-16:30",
-                room: "새빛관 402호",
-                enrolled: 28,
-                capacity: 30
+                schedule: [ // 새로운 형식
+                    { day: "월", startTime: "10:30", endTime: "12:00" },
+                    { day: "수", startTime: "12:00", endTime: "13:15" }
+                ],
+                room: "새빛관 401호"
             }
         ],
 

@@ -195,7 +195,7 @@ const GradesPage = () => {
         
         <div className="dashboard-content">
           <div className="welcome-banner">
-            <h2>성적 조회</h2>
+            <h2>수강/성적 조회</h2>
             <p>현재 {studentData.academic?.year || ''}학년 {studentData.academic?.semester || ''}학기 / 학번: {userData?.studentId || ''}</p>
           </div>
           

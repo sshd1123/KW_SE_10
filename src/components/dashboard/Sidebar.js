@@ -7,10 +7,8 @@ const Sidebar = ({ activeTab, setActiveTab, studentName='', studentId='', depart
   const menuItems = [
     { id: 'overview', label: '대시보드', icon: 'fas fa-home', path: '/student/dashboard' },
     { id: 'courses', label: '내 강의실', icon: 'fas fa-book', path: '/student/courses' },
-    { id: 'announcements', label: '공지사항', icon: 'fas fa-bullhorn', path: '/student/announcements' },
-    { id: 'grades', label: '성적 조회', icon: 'fas fa-chart-line', path: '/student/grades' },
+    { id: 'grades', label: '수강/성적 조회', icon: 'fas fa-chart-line', path: '/student/grades' },
     { id: 'registration', label: '수강 신청', icon: 'fas fa-pencil-alt', path: '/student/registration' },
-    { id: 'assignments', label: '과제 관리', icon: 'fas fa-tasks', path: '/student/assignments' },
     { id: 'graduation', label: '졸업 요건', icon: 'fas fa-graduation-cap', path: '/student/graduation' },
     { id: 'settings', label: '계정 설정', icon: 'fas fa-cog', path: '/student/settings' }
   ];
@@ -53,13 +51,6 @@ const Sidebar = ({ activeTab, setActiveTab, studentName='', studentId='', depart
           ))}
         </ul>
       </nav>
-      
-      <div className="sidebar-footer">
-        <button className="help-button">
-          <i className="fas fa-question-circle"></i>
-          <span>도움말</span>
-        </button>
-      </div>
     </aside>
   );
 };

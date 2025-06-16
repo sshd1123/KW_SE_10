@@ -38,7 +38,6 @@
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
-    min-width: 800px; /* 전체 너비 증가 */
 }
 
 .timetable-header {
@@ -98,7 +97,6 @@
     border: 1px solid var(--neutral-medium);
     padding: 0.5rem; /* 패딩 증가 */
     text-align: center;
-    min-width: 120px; /* 최소 너비 증가 */
     box-sizing: border-box;
 }
 

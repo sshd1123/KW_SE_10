@@ -8,14 +8,15 @@ import StudentDashboard from './components/pages/student/Dashboard';
 import CourseDetailPage from './components/pages/student/CourseDetailPage';
 import GradesPage from './components/pages/student/GradesPage';
 import CoursesPage from './components/pages/student/CoursesPage';
-import AssignmentsPage from './components/pages/student/AssignmentsPage';
 import AssignmentSubmissionPage from './components/pages/student/AssignmentSubmissionPage';
 import AnnouncementsPage from './components/pages/student/AnnouncementsPage';
-import AnnouncementDetailPage from './components/pages/student/AnnouncementDetailPage';
+// import AnnouncementDetailPage from './components/pages/student/AnnouncementDetailPage';
 import CourseRegistrationPage from './components/pages/student/CourseRegistrationPage';
 import AccountSettingsPage from './components/pages/student/AccountSettingsPage';
 import NotificationsPage from './components/pages/student/NotificationsPage';
 import GraduationRequirementsPage from './components/pages/student/GraduationRequirementsPage';
+
+
 
 import ProfessorDashboard from './components/pages/professor/Dashboard';
 import ProfessorCoursesPage from './components/pages/professor/ProfessorCoursesPage';
@@ -29,16 +30,11 @@ import ProfessorAttendancePage from './components/pages/professor/ProfessorAtten
 import ProfessorSettingsPage from './components/pages/professor/ProfessorSettingsPage';
 import ProfessorCourseDetailPage from './components/pages/professor/ProfessorCourseDetailPage';
 import ProfessorAssignmentDetailPage from './components/pages/professor/ProfessorAssignmentDetailPage';
+import CreateAnnouncementPage from './components/pages/professor/CreateAnnouncementPage';
+import CreateAssignmentPage from './components/pages/professor/CreateAssignmentPage';
 
-const ProtectedRoute = ({ children }) => {
-  const isAuthenticated = localStorage.getItem('token') !== null;
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return children;
-};
+import AnnouncementDetailPage from './components/pages/AnnouncementDetailPage';
+import ProtectedRoute from './components/common/ProtectedRoute';
 
 function App() {
   return (
@@ -55,10 +51,10 @@ function App() {
               <Route path="course/:courseId" element={<CourseDetailPage />} />
               <Route path="grades" element={<GradesPage />} />
               <Route path="courses" element={<CoursesPage />} />
-              <Route path="assignments" element={<AssignmentsPage />} />
               <Route path="assignment/submit/:assignmentId" element={<AssignmentSubmissionPage />} />
               <Route path="announcements" element={<AnnouncementsPage />} />
               <Route path="announcement/:announcementId" element={<AnnouncementDetailPage />} />
+              <Route path="course/:courseId/announcement/:announcementId" element={<AnnouncementDetailPage />} />
               <Route path="registration" element={<CourseRegistrationPage />} />
               <Route path="settings" element={<AccountSettingsPage />} />
               <Route path="notifications" element={<NotificationsPage />} />
@@ -80,9 +76,15 @@ function App() {
               <Route path="announcements" element={<ProfessorAnnouncementsPage />} />
               <Route path="schedule" element={<ProfessorSchedulePage />} />
               <Route path="materials" element={<ProfessorMaterialsPage />} />
-              <Route path="attendance" element={<ProfessorAttendancePage />} /> 
+              <Route path="attendance" element={<ProfessorAttendancePage />} />
               <Route path="settings" element={<ProfessorSettingsPage />} />
               <Route path="course/:courseId" element={<ProfessorCourseDetailPage />} />
+              <Route path="course/:courseId/announcement/create" element={<CreateAnnouncementPage />} />
+              <Route path="announcement/:announcementId" element={<AnnouncementDetailPage />} />
+              <Route path="course/:courseId/announcement/:announcementId" element={<AnnouncementDetailPage />} />
+              <Route path="course/:courseId/announcement/:announcementId/edit" element={<CreateAnnouncementPage />} />
+              <Route path="course/:courseId/assignment/create" element={<CreateAssignmentPage />} />
+              <Route path="course/:courseId/assignment/:assignmentId/edit" element={<CreateAssignmentPage />} />
             </Routes>
           </ProtectedRoute>
         } />

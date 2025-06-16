@@ -20,19 +20,19 @@ const StudentDashboard = () => {
 
   useEffect(() => {
     const user = getCurrentUser();
-    
+
     if (!user) {
       navigate('/login');
       return;
     }
-    
+
     const dashboardData = getDashboardData();
-    
+
     if (user && dashboardData) {
       const updatedAssignments = dashboardData.assignments.map(assignment => {
         const today = new Date();
         const deadlineDate = new Date(assignment.deadline);
-        
+
         if (deadlineDate < today && assignment.status !== '완료') {
           return { ...assignment, status: '마감' };
         }
@@ -43,26 +43,26 @@ const StudentDashboard = () => {
         ...dashboardData,
         assignments: updatedAssignments
       };
-      
+
       setUserData(user);
       setStudentData(updatedDashboardData);
     } else {
       console.log("Failed to load data: user or dashboardData is null/undefined");
     }
-    
+
     setLoading(false);
   }, [navigate]);
 
   const getUpcomingAssignments = () => {
     if (!studentData || !studentData.assignments) return [];
-    
+
     const today = new Date();
     return studentData.assignments
       .filter(assignment => {
         const deadlineDate = new Date(assignment.deadline);
         return (
-          assignment.status !== '완료' && 
-          assignment.status !== '마감' && 
+          assignment.status !== '완료' &&
+          assignment.status !== '마감' &&
           deadlineDate >= today
         );
       })
@@ -82,13 +82,13 @@ const StudentDashboard = () => {
   if (!studentData || !userData) {
     return (
       <div className="student-dashboard">
-        <Header 
-          username={userData?.name} 
-          role={userData?.role || '학생'} 
+        <Header
+          username={userData?.name}
+          role={userData?.role || '학생'}
         />
         <div className="dashboard-main">
-          <Sidebar 
-            activeTab={activeTab} 
+          <Sidebar
+            activeTab={activeTab}
             setActiveTab={setActiveTab}
             studentName={userData?.name}
             studentId={userData?.studentId}
@@ -109,13 +109,13 @@ const StudentDashboard = () => {
 
   return (
     <div className="student-dashboard">
-      <Header 
-        username={userData?.name} 
-        role={userData?.role || '학생'} 
+      <Header
+        username={userData?.name}
+        role={userData?.role || '학생'}
       />
       <div className="dashboard-main">
-        <Sidebar 
-          activeTab={activeTab} 
+        <Sidebar
+          activeTab={activeTab}
           setActiveTab={setActiveTab}
           studentName={userData?.name}
           studentId={userData?.studentId}
@@ -128,7 +128,7 @@ const StudentDashboard = () => {
           </div>
 
           <div className="dashboard-row">
-          <div className="dashboard-col">
+            <div className="dashboard-col">
               <div className="timetable-card">
                 <div className="card-header">
                   <h3>시간표</h3>
@@ -164,7 +164,7 @@ const StudentDashboard = () => {
                   </div>
                 </div>
                 <div className="card-footer">
-                  <button 
+                  <button
                     className="btn btn-outline"
                     onClick={() => navigate('/student/courses')}
                   >
@@ -177,7 +177,7 @@ const StudentDashboard = () => {
             <div className="dashboard-col">
               <div className="card">
                 <div className="card-header">
-                  <h3>최근 공지사항</h3>
+                  <h3>학사 공지사항</h3>
                 </div>
                 <div className="card-body">
                   <div className="card-content">
@@ -193,7 +193,7 @@ const StudentDashboard = () => {
                   </div>
                 </div>
                 <div className="card-footer">
-                  <button 
+                  <button
                     className="btn btn-outline"
                     onClick={() => navigate('/student/announcements')}
                   >
@@ -216,7 +216,7 @@ const StudentDashboard = () => {
                   </div>
                 </div>
                 <div className="card-footer">
-                  <button 
+                  <button
                     className="btn btn-outline"
                     onClick={() => navigate('/student/assignments')}
                   >
@@ -254,8 +254,8 @@ const StudentDashboard = () => {
                 </div>
                 <div className="card-body">
                   <div className="card-content">
-                    <GraduationRequirements 
-                      requirements={studentData.graduationRequirements} 
+                    <GraduationRequirements
+                      requirements={studentData.graduationRequirements}
                       completedCredits={studentData.completedCredits}
                     />
                   </div>
