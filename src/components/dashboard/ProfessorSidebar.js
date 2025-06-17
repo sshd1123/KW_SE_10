@@ -51,13 +51,6 @@ const ProfessorSidebar = ({ activeTab, setActiveTab, professorName = '', profess
           ))}
         </ul>
       </nav>
-
-      <div className="sidebar-footer">
-        <button className="help-button">
-          <i className="fas fa-question-circle"></i>
-          도움말
-        </button>
-      </div>
     </aside>
   );
 };
