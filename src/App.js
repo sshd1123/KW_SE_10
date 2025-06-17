@@ -16,8 +16,6 @@ import AccountSettingsPage from './components/pages/student/AccountSettingsPage'
 import NotificationsPage from './components/pages/student/NotificationsPage';
 import GraduationRequirementsPage from './components/pages/student/GraduationRequirementsPage';
 
-
-
 import ProfessorDashboard from './components/pages/professor/Dashboard';
 import ProfessorCoursesPage from './components/pages/professor/ProfessorCoursesPage';
 import ProfessorStudentsPage from './components/pages/professor/ProfessorStudentsPage';
@@ -33,6 +31,7 @@ import ProfessorAssignmentDetailPage from './components/pages/professor/Professo
 import CreateAnnouncementPage from './components/pages/professor/CreateAnnouncementPage';
 import CreateAssignmentPage from './components/pages/professor/CreateAssignmentPage';
 
+import AssignmentDetailPage from './components/pages/student/AssingmentDetailPage';
 import AnnouncementDetailPage from './components/pages/AnnouncementDetailPage';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
@@ -45,13 +44,13 @@ function App() {
 
         {/* 학생 */}
         <Route path="/student/*" element={
-          <ProtectedRoute>
+          // <ProtectedRoute>
             <Routes>
               <Route path="dashboard" element={<StudentDashboard />} />
               <Route path="course/:courseId" element={<CourseDetailPage />} />
               <Route path="grades" element={<GradesPage />} />
               <Route path="courses" element={<CoursesPage />} />
-              <Route path="assignment/submit/:assignmentId" element={<AssignmentSubmissionPage />} />
+              <Route path="course/:courseId/assignment/:assignmentId/submit" element={<AssignmentDetailPage />} />
               <Route path="announcements" element={<AnnouncementsPage />} />
               <Route path="announcement/:announcementId" element={<AnnouncementDetailPage />} />
               <Route path="course/:courseId/announcement/:announcementId" element={<AnnouncementDetailPage />} />
@@ -60,12 +59,12 @@ function App() {
               <Route path="notifications" element={<NotificationsPage />} />
               <Route path="graduation" element={<GraduationRequirementsPage />} />
             </Routes>
-          </ProtectedRoute>
+          // </ProtectedRoute>
         } />
 
         {/* 교수 */}
         <Route path="/professor/*" element={
-          <ProtectedRoute>
+          // <ProtectedRoute>
             <Routes>
               <Route path="dashboard" element={<ProfessorDashboard />} />
               <Route path="courses" element={<ProfessorCoursesPage />} />
@@ -78,18 +77,21 @@ function App() {
               <Route path="materials" element={<ProfessorMaterialsPage />} />
               <Route path="attendance" element={<ProfessorAttendancePage />} />
               <Route path="settings" element={<ProfessorSettingsPage />} />
+
               <Route path="course/:courseId" element={<ProfessorCourseDetailPage />} />
               <Route path="course/:courseId/announcement/create" element={<CreateAnnouncementPage />} />
               <Route path="announcement/:announcementId" element={<AnnouncementDetailPage />} />
               <Route path="course/:courseId/announcement/:announcementId" element={<AnnouncementDetailPage />} />
-              <Route path="course/:courseId/announcement/:announcementId/edit" element={<CreateAnnouncementPage />} />
+              <Route path="announcement/edit/:courseId/:announcementId" element={<CreateAnnouncementPage />} />
+
               <Route path="course/:courseId/assignment/create" element={<CreateAssignmentPage />} />
-              <Route path="course/:courseId/assignment/:assignmentId/edit" element={<CreateAssignmentPage />} />
+              <Route path="assignment/:assignmentId/edit" element={<CreateAssignmentPage />} />
+              <Route path="course/assignment/:assignmentId" element={<AssignmentDetailPage />} />
             </Routes>
-          </ProtectedRoute>
+          // </ProtectedRoute>
         } />
 
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        {/* <Route path="*" element={<Navigate to="/login" replace />} /> */}
       </Routes>
     </Router>
   );

@@ -1,15 +1,24 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 const Header = ({ username, role }) => {
-  const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  
-  const handleLogout = () => {
-    // 로그아웃 처리
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    navigate('/login');
+  const { logout, loading } = useAuth();
+
+  const navigate = useNavigate();
+
+  // const handleLogout = () => {
+  //   // 로그아웃 처리
+  //   localStorage.removeItem('token');
+  //   localStorage.removeItem('user');
+  //   navigate('/login');
+  // };
+
+  const handleLogout = async () => {
+    if (window.confirm('로그아웃 하시겠습니까?')) {
+      await logout();
+    }
   };
 
   // 사용자 역할에 따른 대시보드 경로 결정
@@ -18,9 +27,7 @@ const Header = ({ username, role }) => {
       return '/professor/dashboard';
     } else if (role === '학생' || role === 'student') {
       return '/student/dashboard';
-    } else if (role === '관리자' || role === 'admin') {
-      return '/admin/dashboard';
-    }
+    } 
     // 기본값은 학생 대시보드
     return '/student/dashboard';
   };
@@ -32,7 +39,7 @@ const Header = ({ username, role }) => {
     if (role === '학생') return '학생';
     return '학생';
   };
-  
+
   return (
     <header className="dashboard-header">
       <div className="header-left">
@@ -40,15 +47,15 @@ const Header = ({ username, role }) => {
           <img src="/symbol.png" alt="로고" className="header-logo" />
         </Link>
       </div>
-      
+
       <div className="header-right">
         <div className="notification-icon">
           <i className="fas fa-bell"></i>
           <span className="notification-badge">3</span>
         </div>
-        
+
         <div className="user-dropdown">
-          <button 
+          <button
             className="user-dropdown-toggle"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           >
@@ -56,10 +63,14 @@ const Header = ({ username, role }) => {
             <span className="user-role">{getRoleInKorean(role)}</span>
             <i className="fas fa-chevron-down"></i>
           </button>
-          
+
           {isDropdownOpen && (
             <div className="dropdown-menu">
-              <button onClick={handleLogout} className="dropdown-item logout-button">
+              <button 
+              onClick={handleLogout} 
+              disabled={loading}
+              className="dropdown-item logout-button"
+              >
                 <i className="fas fa-sign-out-alt"></i> 로그아웃
               </button>
             </div>

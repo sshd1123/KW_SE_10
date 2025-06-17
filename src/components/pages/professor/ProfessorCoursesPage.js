@@ -302,15 +302,6 @@ const ProfessorCoursesPage = () => {
                                             </div>
                                             <div className="pc-course-filters">
                                                 <select
-                                                    className="pc-filter-select"
-                                                    value={filter}
-                                                    onChange={(e) => setFilter(e.target.value)}
-                                                >
-                                                    <option value="all">전체</option>
-                                                    <option value="active">진행중</option>
-                                                    <option value="completed">완료</option>
-                                                </select>
-                                                <select
                                                     className="pc-sort-select"
                                                     value={sortBy}
                                                     onChange={(e) => setSortBy(e.target.value)}
@@ -320,12 +311,6 @@ const ProfessorCoursesPage = () => {
                                                     <option value="day">요일순</option>
                                                 </select>
                                             </div>
-                                            <button
-                                                className="pc-btn pc-btn-primary pc-btn-sm"
-                                                onClick={() => setShowNewCourseModal(true)}
-                                            >
-                                                <i className="fas fa-plus"></i> 새 강의
-                                            </button>
                                         </div>
                                     </div>
                                     <div className="pc-card-body pc-courses-card-body">
@@ -404,51 +389,6 @@ const ProfessorCoursesPage = () => {
                                             <div className="pc-stats-value">{totalAnnouncements}</div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="pc-bottom-row">
-                            <div className="pc-card">
-                                <div className="pc-card-header">
-                                    <h3>다가오는 과제 마감일</h3>
-                                </div>
-                                <div className="pc-card-body pc-deadline-card-body">
-                                    {upcomingDeadlines.length > 0 ? (
-                                        <div className="pc-deadline-cards">
-                                            {upcomingDeadlines.map((assignment) => (
-                                                <div
-                                                    key={assignment.id}
-                                                    className={`pc-deadline-card ${getDeadlineStatus(assignment.deadline)}`}
-                                                    onClick={() => handleAssignmentClick(assignment)}
-                                                >
-                                                    <div className="pc-deadline-header">
-                                                        <div className="pc-deadline-course">{assignment.course}</div>
-                                                        <div className="pc-deadline-date">
-                                                            <i className="fas fa-clock"></i>
-                                                            {formatDeadline(assignment.deadline)}
-                                                        </div>
-                                                    </div>
-                                                    <div className="pc-deadline-content">
-                                                        <h4 className="pc-deadline-title">{assignment.title}</h4>
-                                                        <p className="pc-deadline-description">{assignment.description}</p>
-                                                    </div>
-                                                    <div className="pc-deadline-footer">
-                                                        <span className="pc-deadline-submissions">
-                                                            제출: {assignment.submissions || 0}명
-                                                        </span>
-                                                        <button className="pc-btn-outline pc-btn-sm">
-                                                            과제 관리
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <div className="pc-empty-message">
-                                            다가오는 과제 마감일이 없습니다.
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                         </div>

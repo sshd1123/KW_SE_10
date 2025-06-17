@@ -86,7 +86,8 @@ const studentData = {
         assignments: [
             {
                 id: 1,
-                course: "소프트웨어공학",
+                courseId: "I020-2-0123-01",
+                course: "자바프로그래밍",
                 title: "프로젝트 제안서",
                 description: "팀 프로젝트 제안서를 작성하여 제출하세요.",
                 deadline: "2025-06-25",

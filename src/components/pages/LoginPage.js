@@ -1,8 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import LoginForm from '../auth/LoginForm';
+import { isAuthenticated } from '../../data/authHelpers';
 import "../styles/LoginPage.css"
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const LoginPage = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
+
     return (
         <div className="login-page">
             <div className="login-panel">
@@ -18,11 +23,6 @@ const LoginPage = () => {
                     <LoginForm />
 
                     <div className="login-footer">
-                        <div className="remember-me">
-                            <input type="checkbox" id="remember-me" />
-                            <label htmlFor="remember-me">로그인 상태 유지</label>
-                        </div>
-
                         <div className="auth-links">
                             <a href="/register" className="forgot-password-link">회원가입</a>
                         </div>

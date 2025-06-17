@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../../dashboard/Header';
 import ProfessorSidebar from '../../dashboard/ProfessorSidebar';
 import { getDashboardData, getCurrentUser } from '../../../data/authUtils';
+import { AnnouncementAPI } from '../../../services/api';
 import '../../styles/ProfessorCourseDetailPage.css';
 
 const ProfessorCourseDetailPage = () => {
@@ -16,8 +17,110 @@ const ProfessorCourseDetailPage = () => {
     const [showAddStudentModal, setShowAddStudentModal] = useState(false);
     const [showAddAssignmentModal, setShowAddAssignmentModal] = useState(false);
     const [showAddAnnouncementModal, setShowAddAnnouncementModal] = useState(false);
+
+    // ✅ 공지사항 관련 상태 추가
+    const [announcements, setAnnouncements] = useState([]);
+    const [announcementsLoading, setAnnouncementsLoading] = useState(false);
+
     const navigate = useNavigate();
     const { courseId } = useParams();
+
+    // ✅ 공지사항 삭제 완료 후 콜백
+    const handleAnnouncementDeleted = (deletedAnnouncementId) => {
+        setAnnouncements(prev =>
+            prev.filter(announcement => announcement.id !== deletedAnnouncementId)
+        );
+    };
+
+    // ✅ 공지사항 액션 컴포넌트
+    const AnnouncementActions = ({ announcementItem }) => {
+        const [isDeleting, setIsDeleting] = useState(false);
+
+        const handleEdit = () => {
+            navigate(`/professor/announcement/edit/${courseId}/${announcementItem.id}`);
+        };
+
+        const handleDelete = async () => {
+            const isConfirmed = window.confirm(
+                `'${announcementItem.title}' 공지사항을 정말 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`
+            );
+
+            if (!isConfirmed) return;
+
+            try {
+                setIsDeleting(true);
+                console.log('공지사항 삭제 요청:', courseId, announcementItem.id);
+
+                const response = await AnnouncementAPI.deleteAnnouncement(courseId, announcementItem.id);
+
+                if (response.success) {
+                    alert('공지사항이 삭제되었습니다.');
+                    handleAnnouncementDeleted(announcementItem.id);
+                } else {
+                    alert(response.message || '공지사항 삭제에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('공지사항 삭제 오류:', error);
+                let errorMessage = '공지사항 삭제 중 오류가 발생했습니다.';
+                if (error.message.includes('403')) {
+                    errorMessage = '삭제 권한이 없습니다.';
+                } else if (error.message.includes('404')) {
+                    errorMessage = '삭제할 공지사항을 찾을 수 없습니다.';
+                }
+                alert(errorMessage);
+            } finally {
+                setIsDeleting(false);
+            }
+        };
+
+        return (
+            <div className="announcement-actions">
+                <button
+                    className="btn btn-secondary btn-sm"
+                    onClick={handleEdit}
+                >
+                    <i className="fas fa-edit"></i> 수정
+                </button>
+                <button
+                    className="btn btn-danger btn-sm"
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                >
+                    <i className="fas fa-trash"></i> {isDeleting ? '삭제중...' : '삭제'}
+                </button>
+            </div>
+        );
+    };
+
+    // ✅ 공지사항 목록 로드
+    const loadAnnouncements = async () => {
+        try {
+            setAnnouncementsLoading(true);
+            
+            const response = await AnnouncementAPI.getAnnouncements(courseId, {
+                page: 1,
+                limit: 20,
+                orderBy: 'createdAt',
+                order: 'DESC'
+            });
+
+            if (response.success) {
+                setAnnouncements(response.data.announcements || []);
+            } else {
+                console.warn('공지사항 로드 실패:', response.message);
+                // 로컬 데이터 사용
+                const localAnnouncements = getAnnouncementsForCourse(courseId);
+                setAnnouncements(localAnnouncements);
+            }
+        } catch (error) {
+            console.error('공지사항 로드 오류:', error);
+            // 오류 시 로컬 데이터 사용
+            const localAnnouncements = getAnnouncementsForCourse(courseId);
+            setAnnouncements(localAnnouncements);
+        } finally {
+            setAnnouncementsLoading(false);
+        }
+    };
 
     useEffect(() => {
         const user = getCurrentUser();
@@ -44,7 +147,17 @@ const ProfessorCourseDetailPage = () => {
 
         setCourseData(course);
         setLoading(false);
+
+        // ✅ 공지사항 로드
+        loadAnnouncements();
     }, [navigate, courseId]);
+
+    // ✅ activeSection이 announcements로 변경될 때도 로드
+    useEffect(() => {
+        if (activeSection === 'announcements' && announcements.length === 0) {
+            loadAnnouncements();
+        }
+    }, [activeSection]);
 
     const getStudentsForCourse = (courseId) => {
         if (!professorData.students) return [];
@@ -57,7 +170,7 @@ const ProfessorCourseDetailPage = () => {
     };
 
     const getAnnouncementsForCourse = (courseId) => {
-        if (!professorData.announcements) return [];
+        if (!professorData?.announcements) return [];
         return professorData.announcements.filter(announcement => announcement.courseId === courseId);
     };
 
@@ -105,7 +218,7 @@ const ProfessorCourseDetailPage = () => {
 
         const students = getStudentsForCourse(courseData.id);
         const assignments = getAssignmentsForCourse(courseData.id);
-        const announcements = getAnnouncementsForCourse(courseData.id);
+        const localAnnouncements = getAnnouncementsForCourse(courseData.id);
         const materials = getMaterialsForCourse(courseData.id);
         const attendanceStats = getAttendanceStats(students);
         const gradeDistribution = getGradeDistribution(students);
@@ -190,7 +303,7 @@ const ProfessorCourseDetailPage = () => {
                             <p>공지사항</p>
                             <div className="stat-detail">
                                 이번 주: {announcements.filter(a => {
-                                    const diff = Math.ceil((new Date() - new Date(a.date)) / (1000 * 60 * 60 * 24));
+                                    const diff = Math.ceil((new Date() - new Date(a.date || a.createdAt)) / (1000 * 60 * 60 * 24));
                                     return diff <= 7;
                                 }).length}개
                             </div>
@@ -220,15 +333,15 @@ const ProfessorCourseDetailPage = () => {
                         <div className="card-body">
                             <div className="attendance-chart">
                                 <div className="attendance-item excellent">
-                                    <div className="attendance-bar" style={{ width: `${(attendanceStats.excellent / students.length) * 100}%` }}></div>
+                                    <div className="attendance-bar" style={{ width: `${students.length > 0 ? (attendanceStats.excellent / students.length) * 100 : 0}%` }}></div>
                                     <span>우수 (90% 이상): {attendanceStats.excellent}명</span>
                                 </div>
                                 <div className="attendance-item good">
-                                    <div className="attendance-bar" style={{ width: `${(attendanceStats.good / students.length) * 100}%` }}></div>
+                                    <div className="attendance-bar" style={{ width: `${students.length > 0 ? (attendanceStats.good / students.length) * 100 : 0}%` }}></div>
                                     <span>양호 (80-89%): {attendanceStats.good}명</span>
                                 </div>
                                 <div className="attendance-item warning">
-                                    <div className="attendance-bar" style={{ width: `${(attendanceStats.warning / students.length) * 100}%` }}></div>
+                                    <div className="attendance-bar" style={{ width: `${students.length > 0 ? (attendanceStats.warning / students.length) * 100 : 0}%` }}></div>
                                     <span>주의 (80% 미만): {attendanceStats.warning}명</span>
                                 </div>
                             </div>
@@ -389,7 +502,12 @@ const ProfessorCourseDetailPage = () => {
 
                 <div className="assignments-grid">
                     {assignments.map(assignment => (
-                        <div key={assignment.id} className="assignment-card">
+                        <div
+                            key={assignment.id}
+                            className="assignment-card"
+                            onClick={() => navigate(`/professor/course/assignment/${assignment.id}`)}
+                            style={{ cursor: 'pointer' }}
+                        >
                             <div className="assignment-header">
                                 <h4>{assignment.title}</h4>
                                 <span className="assignment-score">{assignment.maxScore}점</span>
@@ -435,50 +553,60 @@ const ProfessorCourseDetailPage = () => {
         );
     };
 
+    // ✅ 공지사항 섹션 렌더링 수정
     const renderAnnouncementsSection = () => {
-        const announcements = getAnnouncementsForCourse(courseData.id);
-
         return (
             <div className="announcements-section">
                 <div className="section-header">
                     <h3>공지사항</h3>
                     <button
                         className="btn btn-primary btn-sm"
-                        onClick={() => navigate(`/professor/course/${courseData.id}/announcement/create`)}
+                        onClick={() => navigate(`/professor/announcement/create/${courseId}`)}
                     >
                         <i className="fas fa-plus"></i> 새 공지
                     </button>
                 </div>
 
-                <div className="announcements-list">
-                    {announcements.map(announcement => (
-                        <div
-                            key={announcement.id}
-                            className="announcement-item"
-                            onClick={() => navigate(`/professor/course/${courseData.id}/announcement/${announcement.id}`)}
-                            style={{ cursor: 'pointer' }}
+                {announcementsLoading ? (
+                    <div className="loading">공지사항을 불러오고 있습니다...</div>
+                ) : announcements.length > 0 ? (
+                    <div className="announcements-list">
+                        {announcements.map(announcementItem => (
+                            <div key={announcementItem.id} className="announcement-item">
+                                <div className="announcement-header">
+                                    <h4>
+                                        {announcementItem.isUrgent && <span className="urgent-badge">🔥 긴급</span>}
+                                        {announcementItem.isPinned && <span className="pinned-badge">📌 고정</span>}
+                                        {announcementItem.title}
+                                    </h4>
+                                    <span className="announcement-date">
+                                        {new Date(announcementItem.createdAt || announcementItem.date).toLocaleDateString()}
+                                    </span>
+                                </div>
+                                <p className="announcement-content">
+                                    {announcementItem.content?.substring(0, 150)}...
+                                </p>
+                                <div className="announcement-footer">
+                                    <div className="announcement-meta">
+                                        <span className="views">👁️ {announcementItem.views || 0}</span>
+                                        <span className="author">✍️ {announcementItem.author || userData?.name}</span>
+                                    </div>
+                                    <AnnouncementActions announcementItem={announcementItem} />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="empty-state">
+                        <p>등록된 공지사항이 없습니다.</p>
+                        <button 
+                            onClick={() => navigate(`/professor/announcement/create/${courseId}`)}
+                            className="btn btn-primary"
                         >
-                            <div className="announcement-header">
-                                <h4>{announcement.title}</h4>
-                                <span className="announcement-date">
-                                    {new Date(announcement.date).toLocaleDateString()}
-                                </span>
-                            </div>
-                            <p className="announcement-content">{announcement.content}</p>
-                            <div className="announcement-actions">
-                                <button
-                                    className="btn btn-secondary btn-sm"
-                                    onClick={() => navigate(`/professor/course/${courseData.id}/announcement/${announcement.id}/edit`)}
-                                >
-                                    <i className="fas fa-edit"></i> 수정
-                                </button>
-                                <button className="btn btn-danger btn-sm">
-                                    <i className="fas fa-trash"></i> 삭제
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                            첫 공지사항 작성하기
+                        </button>
+                    </div>
+                )}
             </div>
         );
     };

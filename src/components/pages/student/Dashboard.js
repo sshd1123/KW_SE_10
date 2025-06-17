@@ -208,27 +208,6 @@ const StudentDashboard = () => {
             <div className="dashboard-col">
               <div className="card">
                 <div className="card-header">
-                  <h3>다가오는 과제</h3>
-                </div>
-                <div className="card-body">
-                  <div className="card-content">
-                    <UpcomingAssignments assignments={getUpcomingAssignments()} />
-                  </div>
-                </div>
-                <div className="card-footer">
-                  <button
-                    className="btn btn-outline"
-                    onClick={() => navigate('/student/assignments')}
-                  >
-                    모든 과제 보기
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="dashboard-col">
-              <div className="card">
-                <div className="card-header">
                   <h3>성적 현황</h3>
                 </div>
                 <div className="card-body">
@@ -244,9 +223,6 @@ const StudentDashboard = () => {
                 </div>
               </div>
             </div>
-          </div>
-
-          <div className="dashboard-row">
             <div className="dashboard-col">
               <div className="graduation-requirements-card">
                 <div className="card-header">

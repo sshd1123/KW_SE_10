@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login } from '../../data/authUtils';
+import { AuthAPI } from '../../services/authApi';
 
 const LoginForm = () => {
   const navigate = useNavigate();
+
   const [loginData, setLoginData] = useState({
-    username: '',
+    userId: '',
     password: ''
   });
+
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -17,45 +20,64 @@ const LoginForm = () => {
       ...prev,
       [name]: value
     }));
+
+    if (error) setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-    
+
+    if (!loginData.userId.trim()) {
+      setError('ID를 입력해주세요.');
+      return;
+    }
+
+    if (!loginData.password.trim()) {
+      setError('비밀번호를 입력해주세요.');
+      setIsLoading(false);
+      return;
+    }
+
     try {
-        // 더미 로그인 함수 사용
-        const user = login(loginData.username, loginData.password);
-        
-        // 사용자 역할에 따라 리디렉션
-        if (user.role === 'student') {
+      const response = await AuthAPI.login({
+        userId: loginData.userId,
+        password: loginData.password
+      });
+
+      if (response.success) {
+        const userRole = response.user.role;
+
+        // 사용자 역할에 따라 리다이렉션
+        if (userRole === 'student') {
           navigate('/student/dashboard');
-        } else if (user.role === 'professor') {
+        } else if (userRole === 'professor') {
           navigate('/professor/dashboard');
         }
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
       }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <form className="login-form" onSubmit={handleSubmit}>
       <div className="form-group">
-        <label htmlFor="username">아이디</label>
+        <label htmlFor="userId">아이디</label>
         <input
           type="text"
-          id="username"
-          name="username"
-          value={loginData.username}
+          id="userId"
+          name="userId"
+          value={loginData.userId}
           onChange={handleChange}
           placeholder="ID(학번 또는 사번)"
           required
         />
       </div>
-      
+
       <div className="form-group">
         <label htmlFor="password">비밀번호</label>
         <input
@@ -68,11 +90,11 @@ const LoginForm = () => {
           required
         />
       </div>
-      
+
       {error && <div className="error-message">{error}</div>}
-      
-      <button 
-        type="submit" 
+
+      <button
+        type="submit"
         className="login-button"
         disabled={isLoading}
       >

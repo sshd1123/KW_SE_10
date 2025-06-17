@@ -1,21 +1,28 @@
+// components/common/ProtectedRoute.js
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { isAuthenticated, hasRole } from '../utils/authHelpers';
+
+// 개발 중에는 무조건 true로 설정
+const FORCE_BYPASS = true;
 
 const ProtectedRoute = ({ children, requiredRole = null }) => {
     const location = useLocation();
 
-    // 인증되지 않은 사용자
-    if (!isAuthenticated()) {
-        return <Navigate to="/login" state={{ from: location }} replace />;
+    console.log('🔍 ProtectedRoute 호출됨');
+    console.log('🎯 FORCE_BYPASS:', FORCE_BYPASS);
+    console.log('📍 경로:', location.pathname);
+
+    // 강제 우회 (개발 중)
+    if (FORCE_BYPASS) {
+        console.log('🚀 강제 우회 모드 - 모든 라우트 허용');
+        return children;
     }
 
-    // 특정 역할이 필요한 경우 역할 확인
-    if (requiredRole && !hasRole(requiredRole)) {
-        return <Navigate to="/unauthorized" replace />;
-    }
-
-    return children;
+    // 실제 배포 시에만 아래 코드 실행
+    // (현재는 FORCE_BYPASS = true 이므로 실행되지 않음)
+    
+    console.log('❌ 로그인 페이지로 리다이렉트');
+    return <Navigate to="/login" state={{ from: location }} replace />;
 };
 
 export default ProtectedRoute;

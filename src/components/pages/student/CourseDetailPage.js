@@ -2,19 +2,266 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../../dashboard/Header';
 import Sidebar from '../../dashboard/Sidebar';
-import { getDashboardData, getCurrentUser } from '../../../data/authUtils';
+import { getCurrentUser, getDashboardData } from '../../../data/authUtils'; // ✅ getDashboardData도 임포트
+import { CourseAPI, AnnouncementAPI, AssignmentAPI, ArchiveAPI } from '../../../services/api';
 import '../../styles/CourseDetailPage.css';
 
 const CourseDetailPage = () => {
     const [activeCourseTab, setActiveCourseTab] = useState('공지');
     const [activeTab, setActiveTab] = useState('courses');
     const [courseData, setCourseData] = useState(null);
-    const [studentData, setStudentData] = useState(null);
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // 각 탭별 데이터와 로딩 상태
+    const [announcements, setAnnouncements] = useState([]);
+    const [assignments, setAssignments] = useState([]);
+    const [materials, setMaterials] = useState([]);
+    const [announcementsLoading, setAnnouncementsLoading] = useState(false);
+    const [assignmentsLoading, setAssignmentsLoading] = useState(false);
+    const [materialsLoading, setMaterialsLoading] = useState(false);
+
     const { courseId } = useParams();
     const navigate = useNavigate();
 
+    // ✅ 백업 방식: 로컬 데이터 사용
+    const loadCourseFromLocalData = () => {
+        try {
+            console.log('🔄 로컬 데이터에서 강의 정보 로드 시도...');
+
+            const dashboardData = getDashboardData();
+            if (!dashboardData || !dashboardData.courses) {
+                throw new Error('로컬 데이터가 없습니다.');
+            }
+
+            // courseId로 강의 찾기 (여러 방식으로 시도)
+            let course = dashboardData.courses.find(c => c.id === courseId);
+            if (!course) {
+                course = dashboardData.courses.find(c => String(c.id) === String(courseId));
+            }
+            if (!course) {
+                course = dashboardData.courses.find(c => c.id === decodeURIComponent(courseId));
+            }
+
+            if (course) {
+                console.log('✅ 로컬 데이터에서 강의 찾음:', course);
+                setCourseData(course);
+
+                // 로컬 데이터에서 관련 데이터도 로드
+                const courseAnnouncements = dashboardData.announcements?.filter(a =>
+                    a.course === course.name || a.courseId === course.id
+                ) || [];
+
+                const courseAssignments = dashboardData.assignments?.filter(a =>
+                    a.course === course.name || a.courseId === course.id
+                ) || [];
+
+                setAnnouncements(courseAnnouncements);
+                setAssignments(courseAssignments);
+                setMaterials(course.materials || []);
+
+                return true; // 성공
+            }
+
+            return false; // 실패
+        } catch (error) {
+            console.error('로컬 데이터 로드 실패:', error);
+            return false;
+        }
+    };
+
+    // ✅ API를 통한 강의 정보 로드 (에러 처리 강화)
+    const loadCourseDetail = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            console.log('🌐 API를 통한 강의 정보 로드 시작:', courseId);
+
+            // 먼저 로컬 데이터 시도
+            if (loadCourseFromLocalData()) {
+                console.log('✅ 로컬 데이터 로드 성공');
+                setLoading(false);
+                return;
+            }
+
+            // 로컬 데이터 실패시 API 호출
+            console.log('🌐 API 호출 시도...');
+            const response = await CourseAPI.getCourse(courseId);
+
+            if (response && response.success) {
+                setCourseData(response.data);
+                console.log('✅ API 강의 정보 로드 성공:', response.data);
+
+                // 공지사항도 로드 시도 (실패해도 괜찮음)
+                try {
+                    await loadAnnouncements();
+                } catch (announcementError) {
+                    console.warn('공지사항 로드 실패 (무시):', announcementError);
+                }
+            } else {
+                throw new Error(response?.message || '강의 정보를 찾을 수 없습니다.');
+            }
+
+        } catch (error) {
+            console.error('강의 정보 로드 실패:', error);
+
+            // API 실패시 로컬 데이터로 재시도
+            console.log('🔄 API 실패, 로컬 데이터로 재시도...');
+            if (loadCourseFromLocalData()) {
+                console.log('✅ 로컬 데이터 백업 성공');
+                setError(null);
+            } else {
+                setError('강의 정보를 불러올 수 없습니다. 잠시 후 다시 시도해주세요.');
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // ✅ 공지사항 로드 (에러 무시)
+    const loadAnnouncements = async () => {
+        try {
+            setAnnouncementsLoading(true);
+
+            const response = await AnnouncementAPI.getAnnouncements(courseId, {
+                page: 1,
+                limit: 10,
+                orderBy: 'createdAt',
+                order: 'DESC'
+            });
+
+            if (response && response.success) {
+                setAnnouncements(response.data.announcements || []);
+            }
+        } catch (error) {
+            console.warn('공지사항 로드 실패 (무시):', error);
+            // 에러 무시 - 로컬 데이터나 빈 배열 유지
+        } finally {
+            setAnnouncementsLoading(false);
+        }
+    };
+
+    // ✅ 과제 목록 로드 (에러 무시)
+    const loadAssignments = async () => {
+        try {
+            setAssignmentsLoading(true);
+
+            const response = await AssignmentAPI.getAssignments(courseId, {
+                page: 1,
+                limit: 10,
+                orderBy: 'deadline',
+                order: 'ASC'
+            });
+
+            if (response && response.success) {
+                setAssignments(response.data.assignments || []);
+            }
+        } catch (error) {
+            console.warn('과제 목록 로드 실패 (무시):', error);
+            // 에러 무시 - 로컬 데이터나 빈 배열 유지
+        } finally {
+            setAssignmentsLoading(false);
+        }
+    };
+
+    // ✅ 자료실 목록 로드 (에러 무시)
+    const loadMaterials = async () => {
+        try {
+            setMaterialsLoading(true);
+
+            const response = await ArchiveAPI.getArchives(courseId, {
+                page: 1,
+                limit: 20,
+                orderBy: 'createdAt',
+                order: 'DESC'
+            });
+
+            if (response && response.success) {
+                setMaterials(response.data.archives || []);
+            }
+        } catch (error) {
+            console.warn('자료실 로드 실패 (무시):', error);
+            // 에러 무시 - 로컬 데이터나 빈 배열 유지
+        } finally {
+            setMaterialsLoading(false);
+        }
+    };
+
+    // 탭 변경 핸들러
+    const handleTabChange = (tabName) => {
+        setActiveCourseTab(tabName);
+
+        // 탭별로 필요한 데이터 로드 (이미 있으면 스킵)
+        switch (tabName) {
+            case '공지':
+                if (announcements.length === 0 && !announcementsLoading) {
+                    loadAnnouncements();
+                }
+                break;
+            case '과제':
+                if (assignments.length === 0 && !assignmentsLoading) {
+                    loadAssignments();
+                }
+                break;
+            case '자료실':
+                if (materials.length === 0 && !materialsLoading) {
+                    loadMaterials();
+                }
+                break;
+            default:
+                break;
+        }
+    };
+
+    // 공지사항 클릭 핸들러 (에러 처리)
+    const handleAnnouncementClick = async (announcementId) => {
+        try {
+            // 조회수 증가 시도 (실패해도 페이지 이동은 진행)
+            await AnnouncementAPI.incrementViews(courseId, announcementId);
+        } catch (error) {
+            console.warn('조회수 증가 실패 (무시):', error);
+        }
+
+        // 페이지 이동
+        navigate(`/student/course/${courseId}/announcement/${announcementId}`);
+    };
+
+    // 과제 클릭 핸들러
+    const handleAssignmentClick = (assignmentId) => {
+        navigate(`/student/course/${courseId}/assignment/${assignmentId}/submit`);
+    };
+
+    // 자료 다운로드 핸들러 (에러 처리)
+    const handleMaterialDownload = async (materialId, fileName) => {
+        try {
+            const blob = await ArchiveAPI.downloadArchive(courseId, materialId);
+
+            // 파일 다운로드
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName || 'download';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            // 다운로드 카운트 증가 시도 (실패해도 무시)
+            try {
+                await ArchiveAPI.incrementDownloadCount(courseId, materialId);
+            } catch (countError) {
+                console.warn('다운로드 카운트 증가 실패 (무시):', countError);
+            }
+
+        } catch (error) {
+            console.error('파일 다운로드 실패:', error);
+            alert('파일 다운로드에 실패했습니다.');
+        }
+    };
+
+    // 컴포넌트 마운트시 데이터 로드
     useEffect(() => {
         const user = getCurrentUser();
         if (!user) {
@@ -22,34 +269,11 @@ const CourseDetailPage = () => {
             return;
         }
 
-        const dashboardData = getDashboardData();
-        if (!dashboardData) {
-            navigate('/student/dashboard');
-            return;
-        }
-
         setUserData(user);
-        setStudentData(dashboardData);
-
-        const course = dashboardData.courses.find(c => c.id === courseId);
-        if (!course) {
-            navigate('/student/dashboard');
-            return;
-        }
-
-        const announcements = dashboardData.announcements.filter(a => a.course === course.name);
-        const assignments = dashboardData.assignments.filter(a => a.course === course.name);
-        const materials = course.materials || [];
-
-        setCourseData({
-            ...course,
-            announcements,
-            assignments,
-            materials
-        });
-        setLoading(false);
+        loadCourseDetail();
     }, [courseId, navigate]);
 
+    // 로딩 상태
     if (loading) {
         return (
             <div className="cdp-page">
@@ -63,19 +287,56 @@ const CourseDetailPage = () => {
                         setActiveTab={setActiveTab}
                         studentName={userData?.name}
                         studentId={userData?.studentId || userData?.id}
-                        department={userData?.department || userData?.major}
+                        department={userData?.department}
                     />
-                    <main className="cdp-main-content">
+                    <div className="cdp-content">
                         <div className="cdp-loading-container">
-                            <div className="cdp-loading-spinner"></div>
-                            <p>강의 정보를 불러오는 중입니다...</p>
+                            <div className="spinner"></div>
+                            <p>강의 정보를 불러오고 있습니다...</p>
                         </div>
-                    </main>
+                    </div>
                 </div>
             </div>
         );
     }
 
+    // 에러 상태
+    if (error) {
+        return (
+            <div className="cdp-page">
+                <Header
+                    username={userData?.name}
+                    role={userData?.role || '학생'}
+                />
+                <div className="cdp-main-layout">
+                    <Sidebar
+                        activeTab={activeTab}
+                        setActiveTab={setActiveTab}
+                        studentName={userData?.name}
+                        studentId={userData?.studentId || userData?.id}
+                        department={userData?.department}
+                    />
+                    <div className="cdp-content">
+                        <div className="cdp-error-container">
+                            <i className="cdp-error-icon">⚠️</i>
+                            <h2>오류가 발생했습니다</h2>
+                            <p>{error}</p>
+                            <div className="error-actions">
+                                <button onClick={() => loadCourseDetail()}>
+                                    다시 시도
+                                </button>
+                                <button onClick={() => navigate('/student/courses')}>
+                                    강의 목록으로
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // 강의 데이터가 없는 경우
     if (!courseData) {
         return (
             <div className="cdp-page">
@@ -89,16 +350,17 @@ const CourseDetailPage = () => {
                         setActiveTab={setActiveTab}
                         studentName={userData?.name}
                         studentId={userData?.studentId || userData?.id}
-                        department={userData?.department || userData?.major}
+                        department={userData?.department}
                     />
-                    <main className="cdp-main-content">
-                        <div className="cdp-error-container">
-                            <h2>강의 정보를 찾을 수 없습니다.</h2>
-                            <button className="cdp-btn cdp-btn-primary" onClick={() => navigate('/student/dashboard')}>
-                                대시보드로 돌아가기
+                    <div className="cdp-content">
+                        <div className="error-container">
+                            <h2>강의를 찾을 수 없습니다</h2>
+                            <p>요청한 강의 정보가 존재하지 않습니다.</p>
+                            <button onClick={() => navigate('/student/courses')}>
+                                강의 목록으로 돌아가기
                             </button>
                         </div>
-                    </main>
+                    </div>
                 </div>
             </div>
         );
@@ -106,80 +368,75 @@ const CourseDetailPage = () => {
 
     return (
         <div className="cdp-page">
-            <Header
-                username={userData?.name}
-                role={userData?.role || '학생'}
-            />
+            <Header activeTab={activeTab} setActiveTab={setActiveTab} userData={userData} />
             <div className="cdp-main-layout">
-                <Sidebar
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
-                    studentName={userData?.name}
-                    studentId={userData?.studentId || userData?.id}
-                    department={userData?.department || userData?.major}
-                />
-                <main className="cdp-main-content">
-                    <div className="cdp-welcome-banner cdp-course-banner">
-                        <div className="cdp-course-banner-info">
-                            <h2>{courseData.name}</h2>
-                            <span className="cdp-course-code">{courseData.code || courseData.courseCode || courseData.id || '과목코드 없음'}</span>
-                        </div>
-                        <div className="cdp-course-banner-meta">
-                            <p><strong>교수:</strong> {courseData.professor}</p>
-                            <p><strong>시간:</strong> {courseData.time}</p>
-                            <p><strong>강의실:</strong> {courseData.room}</p>
-                            <p><strong>학점:</strong> {courseData.credits}학점</p>
+                <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+                <div className="cdp-main-content">
+                    {/* 웰컴 배너 - className 수정 */}
+                    <div className="cdp-welcome-banner">
+                        <div className="cdp-course-banner">
+                            <div className="cdp-course-banner-info">
+                                <h2>{courseData?.name || '강의명 없음'}</h2>
+                                <span className="cdp-course-code">{courseData?.code || courseData?.id}</span>
+                            </div>
+                            <div className="cdp-course-banner-meta">
+                                <p><strong>담당교수:</strong> {courseData?.professor || '미정'}</p>
+                                <p><strong>학점:</strong> {courseData?.credits || courseData?.credit || '미정'}</p>
+                                <p><strong>시간:</strong> {
+                                    Array.isArray(courseData?.schedule)
+                                        ? courseData.schedule.map(s => `${s.day} ${s.startTime}-${s.endTime}`).join(', ')
+                                        : courseData?.schedule || courseData?.time || '시간미정'
+                                }</p>
+                            </div>
                         </div>
                     </div>
 
+                    {/* 강의 콘텐츠 - className 수정 */}
                     <div className="cdp-course-content-container">
+                        {/* 탭 메뉴 - className 수정 */}
                         <div className="cdp-course-tabs">
-                            <button
-                                className={`cdp-course-tab ${activeCourseTab === '공지' ? 'active' : ''}`}
-                                onClick={() => setActiveCourseTab('공지')}
-                            >
-                                공지사항
-                            </button>
-                            <button
-                                className={`cdp-course-tab ${activeCourseTab === '자료' ? 'active' : ''}`}
-                                onClick={() => setActiveCourseTab('자료')}
-                            >
-                                강의자료
-                            </button>
-                            <button
-                                className={`cdp-course-tab ${activeCourseTab === '계획서' ? 'active' : ''}`}
-                                onClick={() => setActiveCourseTab('계획서')}
-                            >
-                                강의계획서
-                            </button>
-                            <button
-                                className={`cdp-course-tab ${activeCourseTab === '과제' ? 'active' : ''}`}
-                                onClick={() => setActiveCourseTab('과제')}
-                            >
-                                과제
-                            </button>
-                            <button
-                                className={`cdp-course-tab ${activeCourseTab === '출석' ? 'active' : ''}`}
-                                onClick={() => setActiveCourseTab('출석')}
-                            >
-                                출석
-                            </button>
+                            {['공지', '과제', '자료실', '강의계획서'].map(tab => (
+                                <button
+                                    key={tab}
+                                    className={`cdp-course-tab ${activeCourseTab === tab ? 'active' : ''}`}
+                                    onClick={() => handleTabChange(tab)}
+                                >
+                                    {tab}
+                                </button>
+                            ))}
                         </div>
 
+                        {/* 탭 콘텐츠 - className 수정 */}
                         <div className="cdp-card cdp-course-detail-card">
+                            <div className="cdp-card-header">
+                                <h3>{activeCourseTab}</h3>
+                            </div>
                             <div className="cdp-card-body cdp-course-detail-card-body">
+                                {/* 공지사항 탭 */}
                                 {activeCourseTab === '공지' && (
-                                    <div className="cdp-notices-section">
-                                        {courseData.announcements.length > 0 ? (
-                                            courseData.announcements.map((announcement) => (
-                                                <div key={announcement.id} className="cdp-notice-item">
-                                                    <div className="cdp-notice-date">{announcement.date}</div>
+                                    <div>
+                                        {announcementsLoading ? (
+                                            <div className="cdp-loading-container">
+                                                <div className="cdp-loading-spinner"></div>
+                                                <p>공지사항을 불러오고 있습니다...</p>
+                                            </div>
+                                        ) : announcements.length > 0 ? (
+                                            announcements.map(announcement => (
+                                                <div
+                                                    key={announcement.id}
+                                                    className="cdp-notice-item"
+                                                    onClick={() => handleAnnouncementClick(announcement.id)}
+                                                    style={{ cursor: 'pointer' }}
+                                                >
+                                                    <div className="cdp-notice-date">
+                                                        {new Date(announcement.createdAt || announcement.date).toLocaleDateString()}
+                                                    </div>
                                                     <h4 className="cdp-notice-title">
                                                         {announcement.isNew && <span className="cdp-new-badge">NEW</span>}
                                                         {announcement.title}
                                                     </h4>
                                                     <div className="cdp-notice-content">
-                                                        {announcement.content}
+                                                        {announcement.content?.substring(0, 100)}...
                                                     </div>
                                                 </div>
                                             ))
@@ -191,128 +448,38 @@ const CourseDetailPage = () => {
                                     </div>
                                 )}
 
-                                {activeCourseTab === '자료' && (
-                                    <div className="cdp-materials-section">
-                                        {courseData.materials.length > 0 ? (
-                                            courseData.materials.map((material, index) => (
-                                                <div key={index} className="cdp-material-item">
-                                                    <div className="cdp-material-left">
-                                                        <i className="fas fa-file-pdf cdp-material-icon"></i>
-                                                        <div>
-                                                            <h4 className="cdp-material-title">{material.title}</h4>
-                                                            <div className="cdp-material-meta">
-                                                                <span className="cdp-material-date">{material.date}</span>
-                                                                <span>{material.size}</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <button className="cdp-btn cdp-btn-outline cdp-btn-sm">
-                                                        <i className="fas fa-download"></i>
-                                                        다운로드
-                                                    </button>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <div className="cdp-empty-message">
-                                                등록된 강의자료가 없습니다.
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {activeCourseTab === '계획서' && (
-                                    <div className="cdp-syllabus-section">
-                                        <div className="cdp-syllabus-section">
-                                            <h3>강의 개요</h3>
-                                            <p>본 강의는 학생들에게 {courseData.name}의 기본 개념과 원리를 소개합니다. 이론과 실습을 통해 학생들은 실제 문제 해결 능력을 키울 수 있습니다.</p>
-                                        </div>
-
-                                        <div className="cdp-syllabus-section">
-                                            <h3>주차별 강의 계획</h3>
-                                            <table className="cdp-syllabus-table">
-                                                <thead>
-                                                    <tr>
-                                                        <th>주차</th>
-                                                        <th>주제</th>
-                                                        <th>내용</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr>
-                                                        <td>1</td>
-                                                        <td>강의 소개</td>
-                                                        <td>강의 계획 및 평가 방법 소개</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>2</td>
-                                                        <td>기본 개념</td>
-                                                        <td>기본 이론 및 개념 학습</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>3-4</td>
-                                                        <td>핵심 원리</td>
-                                                        <td>주요 원리 및 방법론 학습</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>5-6</td>
-                                                        <td>응용 사례</td>
-                                                        <td>실제 응용 사례 분석</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>7</td>
-                                                        <td>중간고사</td>
-                                                        <td>중간 평가</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>8-10</td>
-                                                        <td>심화 학습</td>
-                                                        <td>고급 개념 및 기술 학습</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>11-13</td>
-                                                        <td>프로젝트</td>
-                                                        <td>팀 프로젝트 진행</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>14</td>
-                                                        <td>프로젝트 발표</td>
-                                                        <td>팀별 프로젝트 결과 발표</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>15</td>
-                                                        <td>기말고사</td>
-                                                        <td>최종 평가</td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                )}
-
+                                {/* 과제 탭 */}
                                 {activeCourseTab === '과제' && (
-                                    <div className="cdp-assignments-section">
-                                        {courseData.assignments.length > 0 ? (
-                                            courseData.assignments.map((assignment) => (
+                                    <div>
+                                        {assignmentsLoading ? (
+                                            <div className="cdp-loading-container">
+                                                <div className="cdp-loading-spinner"></div>
+                                                <p>과제 목록을 불러오고 있습니다...</p>
+                                            </div>
+                                        ) : assignments.length > 0 ? (
+                                            assignments.map(assignment => (
                                                 <div key={assignment.id} className="cdp-assignment-item">
                                                     <div className="cdp-assignment-header">
                                                         <h4 className="cdp-assignment-title">{assignment.title}</h4>
-                                                        <span className="cdp-assignment-status">{assignment.status}</span>
+                                                        <span className="cdp-assignment-status">
+                                                            {assignment.status || '미제출'}
+                                                        </span>
                                                     </div>
                                                     <div className="cdp-assignment-content">
                                                         {assignment.description}
                                                     </div>
                                                     <div className="cdp-assignment-meta">
-                                                        <span className="cdp-assignment-deadline">
+                                                        <div className="cdp-assignment-deadline">
                                                             <i className="fas fa-clock"></i>
-                                                            마감일: {assignment.deadline}
-                                                        </span>
+                                                            마감: {new Date(assignment.deadline || assignment.dueDate).toLocaleDateString()}
+                                                        </div>
                                                     </div>
                                                     <div className="cdp-assignment-actions">
-                                                        <button className="cdp-btn cdp-btn-primary cdp-btn-sm">
+                                                        <button
+                                                            className="cdp-btn cdp-btn-primary cdp-btn-sm"
+                                                            onClick={() => handleAssignmentClick(assignment.id)}
+                                                        >
                                                             과제 제출
-                                                        </button>
-                                                        <button className="cdp-btn cdp-btn-outline cdp-btn-sm">
-                                                            상세 보기
                                                         </button>
                                                     </div>
                                                 </div>
@@ -325,69 +492,73 @@ const CourseDetailPage = () => {
                                     </div>
                                 )}
 
-                                {activeCourseTab === '출석' && (
-                                    <div className="cdp-attendance-section">
-                                        <div className="cdp-attendance-summary">
-                                            <div className="cdp-attendance-chart">
-                                                <div className="cdp-attendance-circle" style={{
-                                                    background: `conic-gradient(#28a745 0deg ${(12 / 15) * 360}deg, #ffc107 ${(12 / 15) * 360}deg ${(13 / 15) * 360}deg, #dc3545 ${(13 / 15) * 360}deg 360deg)`
-                                                }}>
-                                                    <div className="cdp-attendance-value">80%</div>
-                                                </div>
+                                {/* 자료실 탭 */}
+                                {activeCourseTab === '자료실' && (
+                                    <div>
+                                        {materialsLoading ? (
+                                            <div className="cdp-loading-container">
+                                                <div className="cdp-loading-spinner"></div>
+                                                <p>자료를 불러오고 있습니다...</p>
                                             </div>
-                                            <div className="cdp-attendance-stats">
-                                                <div className="cdp-attendance-stat-item">
-                                                    <div className="cdp-attendance-stat-label">출석</div>
-                                                    <div className="cdp-attendance-stat-value">12</div>
-                                                </div>
-                                                <div className="cdp-attendance-stat-item">
-                                                    <div className="cdp-attendance-stat-label">지각</div>
-                                                    <div className="cdp-attendance-stat-value">1</div>
-                                                </div>
-                                                <div className="cdp-attendance-stat-item">
-                                                    <div className="cdp-attendance-stat-label">결석</div>
-                                                    <div className="cdp-attendance-stat-value">0</div>
-                                                </div>
-                                                <div className="cdp-attendance-stat-item">
-                                                    <div className="cdp-attendance-stat-label">총 수업</div>
-                                                    <div className="cdp-attendance-stat-value">15</div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="cdp-attendance-table-container">
-                                            <table className="cdp-attendance-table">
-                                                <thead>
-                                                    <tr>
-                                                        <th>주차</th>
-                                                        <th>날짜</th>
-                                                        <th>출결 상태</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {Array.from({ length: 15 }, (_, i) => (
-                                                        <tr key={i}>
-                                                            <td>{i + 1}주차</td>
-                                                            <td>{`2025-03-${String(i + 4).padStart(2, '0')}`}</td>
-                                                            <td>
-                                                                <span className={`cdp-attendance-status ${i < 12 ? 'status-present' :
-                                                                    i === 12 ? 'status-late' :
-                                                                        'status-future'
-                                                                    }`}>
-                                                                    {i < 12 ? '출석' : i === 12 ? '지각' : '-'}
+                                        ) : materials.length > 0 ? (
+                                            materials.map(material => (
+                                                <div key={material.id} className="cdp-material-item">
+                                                    <div className="cdp-material-left">
+                                                        <div className="cdp-material-icon">📄</div>
+                                                        <div>
+                                                            <h4 className="cdp-material-title">{material.title || material.name}</h4>
+                                                            <div className="cdp-material-meta">
+                                                                <span className="cdp-material-date">
+                                                                    {new Date(material.createdAt || material.date).toLocaleDateString()}
                                                                 </span>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
+                                                                <span>크기: {material.size || '알 수 없음'}</span>
+                                                            </div>
+                                                            <div className="cdp-notice-content">
+                                                                {material.description}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        className="cdp-btn cdp-btn-outline cdp-btn-sm"
+                                                        onClick={() => handleMaterialDownload(material.id, material.fileName || material.name)}
+                                                    >
+                                                        다운로드
+                                                    </button>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="cdp-empty-message">
+                                                등록된 자료가 없습니다.
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* 강의계획서 탭 */}
+                                {activeCourseTab === '강의계획서' && (
+                                    <div>
+                                        <div className="cdp-syllabus-section">
+                                            <h3>강의 목표</h3>
+                                            <p>{courseData?.objectives || courseData?.description || '강의 목표가 등록되지 않았습니다.'}</p>
+                                        </div>
+                                        <div className="cdp-syllabus-section">
+                                            <h3>강의 내용</h3>
+                                            <p>{courseData?.syllabus || courseData?.content || '강의 내용이 등록되지 않았습니다.'}</p>
+                                        </div>
+                                        <div className="cdp-syllabus-section">
+                                            <h3>평가 방법</h3>
+                                            <p>{courseData?.grading || '평가 방법이 등록되지 않았습니다.'}</p>
+                                        </div>
+                                        <div className="cdp-syllabus-section">
+                                            <h3>선수과목</h3>
+                                            <p>{courseData?.prerequisites?.join(', ') || '선수과목이 없습니다.'}</p>
                                         </div>
                                     </div>
                                 )}
                             </div>
                         </div>
                     </div>
-                </main>
+                </div>
             </div>
         </div>
     );

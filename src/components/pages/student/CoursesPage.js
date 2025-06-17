@@ -4,6 +4,7 @@ import Header from '../../dashboard/Header';
 import Sidebar from '../../dashboard/Sidebar';
 import CourseCard from '../../dashboard/CourseCard';
 import { getDashboardData, getCurrentUser } from '../../../data/authUtils';
+import { EnrollmentAPI } from '../../../services/api';
 import '../../styles/CoursesPage.css';
 
 const CoursesPage = () => {
@@ -16,6 +17,15 @@ const CoursesPage = () => {
     const [sortBy, setSortBy] = useState('name');
     const [scrollPosition, setScrollPosition] = useState(0);
     const navigate = useNavigate();
+
+    const loadMyCourses = async () => {
+        try {
+            const response = await EnrollmentAPI.getMyCourses();
+            setStudentData({ courses: response.data });
+        } catch (error) {
+            console.error('내 강의 조회 실패:', error);
+        }
+    };
 
     const handleScrollLeft = () => {
         const container = document.querySelector('.cp-courses-grid');
@@ -366,7 +376,7 @@ const CoursesPage = () => {
                                                 <div
                                                     key={assignment.id}
                                                     className={`cp-deadline-card ${getDeadlineStatus(assignment.deadline)}`}
-                                                    onClick={() => navigate(`/student/assignment/submit/${assignment.id}`)}
+                                                    onClick={() => navigate(`/student/course/${assignment.course.id}/assignment/${assignment.id}/submit`)}
                                                 >
                                                     <div className="cp-deadline-header">
                                                         <div className="cp-deadline-course">{assignment.course}</div>

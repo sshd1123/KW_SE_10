@@ -1,4 +1,3 @@
-// dummyProfessorData.js
 const professorData = {
     "professor1": {
         // 개인 정보
@@ -17,26 +16,111 @@ const professorData = {
         // 교수 기능 - 강의 관리
         courses: [
             {
-                id: "I020-2-0156-02", // 인공지능융합대학 2학년 대상 과목
-                name: "데이터베이스",
-                professor: "박교수",
-                credits: 3,
-                schedule: [ // 새로운 형식
-                    { day: "월", startTime: "12:00", endTime: "13:15" },
-                    { day: "수", startTime: "10:30", endTime: "11:45" }
-                ],
-                room: "새빛관 302호"
-            },
-            {
-                id: "I020-2-0123-01", // 인공지능융합대학 2학년 대상 과목
+                id: "I020-2-0123-01",
                 name: "자바프로그래밍",
-                professor: "이교수",
+                professor: "김교수",
                 credits: 3,
-                schedule: [ // 새로운 형식
+                schedule: [
                     { day: "월", startTime: "10:30", endTime: "12:00" },
                     { day: "수", startTime: "12:00", endTime: "13:15" }
                 ],
-                room: "새빛관 401호"
+                room: "새빛관 401호",
+                enrolled: 42,
+                capacity: 50
+            },
+            {
+                id: "I020-2-0156-02",
+                name: "데이터베이스",
+                professor: "김교수",
+                credits: 3,
+                schedule: [
+                    { day: "월", startTime: "12:00", endTime: "13:15" },
+                    { day: "수", startTime: "10:30", endTime: "11:45" }
+                ],
+                room: "새빛관 302호",
+                enrolled: 38,
+                capacity: 45
+            },
+            {
+                id: "I020-3-0187-01",
+                name: "알고리즘",
+                professor: "김교수",
+                credits: 3,
+                time: "월 15:00-16:30, 수 15:00-16:30",
+                room: "새빛관 201호",
+                enrolled: 35,
+                capacity: 40
+            }
+        ],
+
+        // 과제 관리 - 이 부분이 핵심!
+        assignments: [
+            {
+                id: 1,
+                courseId: "I020-2-0123-01",
+                course: "자바프로그래밍",
+                title: "프로젝트 제안서",
+                description: "팀 프로젝트 제안서를 작성하여 제출하세요.",
+                deadline: "2025-06-25",
+                maxScore: 30,
+                submissions: 12,
+                authorId: "2015001", // professorId와 일치
+                submissionType: "file",
+                allowLateSubmission: false,
+                latePenalty: 10,
+                teamAssignment: false,
+                maxTeamSize: 4,
+                attachments: [],
+                rubric: [
+                    { criteria: '코드 품질', maxPoints: 10, description: '코드의 가독성, 효율성, 구조' },
+                    { criteria: '기능 구현', maxPoints: 15, description: '요구사항 충족도' },
+                    { criteria: '창의성', maxPoints: 5, description: '추가 기능, 개선사항' }
+                ],
+                status: "진행중"
+            },
+            {
+                id: 2,
+                courseId: "I020-2-0156-02",
+                course: "데이터베이스",
+                title: "ERD 설계",
+                description: "주어진 요구사항에 맞는 ERD를 설계하고 정규화 과정을 설명하세요.",
+                deadline: "2025-06-20",
+                maxScore: 20,
+                submissions: 8,
+                authorId: "2015001",
+                submissionType: "file",
+                allowLateSubmission: true,
+                latePenalty: 5,
+                teamAssignment: false,
+                maxTeamSize: 1,
+                attachments: [],
+                rubric: [
+                    { criteria: 'ERD 설계', maxPoints: 10, description: 'ERD 다이어그램의 완성도' },
+                    { criteria: '정규화', maxPoints: 10, description: '정규화 과정의 이해도' }
+                ],
+                status: "진행중"
+            },
+            {
+                id: 3,
+                courseId: "I020-3-0187-01",
+                course: "알고리즘",
+                title: "알고리즘 분석 보고서",
+                description: "선택한 정렬 알고리즘의 시간 복잡도와 공간 복잡도를 분석하고 보고서를 제출하세요.",
+                deadline: "2025-05-18",
+                maxScore: 25,
+                submissions: 5,
+                authorId: "2015001",
+                submissionType: "file",
+                allowLateSubmission: false,
+                latePenalty: 10,
+                teamAssignment: false,
+                maxTeamSize: 1,
+                attachments: [],
+                rubric: [
+                    { criteria: '알고리즘 분석', maxPoints: 15, description: '시간/공간 복잡도 분석의 정확성' },
+                    { criteria: '보고서 작성', maxPoints: 10, description: '보고서의 구성과 논리성' }
+                ],
+                status: "진행중"
             }
         ],
 
@@ -46,11 +130,11 @@ const professorData = {
                 id: "2023123456",
                 name: "홍길동",
                 department: "소프트웨어학과",
-                courseId: "I020-2-0123-01", // 수정된 과목 코드
+                courseId: "I020-2-0123-01",
                 midterm: 85,
                 final: null,
                 assignments: [
-                    { id: 1, title: "GUI 프로그래밍 과제", score: null, maxScore: 30 }
+                    { id: 1, title: "프로젝트 제안서", score: null, maxScore: 30 }
                 ],
                 attendance: 90
             },
@@ -58,11 +142,11 @@ const professorData = {
                 id: "2022987654",
                 name: "김철수",
                 department: "경영학과",
-                courseId: "I020-2-0123-01", // 수정된 과목 코드
+                courseId: "I020-2-0123-01",
                 midterm: 78,
                 final: null,
                 assignments: [
-                    { id: 1, title: "GUI 프로그래밍 과제", score: null, maxScore: 30 }
+                    { id: 1, title: "프로젝트 제안서", score: null, maxScore: 30 }
                 ],
                 attendance: 95
             }
@@ -72,16 +156,16 @@ const professorData = {
         announcements: [
             {
                 id: 1,
-                courseId: "I020-2-0123-01", // 수정된 과목 코드
+                courseId: "I020-2-0123-01",
                 title: "프로젝트 제출 마감일 연장",
                 content: "수강생 여러분, 프로젝트 제출 마감일이 5월 25일에서 5월 30일로 연장되었습니다.",
                 date: "2025-05-15"
             },
             {
                 id: 2,
-                courseId: "I020-4-0256-01", // 수정된 과목 코드
+                courseId: "I020-2-0156-02",
                 title: "다음 주 수업 자료 사전 공지",
-                content: "다음 주 수업에서는 디자인 패턴에 대해 다룰 예정입니다. 미리 공유된 자료를 읽어오시기 바랍니다.",
+                content: "다음 주 수업에서는 정규화에 대해 다룰 예정입니다. 미리 공유된 자료를 읽어오시기 바랍니다.",
                 date: "2025-05-12"
             }
         ],
@@ -90,7 +174,7 @@ const professorData = {
         materials: [
             {
                 id: 1,
-                courseId: "I020-2-0123-01", // 수정된 과목 코드
+                courseId: "I020-2-0123-01",
                 title: "1주차 강의자료",
                 content: "자바 프로그래밍 개요",
                 uploadDate: "2025-03-02",
@@ -98,33 +182,11 @@ const professorData = {
             },
             {
                 id: 2,
-                courseId: "I020-2-0123-01", // 수정된 과목 코드
-                title: "2주차 강의자료",
-                content: "객체지향 프로그래밍 기초",
-                uploadDate: "2025-03-09",
+                courseId: "I020-2-0156-02",
+                title: "1주차 강의자료",
+                content: "데이터베이스 개론",
+                uploadDate: "2025-03-02",
                 fileUrl: "#"
-            }
-        ],
-
-        // 과제 관리
-        assignments: [
-            {
-                id: 1,
-                courseId: "I020-2-0123-01", // 수정된 과목 코드
-                title: "GUI 프로그래밍 과제",
-                description: "Swing을 이용한 GUI 프로그램을 작성하여 제출하세요. 양식은 강의 자료실에 업로드되어 있습니다.",
-                deadline: "2025-05-25",
-                maxScore: 30,
-                submissions: 12
-            },
-            {
-                id: 2,
-                courseId: "I020-4-0256-01", // 수정된 과목 코드
-                title: "아키텍처 설계 보고서",
-                description: "주어진 요구사항에 맞는 소프트웨어 아키텍처를 설계하고 보고서를 제출하세요.",
-                deadline: "2025-05-20",
-                maxScore: 40,
-                submissions: 8
             }
         ],
 
@@ -157,10 +219,10 @@ const professorData = {
         // 관리자 기능 - 강의 개설 관리
         allCourses: [
             {
-                id: "I020-2-0123-01", // 수정된 과목 코드
+                id: "I020-2-0123-01",
                 name: "자바프로그래밍",
                 department: "소프트웨어학과",
-                professor: "이교수",
+                professor: "김교수",
                 semesterId: "2025-1",
                 credits: 3,
                 time: "월 10:30-12:00, 수 10:30-12:00",
@@ -170,16 +232,16 @@ const professorData = {
                 status: "개설"
             },
             {
-                id: "B030-3-0521-01", // 수정된 과목 코드
-                name: "경영전략",
-                department: "경영학과",
-                professor: "박교수",
+                id: "I020-2-0156-02",
+                name: "데이터베이스",
+                department: "소프트웨어학과",
+                professor: "김교수",
                 semesterId: "2025-1",
                 credits: 3,
-                time: "월 9:00-10:30, 수 9:00-10:30",
-                room: "한울관 301호",
+                time: "월 12:00-13:15, 수 10:30-11:45",
+                room: "새빛관 302호",
                 enrolled: 38,
-                capacity: 40,
+                capacity: 45,
                 status: "개설"
             }
         ],
@@ -199,20 +261,6 @@ const professorData = {
                 start: "2025-06-15",
                 end: "2025-06-21",
                 category: "시험"
-            },
-            {
-                id: 3,
-                title: "여름방학",
-                start: "2025-06-22",
-                end: "2025-08-31",
-                category: "방학"
-            },
-            {
-                id: 4,
-                title: "2025-2학기 수강신청",
-                start: "2025-07-15",
-                end: "2025-07-20",
-                category: "학사"
             }
         ],
 
@@ -221,22 +269,13 @@ const professorData = {
             studentsByDepartment: [
                 { department: "컴퓨터공학과", count: 320 },
                 { department: "경영학과", count: 280 },
-                { department: "전자공학과", count: 290 },
-                { department: "기계공학과", count: 260 },
-                { department: "화학공학과", count: 240 }
+                { department: "전자공학과", count: 290 }
             ],
             studentsByYear: [
                 { year: 1, count: 350 },
                 { year: 2, count: 330 },
                 { year: 3, count: 320 },
                 { year: 4, count: 310 }
-            ],
-            gpaByDepartment: [
-                { department: "컴퓨터공학과", gpa: 3.5 },
-                { department: "경영학과", gpa: 3.7 },
-                { department: "전자공학과", gpa: 3.4 },
-                { department: "기계공학과", gpa: 3.3 },
-                { department: "화학공학과", gpa: 3.6 }
             ]
         }
     },
@@ -250,10 +289,9 @@ const professorData = {
             email: "professor2@example.ac.kr",
             position: "부교수"
         },
-        // 나머지 데이터 유사한 구조로 구성
         courses: [
             {
-                id: "B030-3-0521-01", // 수정된 과목 코드
+                id: "B030-3-0521-01",
                 name: "경영전략",
                 semesterId: "2025-1",
                 credits: 3,
@@ -262,8 +300,22 @@ const professorData = {
                 enrolled: 38,
                 capacity: 40
             }
+        ],
+        assignments: [
+            {
+                id: 4,
+                courseId: "B030-3-0521-01",
+                course: "경영전략",
+                title: "사례 분석 보고서",
+                description: "기업 사례를 분석하고 전략을 제안하세요.",
+                deadline: "2025-05-30",
+                maxScore: 40,
+                submissions: 5,
+                authorId: "2018043",
+                submissionType: "file",
+                status: "진행중"
+            }
         ]
-        // 기타 교수/관리자 데이터 생략
     }
 };
 

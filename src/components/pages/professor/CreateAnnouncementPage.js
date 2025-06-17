@@ -1,650 +1,510 @@
+// CreateAnnouncementPage.js - 공지사항 작성 페이지
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../../dashboard/Header';
 import ProfessorSidebar from '../../dashboard/ProfessorSidebar';
-import { getDashboardData, getCurrentUser } from '../../../data/authUtils';
+import { getCurrentUser } from '../../../data/authUtils';
+import { AnnouncementAPI, CourseAPI } from '../../../services/api';
 import '../../styles/CreateAnnouncementPage.css';
 
 const CreateAnnouncementPage = () => {
     const [userData, setUserData] = useState(null);
-    const [professorData, setProfessorData] = useState(null);
-    const [courseData, setCourseData] = useState(null);
-    const [originalAnnouncement, setOriginalAnnouncement] = useState(null);
-    const [activeTab, setActiveTab] = useState('announcements');
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    
+    const [loading, setLoading] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [courses, setCourses] = useState([]);
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
+    const [showPreview, setShowPreview] = useState(false);
+
     // 공지사항 폼 데이터
-    const [announcement, setAnnouncement] = useState({
+    const [formData, setFormData] = useState({
+        courseId: '',
         title: '',
         content: '',
-        priority: 'normal',
         isPinned: false,
         isUrgent: false,
-        allowComments: true,
-        notifyStudents: true,
-        scheduledDate: '',
-        attachments: []
+        publishDate: '',
+        expiryDate: ''
     });
 
-    const [errors, setErrors] = useState({});
-    const [previewMode, setPreviewMode] = useState(false);
-    const [hasChanges, setHasChanges] = useState(false);
-    
-    const { courseId, announcementId } = useParams();
     const navigate = useNavigate();
-
-    // 수정 모드인지 확인
+    const { courseId, announcementId } = useParams();
     const isEditMode = !!announcementId;
 
+    // 교수의 담당 강의 목록 로드
+    const loadProfessorCourses = async () => {
+        try {
+            setLoading(true);
+            setError(null); // 이전 오류 초기화
+
+            // 사용자 데이터 검증
+            if (!userData?.id && !userData?.professorId) {
+                throw new Error('교수 ID가 없습니다. 다시 로그인해주세요.');
+            }
+
+            const response = await CourseAPI.searchCourses({
+                professorId: userData?.id || userData?.professorId,
+                semester: '2025-1'
+            });
+
+            if (response.success) {
+                setCourses(response.data.courses || []);
+            } else {
+                // API에서 반환한 구체적인 오류 메시지 사용
+                setError(response.message || '담당 강의 목록을 불러올 수 없습니다.');
+            }
+        } catch (error) {
+            console.error('담당 강의 목록 로드 실패:', error);
+
+            // 오류 유형별 메시지 분기
+            let errorMessage = '담당 강의 목록을 불러오는 중 오류가 발생했습니다.';
+
+            if (error.message.includes('401')) {
+                errorMessage = '로그인이 만료되었습니다. 다시 로그인해주세요.';
+            } else if (error.message.includes('403')) {
+                errorMessage = '강의 목록에 접근할 권한이 없습니다.';
+            } else if (error.message.includes('404')) {
+                errorMessage = '해당 학기의 강의 정보를 찾을 수 없습니다.';
+            } else if (error.message.includes('Network Error')) {
+                errorMessage = '네트워크 연결을 확인해주세요.';
+            }
+
+            setError(errorMessage);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    // 기존 공지사항 로드 (수정 모드)
+    const loadExistingAnnouncement = async () => {
+        if (!isEditMode || !courseId || !announcementId) return;
+        try {
+            setLoading(true);
+            const response = await AnnouncementAPI.getAnnouncement(courseId, announcementId);
+            if (response.success) {
+                const announcement = response.data;
+                setFormData({
+                    courseId: courseId,
+                    title: announcement.title || '',
+                    content: announcement.content || '',
+                    isPinned: announcement.isPinned || false,
+                    isUrgent: announcement.isUrgent || false,
+                    publishDate: announcement.publishDate ? new Date(announcement.publishDate).toISOString().slice(0, 16) : '',
+                    expiryDate: announcement.expiryDate ? new Date(announcement.expiryDate).toISOString().slice(0, 16) : ''
+                });
+            } else {
+                setError(response.message || '공지사항을 찾을 수 없습니다.');
+            }
+        } catch (error) {
+            console.error('공지사항 로드 실패:', error);
+            setError('공지사항을 불러오는 중 오류가 발생했습니다.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // 폼 입력 핸들러
+    const handleInputChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
+        if (error) setError(null);
+    };
+
+    // 폼 검증
+    const validateForm = () => {
+        if (!formData.courseId) {
+            setError('강의를 선택해주세요.');
+            return false;
+        }
+        if (!formData.title.trim()) {
+            setError('제목을 입력해주세요.');
+            return false;
+        }
+        if (!formData.content.trim()) {
+            setError('내용을 입력해주세요.');
+            return false;
+        }
+        if (formData.title.length > 100) {
+            setError('제목은 100자 이내로 입력해주세요.');
+            return false;
+        }
+        if (formData.content.length > 5000) {
+            setError('내용은 5000자 이내로 입력해주세요.');
+            return false;
+        }
+        return true;
+    };
+
+    // 공지사항 작성/수정 제출
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!validateForm()) return;
+
+        try {
+            setSubmitting(true);
+            setError(null);
+            setSuccess(null);
+
+            const submitData = {
+                title: formData.title.trim(),
+                content: formData.content.trim(),
+                isPinned: formData.isPinned,
+                isUrgent: formData.isUrgent,
+                publishDate: formData.publishDate || null,
+                expiryDate: formData.expiryDate || null
+            };
+
+            let response;
+            if (isEditMode) {
+                response = await AnnouncementAPI.updateAnnouncement(
+                    formData.courseId,
+                    announcementId,
+                    submitData
+                );
+            } else {
+                response = await AnnouncementAPI.createAnnouncement(
+                    formData.courseId,
+                    submitData
+                );
+            }
+
+            if (response.success) {
+                const successMessage = isEditMode ? '공지사항이 수정되었습니다.' : '공지사항이 작성되었습니다.';
+                setSuccess(successMessage);
+                setTimeout(() => {
+                    navigate(`/professor/course/${formData.courseId}`);
+                }, 2000);
+            } else {
+                setError(response.message || (isEditMode ? '공지사항 수정에 실패했습니다.' : '공지사항 작성에 실패했습니다.'));
+            }
+        } catch (error) {
+            console.error(isEditMode ? '공지사항 수정 오류:' : '공지사항 작성 오류:', error);
+            let errorMessage = isEditMode ? '공지사항 수정 중 오류가 발생했습니다.' : '공지사항 작성 중 오류가 발생했습니다.';
+            if (error.message.includes('403')) {
+                errorMessage = '해당 강의의 공지사항을 작성할 권한이 없습니다.';
+            } else if (error.message.includes('404')) {
+                errorMessage = isEditMode ? '수정할 공지사항을 찾을 수 없습니다.' : '강의를 찾을 수 없습니다.';
+            }
+            setError(errorMessage);
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    // 공지사항 삭제 (수정 모드에서만)
+    const handleDelete = async () => {
+        if (!isEditMode) return;
+        if (!window.confirm('정말로 이 공지사항을 삭제하시겠습니까?')) return;
+
+        try {
+            setSubmitting(true);
+            setError(null);
+            const response = await AnnouncementAPI.deleteAnnouncement(courseId, announcementId);
+            if (response.success) {
+                alert('공지사항이 삭제되었습니다.');
+                navigate(`/professor/course/${courseId}`);
+            } else {
+                setError(response.message || '공지사항 삭제에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('공지사항 삭제 오류:', error);
+            setError('공지사항 삭제 중 오류가 발생했습니다.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    // 컴포넌트 마운트시 데이터 로드
     useEffect(() => {
         const user = getCurrentUser();
-        if (!user) {
+        if (!user || user.role !== 'professor') {
             navigate('/login');
             return;
         }
-
-        const dashboardData = getDashboardData();
-        if (!dashboardData) {
-            navigate('/professor/dashboard');
-            return;
-        }
-
         setUserData(user);
-        setProfessorData(dashboardData);
+    }, [navigate]);
 
-        // 수정 모드인 경우 기존 공지사항 찾기
-        if (isEditMode) {
-            const foundAnnouncement = dashboardData.announcements?.find(ann => ann.id === announcementId);
-            if (!foundAnnouncement) {
-                alert('공지사항을 찾을 수 없습니다.');
-                navigate('/professor/courses');
-                return;
-            }
-
-            // 권한 확인 (작성자만 수정 가능)
-            if (foundAnnouncement.authorId !== user.professorId) {
-                alert('이 공지사항을 수정할 권한이 없습니다.');
-                navigate(-1);
-                return;
-            }
-
-            setOriginalAnnouncement(foundAnnouncement);
-            
-            // 기존 데이터로 폼 초기화
-            setAnnouncement({
-                title: foundAnnouncement.title || '',
-                content: foundAnnouncement.content || '',
-                priority: foundAnnouncement.priority || 'normal',
-                isPinned: foundAnnouncement.isPinned || false,
-                isUrgent: foundAnnouncement.isUrgent || false,
-                allowComments: foundAnnouncement.allowComments !== false,
-                notifyStudents: false, // 수정 시에는 기본적으로 알림 안함
-                scheduledDate: '', // 수정 시에는 즉시 업데이트
-                attachments: foundAnnouncement.attachments || []
-            });
-        }
-
-        // 강의 데이터 찾기
-        const course = dashboardData.courses?.find(c => c.id === courseId);
-        if (!course) {
-            alert('강의를 찾을 수 없습니다.');
-            navigate('/professor/courses');
-            return;
-        }
-
-        setCourseData(course);
-        setLoading(false);
-    }, [navigate, courseId, announcementId, isEditMode]);
-
-    // 변경사항 감지 (수정 모드에서만)
     useEffect(() => {
-        if (!isEditMode || !originalAnnouncement) {
-            setHasChanges(announcement.title.trim() !== '' || announcement.content.trim() !== '');
-            return;
-        }
-        
-        const hasChanged = 
-            announcement.title !== originalAnnouncement.title ||
-            announcement.content !== originalAnnouncement.content ||
-            announcement.priority !== originalAnnouncement.priority ||
-            announcement.isPinned !== originalAnnouncement.isPinned ||
-            announcement.isUrgent !== originalAnnouncement.isUrgent ||
-            announcement.allowComments !== (originalAnnouncement.allowComments !== false);
-            
-        setHasChanges(hasChanged);
-    }, [announcement, originalAnnouncement, isEditMode]);
+        if (userData) {
+            loadProfessorCourses();
 
-    // 폼 데이터 변경 핸들러
-    const handleInputChange = (field, value) => {
-        setAnnouncement(prev => ({
-            ...prev,
-            [field]: value
-        }));
-        
-        // 에러 메시지 제거
-        if (errors[field]) {
-            setErrors(prev => ({
-                ...prev,
-                [field]: ''
-            }));
-        }
-    };
-
-    // 폼 유효성 검사
-    const validateForm = () => {
-        const newErrors = {};
-
-        if (!announcement.title.trim()) {
-            newErrors.title = '제목을 입력해주세요.';
-        } else if (announcement.title.length > 100) {
-            newErrors.title = '제목은 100자 이내로 입력해주세요.';
-        }
-
-        if (!announcement.content.trim()) {
-            newErrors.content = '내용을 입력해주세요.';
-        } else if (announcement.content.length < 10) {
-            newErrors.content = '내용은 최소 10자 이상 입력해주세요.';
-        }
-
-        if (announcement.scheduledDate) {
-            const scheduleDate = new Date(announcement.scheduledDate);
-            const now = new Date();
-            if (scheduleDate <= now) {
-                newErrors.scheduledDate = '예약 발행일은 현재 시간보다 미래여야 합니다.';
+            // URL에 courseId가 있으면 직접 설정 (임시 해결책)
+            if (courseId && !formData.courseId) {
+                setFormData(prev => ({ ...prev, courseId }));
             }
-        }
 
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    // 원본으로 되돌리기 (수정 모드에서만)
-    const handleReset = () => {
-        if (!isEditMode || !originalAnnouncement) return;
-        
-        if (window.confirm('원본 내용으로 되돌리시겠습니까? 현재 수정 중인 내용이 모두 사라집니다.')) {
-            setAnnouncement({
-                title: originalAnnouncement.title || '',
-                content: originalAnnouncement.content || '',
-                priority: originalAnnouncement.priority || 'normal',
-                isPinned: originalAnnouncement.isPinned || false,
-                isUrgent: originalAnnouncement.isUrgent || false,
-                allowComments: originalAnnouncement.allowComments !== false,
-                notifyStudents: false,
-                scheduledDate: '',
-                attachments: originalAnnouncement.attachments || []
-            });
-            setErrors({});
-        }
-    };
-
-    // 공지사항 발행/수정
-    const handlePublish = async () => {
-        if (!validateForm()) {
-            return;
-        }
-
-        if (isEditMode && !hasChanges) {
-            alert('변경된 내용이 없습니다.');
-            return;
-        }
-
-        setSaving(true);
-        
-        try {
             if (isEditMode) {
-                // 수정 모드
-                const updatedAnnouncement = {
-                    ...originalAnnouncement,
-                    ...announcement,
-                    updatedAt: new Date().toISOString(),
-                    status: 'published'
-                };
-
-                console.log('수정된 공지사항:', updatedAnnouncement);
-                alert('공지사항이 성공적으로 수정되었습니다.');
-                
-                // 공지사항 상세 페이지로 이동
-                navigate(`/professor/announcement/${announcementId}`);
-            } else {
-                // 새 작성 모드
-                const newAnnouncement = {
-                    id: Date.now().toString(),
-                    ...announcement,
-                    courseId: courseData.id,
-                    courseName: courseData.name,
-                    authorId: userData.professorId,
-                    authorName: userData.name,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                    views: 0,
-                    comments: [],
-                    status: announcement.scheduledDate ? 'scheduled' : 'published'
-                };
-
-                console.log('새 공지사항:', newAnnouncement);
-                alert('공지사항이 성공적으로 발행되었습니다.');
-                
-                // 강의 상세 페이지로 이동
-                navigate(`/professor/course/${courseId}`);
+                loadExistingAnnouncement();
             }
-
-            // 임시저장 데이터 삭제
-            const draftKey = isEditMode 
-                ? `announcement_edit_draft_${announcementId}`
-                : `announcement_draft_${courseId}`;
-            localStorage.removeItem(draftKey);
-            
-        } catch (error) {
-            console.error('공지사항 처리 실패:', error);
-            alert(`공지사항 ${isEditMode ? '수정' : '발행'} 중 오류가 발생했습니다. 다시 시도해주세요.`);
-        } finally {
-            setSaving(false);
         }
-    };
+    }, [userData, isEditMode, courseId, announcementId]);
 
-    // 취소
-    const handleCancel = () => {
-        const hasAnyChanges = isEditMode ? hasChanges : (announcement.title || announcement.content);
-        if (hasAnyChanges) {
-            const confirmCancel = window.confirm('작성 중인 내용이 있습니다. 정말 취소하시겠습니까?');
-            if (!confirmCancel) return;
-        }
-        
-        if (isEditMode) {
-            navigate(`/professor/announcement/${announcementId}`);
-        } else {
-            navigate(`/professor/course/${courseId}`);
-        }
-    };
-
-    // 파일 첨부 핸들러
-    const handleFileAttach = (event) => {
-        const files = Array.from(event.target.files);
-        const maxSize = 10 * 1024 * 1024; // 10MB
-        const allowedTypes = ['image/', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument'];
-        
-        const validFiles = files.filter(file => {
-            if (file.size > maxSize) {
-                alert(`${file.name}은 10MB를 초과합니다.`);
-                return false;
-            }
-            if (!allowedTypes.some(type => file.type.startsWith(type))) {
-                alert(`${file.name}은 지원하지 않는 파일 형식입니다.`);
-                return false;
-            }
-            return true;
-        });
-
-        setAnnouncement(prev => ({
-            ...prev,
-            attachments: [...prev.attachments, ...validFiles.map(file => ({
-                id: Date.now() + Math.random(),
-                name: file.name,
-                size: file.size,
-                type: file.type,
-                file: file
-            }))]
-        }));
-    };
-
-    // 첨부파일 제거
-    const removeAttachment = (attachmentId) => {
-        setAnnouncement(prev => ({
-            ...prev,
-            attachments: prev.attachments.filter(att => att.id !== attachmentId)
-        }));
-    };
-
-    // 파일 크기 포맷
-    const formatFileSize = (bytes) => {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    };
-
+    // 로딩 상태 - className 수정
     if (loading) {
         return (
-            <div className="ca-page">
-                <Header username={userData?.name || '교수님'} role="교수" />
-                <div className="ca-main-layout">
-                    <ProfessorSidebar
-                        activeTab={activeTab}
-                        setActiveTab={setActiveTab}
-                        professorName={userData?.name || ''}
-                        professorId={userData?.professorId || ''}
-                        department={userData?.department || ''}
-                    />
-                    <main className="ca-main-content">
-                        <div className="ca-loading-container">
-                            <div className="ca-loading-spinner"></div>
-                            <p>페이지를 불러오는 중입니다...</p>
-                        </div>
-                    </main>
-                </div>
+            <div className="ca-loading-container">
+                <div className="ca-loading-spinner"></div>
+                <p>로딩 중...</p>
             </div>
         );
     }
 
-    if (!courseData) {
-        return (
-            <div className="ca-page">
-                <Header username={userData?.name || '교수님'} role="교수" />
-                <div className="ca-main-layout">
-                    <ProfessorSidebar
-                        activeTab={activeTab}
-                        setActiveTab={setActiveTab}
-                        professorName={userData?.name || ''}
-                        professorId={userData?.professorId || ''}
-                        department={userData?.department || ''}
-                    />
-                    <main className="ca-main-content">
-                        <div className="ca-error-container">
-                            <h2>강의를 찾을 수 없습니다.</h2>
-                            <button className="ca-btn ca-btn-primary" onClick={() => navigate('/professor/courses')}>
-                                강의 목록으로 이동
-                            </button>
-                        </div>
-                    </main>
-                </div>
-            </div>
-        );
-    }
+    // 선택된 강의 정보
+    const selectedCourse = courses.find(course => course.id === formData.courseId);
 
     return (
         <div className="ca-page">
-            <Header username={userData?.name || '교수님'} role="교수" />
-
+            <Header activeTab="courses" setActiveTab={() => { }} userData={userData} />
             <div className="ca-main-layout">
-                <ProfessorSidebar
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
-                    professorName={userData?.name || ''}
-                    professorId={userData?.professorId || ''}
-                    department={userData?.department || ''}
-                />
-
-                <main className="ca-main-content">
-                    {/* 헤더 영역 */}
+                <ProfessorSidebar activeTab="courses" setActiveTab={() => { }} />
+                <div className="ca-main-content">
+                    {/* 헤더 섹션 - className 수정 */}
                     <div className="ca-header">
                         <div className="ca-breadcrumb">
-                            <span onClick={() => navigate('/professor/courses')} className="ca-breadcrumb-link">
+                            <span
+                                className="ca-breadcrumb-link"
+                                onClick={() => navigate('/professor/dashboard')}
+                            >
+                                대시보드
+                            </span>
+                            <i className="fas fa-chevron-right"></i>
+                            <span
+                                className="ca-breadcrumb-link"
+                                onClick={() => navigate('/professor/courses')}
+                            >
                                 강의 관리
                             </span>
-                            <i className="fas fa-chevron-right"></i>
-                            <span onClick={() => navigate(`/professor/course/${courseData.id}`)} className="ca-breadcrumb-link">
-                                {courseData.name}
-                            </span>
-                            <i className="fas fa-chevron-right"></i>
-                            {isEditMode ? (
+                            {selectedCourse && (
                                 <>
-                                    <span onClick={() => navigate(`/professor/announcement/${announcementId}`)} className="ca-breadcrumb-link">
-                                        공지사항
-                                    </span>
                                     <i className="fas fa-chevron-right"></i>
-                                    <span className="ca-breadcrumb-current">수정</span>
+                                    <span
+                                        className="ca-breadcrumb-link"
+                                        onClick={() => navigate(`/professor/course/${selectedCourse.id}`)}
+                                    >
+                                        {selectedCourse.name}
+                                    </span>
                                 </>
-                            ) : (
-                                <span className="ca-breadcrumb-current">공지사항 작성</span>
                             )}
+                            <i className="fas fa-chevron-right"></i>
+                            <span className="ca-breadcrumb-current">
+                                {isEditMode ? '공지사항 수정' : '공지사항 작성'}
+                            </span>
                         </div>
-                        
+
                         <div className="ca-course-info">
                             <h1>{isEditMode ? '공지사항 수정' : '공지사항 작성'}</h1>
-                            <div className="ca-course-meta">
-                                <span className="ca-course-name">{courseData.name}</span>
-                                <span className="ca-course-code">({courseData.id})</span>
-                                <span className="ca-course-students">{courseData.enrolled}명 수강</span>
-                                {isEditMode && hasChanges && <span className="ca-changes-indicator">• 수정됨</span>}
-                            </div>
+                            {selectedCourse && (
+                                <div className="ca-course-meta">
+                                    <span className="ca-course-name">{selectedCourse.name}</span>
+                                    <span className="ca-course-code">({selectedCourse.code})</span>
+                                    <span className="ca-course-students">
+                                        수강생 {selectedCourse.enrolledStudents || 0}명
+                                    </span>
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    {/* 메인 컨텐츠 */}
+                    {/* 콘텐츠 섹션 - className 수정 */}
                     <div className="ca-content">
+                        {/* 에러/성공 메시지 */}
+                        {error && (
+                            <div className="ca-error-container">
+                                <i className="fas fa-exclamation-triangle"></i>
+                                <p>{error}</p>
+                            </div>
+                        )}
+
+                        {success && (
+                            <div className="ca-success-container">
+                                <i className="fas fa-check-circle"></i>
+                                <p>{success}</p>
+                            </div>
+                        )}
+
+                        {/* 에디터 컨테이너 - className 수정 */}
                         <div className="ca-editor-container">
-                            {/* 에디터 모드 탭 */}
+                            {/* 에디터 탭 - className 수정 */}
                             <div className="ca-editor-tabs">
-                                <button 
-                                    className={`ca-tab ${!previewMode ? 'active' : ''}`}
-                                    onClick={() => setPreviewMode(false)}
+                                <button
+                                    className={`ca-tab ${!showPreview ? 'active' : ''}`}
+                                    onClick={() => setShowPreview(false)}
                                 >
-                                    <i className="fas fa-edit"></i> {isEditMode ? '수정' : '작성'}
+                                    <i className="fas fa-edit"></i>
+                                    작성
                                 </button>
-                                <button 
-                                    className={`ca-tab ${previewMode ? 'active' : ''}`}
-                                    onClick={() => setPreviewMode(true)}
+                                <button
+                                    className={`ca-tab ${showPreview ? 'active' : ''}`}
+                                    onClick={() => setShowPreview(true)}
                                 >
-                                    <i className="fas fa-eye"></i> 미리보기
+                                    <i className="fas fa-eye"></i>
+                                    미리보기
                                 </button>
                             </div>
 
                             {/* 작성 모드 */}
-                            {!previewMode && (
-                                <div className="ca-editor">
+                            {!showPreview && (
+                                <form onSubmit={handleSubmit} className="ca-editor">
+                                    {/* 강의 선택 - className 수정 */}
                                     <div className="ca-form-group">
-                                        <label htmlFor="title" className="ca-label">
-                                            제목 <span className="ca-required">*</span>
+                                        <label className="ca-label">
+                                            강의 선택<span className="ca-required">*</span>
+                                        </label>
+                                        <select
+                                            name="courseId"
+                                            value={formData.courseId}
+                                            onChange={handleInputChange}
+                                            className="ca-select"
+                                            disabled={isEditMode}
+                                        >
+                                            <option value="">강의를 선택하세요</option>
+                                            {courses.map(course => (
+                                                <option key={course.id} value={course.id}>
+                                                    {course.name} ({course.code})
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* 제목 입력 - className 수정 */}
+                                    <div className="ca-form-group">
+                                        <label className="ca-label">
+                                            제목<span className="ca-required">*</span>
                                         </label>
                                         <input
                                             type="text"
-                                            id="title"
-                                            className={`ca-input ${errors.title ? 'error' : ''}`}
+                                            name="title"
+                                            value={formData.title}
+                                            onChange={handleInputChange}
                                             placeholder="공지사항 제목을 입력하세요"
-                                            value={announcement.title}
-                                            onChange={(e) => handleInputChange('title', e.target.value)}
+                                            className="ca-input"
                                             maxLength={100}
                                         />
-                                        {errors.title && <div className="ca-error-message">{errors.title}</div>}
-                                        <div className="ca-char-count">{announcement.title.length}/100</div>
+                                        <div className="ca-char-count">
+                                            {formData.title.length}/100
+                                        </div>
                                     </div>
 
+                                    {/* 내용 입력 - className 수정 */}
                                     <div className="ca-form-group">
-                                        <label htmlFor="content" className="ca-label">
-                                            내용 <span className="ca-required">*</span>
+                                        <label className="ca-label">
+                                            내용<span className="ca-required">*</span>
                                         </label>
                                         <textarea
-                                            id="content"
-                                            className={`ca-textarea ${errors.content ? 'error' : ''}`}
-                                            placeholder="공지사항 내용을 입력하세요&#10;&#10;• 수강생들에게 전달하고 싶은 내용을 상세히 작성해주세요&#10;• 중요한 일정이나 변경사항이 있다면 명확히 기재해주세요&#10;• 문의사항이 있을 경우 연락 방법을 포함해주세요"
-                                            rows="12"
-                                            value={announcement.content}
-                                            onChange={(e) => handleInputChange('content', e.target.value)}
+                                            name="content"
+                                            value={formData.content}
+                                            onChange={handleInputChange}
+                                            placeholder="공지사항 내용을 입력하세요"
+                                            className="ca-textarea"
+                                            maxLength={5000}
                                         />
-                                        {errors.content && <div className="ca-error-message">{errors.content}</div>}
-                                        <div className="ca-char-count">{announcement.content.length}자</div>
-                                    </div>
-
-                                    {/* 첨부파일 */}
-                                    <div className="ca-form-group">
-                                        <label className="ca-label">첨부파일</label>
-                                        <div className="ca-file-upload">
-                                            <input
-                                                type="file"
-                                                id="file-upload"
-                                                multiple
-                                                onChange={handleFileAttach}
-                                                className="ca-file-input"
-                                                accept="image/*,.pdf,.doc,.docx,.hwp"
-                                            />
-                                            <label htmlFor="file-upload" className="ca-file-upload-btn">
-                                                <i className="fas fa-paperclip"></i>
-                                                파일 첨부
-                                            </label>
-                                            <span className="ca-file-help">
-                                                이미지, PDF, 문서 파일 (최대 10MB)
-                                            </span>
-                                        </div>
-                                        
-                                        {announcement.attachments.length > 0 && (
-                                            <div className="ca-attachments">
-                                                {announcement.attachments.map(attachment => (
-                                                    <div key={attachment.id} className="ca-attachment-item">
-                                                        <div className="ca-attachment-info">
-                                                            <i className="fas fa-file"></i>
-                                                            <span className="ca-attachment-name">{attachment.name}</span>
-                                                            <span className="ca-attachment-size">
-                                                                ({formatFileSize(attachment.size)})
-                                                            </span>
-                                                        </div>
-                                                        <button
-                                                            type="button"
-                                                            className="ca-attachment-remove"
-                                                            onClick={() => removeAttachment(attachment.id)}
-                                                        >
-                                                            <i className="fas fa-times"></i>
-                                                        </button>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* 옵션 설정 */}
-                                    <div className="ca-options">
-                                        <div className="ca-options-row">
-                                        </div>
-
-                                        <div className="ca-checkboxes">
-                                            <label className="ca-checkbox">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={announcement.isPinned}
-                                                    onChange={(e) => handleInputChange('isPinned', e.target.checked)}
-                                                />
-                                                <span className="ca-checkbox-mark"></span>
-                                                <span className="ca-checkbox-text">상단 고정</span>
-                                            </label>
-
-                                            <label className="ca-checkbox">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={announcement.isUrgent}
-                                                    onChange={(e) => handleInputChange('isUrgent', e.target.checked)}
-                                                />
-                                                <span className="ca-checkbox-mark"></span>
-                                                <span className="ca-checkbox-text">긴급 공지</span>
-                                            </label>
-
-                                            <label className="ca-checkbox">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={announcement.notifyStudents}
-                                                    onChange={(e) => handleInputChange('notifyStudents', e.target.checked)}
-                                                />
-                                                <span className="ca-checkbox-mark"></span>
-                                                <span className="ca-checkbox-text">학생 알림</span>
-                                            </label>
+                                        <div className="ca-char-count">
+                                            {formData.content.length}/5000
                                         </div>
                                     </div>
-                                </div>
+                                </form>
                             )}
 
-                            {/* 미리보기 모드 */}
-                            {previewMode && (
+                            {/* 미리보기 모드 - className 수정 */}
+                            {showPreview && (
                                 <div className="ca-preview">
                                     <div className="ca-preview-header">
                                         <div className="ca-preview-meta">
-                                            <span className="ca-preview-course">{courseData.name}</span>
-                                            <span className="ca-preview-date">
-                                                {announcement.scheduledDate || new Date().toLocaleDateString()}
-                                            </span>
+                                            <div className="ca-preview-course">
+                                                {selectedCourse?.name || '강의 선택 필요'}
+                                            </div>
+                                            <div className="ca-preview-date">
+                                                {new Date().toLocaleDateString('ko-KR', {
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
+                                                })}
+                                            </div>
                                         </div>
                                         <div className="ca-preview-badges">
-                                            {announcement.isPinned && <span className="ca-badge ca-badge-pinned">고정</span>}
-                                            {announcement.isUrgent && <span className="ca-badge ca-badge-urgent">긴급</span>}
-                                            {announcement.priority === 'important' && <span className="ca-badge ca-badge-important">중요</span>}
+                                            {formData.isPinned && (
+                                                <span className="ca-badge ca-badge-pinned">고정</span>
+                                            )}
+                                            {formData.isUrgent && (
+                                                <span className="ca-badge ca-badge-urgent">긴급</span>
+                                            )}
                                         </div>
                                     </div>
-                                    
+
                                     <h2 className="ca-preview-title">
-                                        {announcement.title || '제목을 입력해주세요'}
+                                        {formData.title || '제목을 입력하세요'}
                                     </h2>
-                                    
+
                                     <div className="ca-preview-content">
-                                        {announcement.content ? (
-                                            announcement.content.split('\n').map((line, index) => (
-                                                <p key={index}>{line || '\u00A0'}</p>
+                                        {formData.content ? (
+                                            formData.content.split('\n').map((line, index) => (
+                                                <p key={index}>{line}</p>
                                             ))
                                         ) : (
-                                            <p className="ca-preview-placeholder">내용을 입력해주세요</p>
+                                            <p className="ca-preview-placeholder">내용을 입력하세요</p>
                                         )}
                                     </div>
 
-                                    {announcement.attachments.length > 0 && (
-                                        <div className="ca-preview-attachments">
-                                            <h4>첨부파일</h4>
-                                            <ul>
-                                                {announcement.attachments.map(attachment => (
-                                                    <li key={attachment.id}>
-                                                        <i className="fas fa-file"></i>
-                                                        {attachment.name}
-                                                        <span className="ca-file-size">({formatFileSize(attachment.size)})</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    )}
-
                                     <div className="ca-preview-footer">
-                                        <span className="ca-preview-author">작성자: {userData.name}</span>
+                                        <span>작성자: {userData?.name || '교수'}</span>
+                                        <span>조회수: 0</span>
                                     </div>
                                 </div>
                             )}
                         </div>
 
-                        {/* 액션 버튼 */}
+                        {/* 액션 버튼 - className 수정 */}
                         <div className="ca-actions">
                             <div className="ca-actions-left">
-                                {isEditMode && (
-                                    <button 
-                                        type="button"
-                                        className="ca-btn ca-btn-outline"
-                                        onClick={handleReset}
-                                        disabled={!hasChanges}
-                                    >
-                                        <i className="fas fa-undo"></i>
-                                        원본으로 되돌리기
-                                    </button>
-                                )}
-                            </div>
-                            
-                            <div className="ca-actions-right">
-                                <button 
+                                <button
                                     type="button"
                                     className="ca-btn ca-btn-outline"
-                                    onClick={handleCancel}
+                                    onClick={() => navigate(selectedCourse ? `/professor/course/${selectedCourse.id}` : '/professor/courses')}
                                 >
+                                    <i className="fas fa-arrow-left"></i>
                                     취소
                                 </button>
-                                <button 
-                                    type="button"
-                                    className={`ca-btn ca-btn-primary ${isEditMode && !hasChanges ? 'ca-btn-disabled' : ''}`}
-                                    onClick={handlePublish}
-                                    disabled={saving || (isEditMode && !hasChanges)}
+                            </div>
+                            <div className="ca-actions-right">
+                                {isEditMode && (
+                                    <button
+                                        type="button"
+                                        className="ca-btn ca-btn-secondary"
+                                        onClick={handleDelete}
+                                        disabled={submitting}
+                                    >
+                                        <i className="fas fa-trash"></i>
+                                        삭제
+                                    </button>
+                                )}
+                                <button
+                                    type="submit"
+                                    className="ca-btn ca-btn-primary"
+                                    onClick={handleSubmit}
+                                    disabled={submitting || !formData.courseId || !formData.title.trim() || !formData.content.trim()}
                                 >
-                                    {saving ? (
+                                    {submitting ? (
                                         <>
                                             <i className="fas fa-spinner fa-spin"></i>
-                                            {isEditMode ? '저장 중...' : '발행 중...'}
+                                            {isEditMode ? '수정 중...' : '작성 중...'}
                                         </>
                                     ) : (
                                         <>
-                                            <i className={`fas ${isEditMode ? 'fa-check' : 'fa-paper-plane'}`}></i>
-                                            {isEditMode 
-                                                ? '수정 완료'
-                                                : '작성 완료'
-                                            }
+                                            <i className="fas fa-save"></i>
+                                            {isEditMode ? '수정 완료' : '작성 완료'}
                                         </>
                                     )}
                                 </button>
                             </div>
                         </div>
                     </div>
-                </main>
+                </div>
             </div>
         </div>
     );

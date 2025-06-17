@@ -9,8 +9,6 @@ const ProfessorSidebar = ({ activeTab, setActiveTab, professorName = '', profess
     { id: 'courses', label: '강의 관리', icon: 'fas fa-book', path: '/professor/courses' },
     { id: 'students', label: '학생 관리', icon: 'fas fa-users', path: '/professor/students' },
     { id: 'grades', label: '성적 관리', icon: 'fas fa-chart-line', path: '/professor/grades' },
-    { id: 'materials', label: '강의 자료', icon: 'fas fa-folder', path: '/professor/materials' },
-    { id: 'attendance', label: '출석 관리', icon: 'fas fa-clipboard-check', path: '/professor/attendance' },
     { id: 'settings', label: '계정 설정', icon: 'fas fa-cog', path: '/professor/settings' }
   ];
 
