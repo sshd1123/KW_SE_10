@@ -275,14 +275,6 @@ const ProfessorStudentsPage = () => {
                     <div className="card students-management-card">
                         <div className="card-header">
                             <h3>수강생 목록</h3>
-                            <div className="header-actions">
-                                <button className="btn btn-outline btn-sm">
-                                    <i className="fas fa-download"></i> 전체 내보내기
-                                </button>
-                                <button className="btn btn-primary btn-sm">
-                                    <i className="fas fa-user-plus"></i> 학생 추가
-                                </button>
-                            </div>
                         </div>
 
                         {/* 필터 및 검색 영역 */}

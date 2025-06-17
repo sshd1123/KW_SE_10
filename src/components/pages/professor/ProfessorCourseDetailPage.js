@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../../dashboard/Header';
 import ProfessorSidebar from '../../dashboard/ProfessorSidebar';
 import { getDashboardData, getCurrentUser } from '../../../data/authUtils';
-import { AnnouncementAPI } from '../../../services/api';
+import { AnnouncementAPI, ArchiveAPI } from '../../../services/api';
 import '../../styles/ProfessorCourseDetailPage.css';
 
 const ProfessorCourseDetailPage = () => {
@@ -18,21 +18,27 @@ const ProfessorCourseDetailPage = () => {
     const [showAddAssignmentModal, setShowAddAssignmentModal] = useState(false);
     const [showAddAnnouncementModal, setShowAddAnnouncementModal] = useState(false);
 
-    // ✅ 공지사항 관련 상태 추가
+    // 공지사항 관련 상태 추가
     const [announcements, setAnnouncements] = useState([]);
     const [announcementsLoading, setAnnouncementsLoading] = useState(false);
+
+    const [showUploadModal, setShowUploadModal] = useState(false);
+
+    const [materials, setMaterials] = useState([]);
+    const [materialsLoading, setMaterialsLoading] = useState(false);
+    const [selectedMaterials, setSelectedMaterials] = useState(new Set());
 
     const navigate = useNavigate();
     const { courseId } = useParams();
 
-    // ✅ 공지사항 삭제 완료 후 콜백
+    // 공지사항 삭제 완료 후 콜백
     const handleAnnouncementDeleted = (deletedAnnouncementId) => {
         setAnnouncements(prev =>
             prev.filter(announcement => announcement.id !== deletedAnnouncementId)
         );
     };
 
-    // ✅ 공지사항 액션 컴포넌트
+    // 공지사항 액션 컴포넌트
     const AnnouncementActions = ({ announcementItem }) => {
         const [isDeleting, setIsDeleting] = useState(false);
 
@@ -92,11 +98,11 @@ const ProfessorCourseDetailPage = () => {
         );
     };
 
-    // ✅ 공지사항 목록 로드
+    // 공지사항 목록 로드
     const loadAnnouncements = async () => {
         try {
             setAnnouncementsLoading(true);
-            
+
             const response = await AnnouncementAPI.getAnnouncements(courseId, {
                 page: 1,
                 limit: 20,
@@ -119,6 +125,125 @@ const ProfessorCourseDetailPage = () => {
             setAnnouncements(localAnnouncements);
         } finally {
             setAnnouncementsLoading(false);
+        }
+    };
+
+    // 자료 목록 로드
+    const loadMaterials = async () => {
+        try {
+            setMaterialsLoading(true);
+
+            const response = await ArchiveAPI.getArchives(courseId, {
+                page: 1,
+                limit: 20,
+                orderBy: 'createdAt',
+                order: 'DESC'
+            });
+
+            if (response && response.success) {
+                setMaterials(response.data.archives || []);
+            }
+        } catch (error) {
+            console.warn('자료실 로드 실패 (무시):', error);
+            // 에러 무시 - 로컬 데이터나 빈 배열 유지
+        } finally {
+            setMaterialsLoading(false);
+        }
+    };
+
+    // 자료 삭제 (교수용)
+    const handleDeleteMaterial = async (materialId, materialName) => {
+        if (!window.confirm(`'${materialName}' 자료를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) {
+            return;
+        }
+
+        try {
+            const response = await ArchiveAPI.deleteArchive(courseId, materialId);
+
+            if (response.success) {
+                alert('자료가 삭제되었습니다.');
+                loadMaterials(); // 목록 새로고침
+            } else {
+                alert(response.message || '자료 삭제에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('자료 삭제 실패:', error);
+            alert('자료 삭제 중 오류가 발생했습니다.');
+        }
+    };
+
+    // 자료 선택 토글
+    const toggleMaterialSelection = (materialId) => {
+        const newSelected = new Set(selectedMaterials);
+        if (newSelected.has(materialId)) {
+            newSelected.delete(materialId);
+        } else {
+            newSelected.add(materialId);
+        }
+        setSelectedMaterials(newSelected);
+    };
+
+    // 전체 선택/해제
+    const toggleSelectAllMaterials = () => {
+        if (selectedMaterials.size === materials.length) {
+            setSelectedMaterials(new Set());
+        } else {
+            setSelectedMaterials(new Set(materials.map(material => material.id)));
+        }
+    };
+
+    // 다중 삭제
+    const handleBulkDeleteMaterials = async () => {
+        if (selectedMaterials.size === 0) {
+            alert('삭제할 자료를 선택해주세요.');
+            return;
+        }
+
+        if (!window.confirm(`선택한 ${selectedMaterials.size}개의 자료를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) {
+            return;
+        }
+
+        try {
+            const response = await ArchiveAPI.bulkDeleteArchives(courseId, Array.from(selectedMaterials));
+
+            if (response.success) {
+                alert('선택한 자료들이 삭제되었습니다.');
+                setSelectedMaterials(new Set());
+                loadMaterials(); // 목록 새로고침
+            } else {
+                alert(response.message || '자료 삭제에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('다중 자료 삭제 실패:', error);
+            alert('자료 삭제 중 오류가 발생했습니다.');
+        }
+    };
+
+    const handleMaterialDownload = async (materialId, materialName) => {
+        try {
+            console.log('자료 다운로드 요청:', { materialId, materialName });
+
+            // ArchiveAPI를 통한 다운로드 요청
+            await ArchiveAPI.downloadArchive(courseId, materialId);
+
+            // 다운로드 성공 시 선택적으로 알림 표시 (사용자 경험에 따라 제거 가능)
+            // console.log(`${materialName} 다운로드가 시작되었습니다.`);
+
+        } catch (error) {
+            console.error('자료 다운로드 실패:', error);
+
+            // 사용자에게 친화적인 오류 메시지 표시
+            let errorMessage = '파일 다운로드에 실패했습니다.';
+
+            if (error.message.includes('404')) {
+                errorMessage = '파일을 찾을 수 없습니다.';
+            } else if (error.message.includes('403')) {
+                errorMessage = '파일에 접근할 권한이 없습니다.';
+            } else if (error.message.includes('Network Error')) {
+                errorMessage = '네트워크 연결을 확인해주세요.';
+            }
+
+            alert(errorMessage);
         }
     };
 
@@ -148,16 +273,31 @@ const ProfessorCourseDetailPage = () => {
         setCourseData(course);
         setLoading(false);
 
-        // ✅ 공지사항 로드
+        // 공지사항 로드
         loadAnnouncements();
     }, [navigate, courseId]);
 
-    // ✅ activeSection이 announcements로 변경될 때도 로드
+    // activeSection이 announcements로 변경될 때도 로드
     useEffect(() => {
-        if (activeSection === 'announcements' && announcements.length === 0) {
-            loadAnnouncements();
+        if (professorData) {
+            if (activeSection === 'announcements' && announcements.length === 0) {
+                loadAnnouncements();
+            }
+            if (activeSection === 'materials' && materials.length === 0) {
+                loadMaterials();
+            }
+            if (activeSection === 'materials') {
+                loadMaterials();
+            }
         }
-    }, [activeSection]);
+    }, [activeSection, professorData]);
+
+    useEffect(() => {
+        if (professorData && courseData) {
+            loadAnnouncements();
+            loadMaterials(); // 추가
+        }
+    }, [professorData, courseData]);
 
     const getStudentsForCourse = (courseId) => {
         if (!professorData.students) return [];
@@ -553,7 +693,7 @@ const ProfessorCourseDetailPage = () => {
         );
     };
 
-    // ✅ 공지사항 섹션 렌더링 수정
+    // 공지사항 섹션 렌더링 수정
     const renderAnnouncementsSection = () => {
         return (
             <div className="announcements-section">
@@ -599,7 +739,7 @@ const ProfessorCourseDetailPage = () => {
                 ) : (
                     <div className="empty-state">
                         <p>등록된 공지사항이 없습니다.</p>
-                        <button 
+                        <button
                             onClick={() => navigate(`/professor/announcement/create/${courseId}`)}
                             className="btn btn-primary"
                         >
@@ -609,6 +749,227 @@ const ProfessorCourseDetailPage = () => {
                 )}
             </div>
         );
+    };
+
+    const renderMaterialsSection = () => {
+        return (
+            <div className="materials-section">
+                {/* 자료실 헤더 */}
+                <div className="materials-header">
+                    <div className="materials-header-left">
+                        <h3>📁 강의자료</h3>
+                        <p>수업에 필요한 자료를 업로드하고 관리하세요.</p>
+                    </div>
+                    <div className="materials-header-actions">
+                        <button
+                            onClick={handleUploadMaterial}
+                            className="upload-material-btn"
+                        >
+                            📤 자료 업로드
+                        </button>
+                        {selectedMaterials.size > 0 && (
+                            <button
+                                onClick={handleBulkDeleteMaterials}
+                                className="bulk-delete-btn"
+                            >
+                                🗑️ 선택 삭제 ({selectedMaterials.size})
+                            </button>
+                        )}
+                    </div>
+                </div>
+
+                {materialsLoading ? (
+                    <div className="loading-container">
+                        <div className="loading-spinner"></div>
+                        <p>자료를 불러오고 있습니다...</p>
+                    </div>
+                ) : materials.length > 0 ? (
+                    <div className="materials-content">
+                        {/* 자료 목록 헤더 */}
+                        <div className="materials-list-header">
+                            <div className="materials-header-row">
+                                <div className="col-checkbox">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedMaterials.size === materials.length && materials.length > 0}
+                                        onChange={toggleSelectAllMaterials}
+                                    />
+                                </div>
+                                <div className="col-icon"></div>
+                                <div className="col-name">파일명</div>
+                                <div className="col-category">카테고리</div>
+                                <div className="col-size">크기</div>
+                                <div className="col-date">업로드일</div>
+                                <div className="col-downloads">다운로드</div>
+                                <div className="col-actions">작업</div>
+                            </div>
+                        </div>
+
+                        {/* 자료 목록 */}
+                        <div className="materials-list">
+                            {materials.map(material => (
+                                <div
+                                    key={material.id}
+                                    className="material-item"
+                                    onClick={() => handleMaterialClick(material.id)}
+                                >
+                                    <div className="material-row">
+                                        <div className="col-checkbox">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedMaterials.has(material.id)}
+                                                onChange={(e) => {
+                                                    e.stopPropagation();
+                                                    toggleMaterialSelection(material.id);
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="col-icon">
+                                            <span
+                                                className="material-icon"
+                                                style={{ color: getFileTypeColor(material.name) }}
+                                            >
+                                                {getFileIcon(material.type)}
+                                            </span>
+                                        </div>
+                                        <div className="col-name">
+                                            <div className="material-name">{material.name}</div>
+                                            {material.description && (
+                                                <div className="material-description">{material.description}</div>
+                                            )}
+                                        </div>
+                                        <div className="col-category">
+                                            <span className={`category-badge category-${material.category}`}>
+                                                {material.category === 'lecture' ? '강의자료' :
+                                                    material.category === 'assignment' ? '과제자료' :
+                                                        material.category === 'exam' ? '시험자료' :
+                                                            material.category === 'reference' ? '참고자료' :
+                                                                material.category || '기타'}
+                                            </span>
+                                        </div>
+                                        <div className="col-size">
+                                            {formatFileSize(material.size)}
+                                        </div>
+                                        <div className="col-date">
+                                            {new Date(material.uploadDate || material.createdAt).toLocaleDateString('ko-KR')}
+                                        </div>
+                                        <div className="col-downloads">
+                                            {material.downloads || 0}회
+                                        </div>
+                                        <div className="col-actions">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleMaterialDownload(material.id, material.name);
+                                                }}
+                                                className="action-btn download-btn"
+                                                title="다운로드"
+                                            >
+                                                💾
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    navigate(`/professor/course/${courseId}/archive/${material.id}/edit`);
+                                                }}
+                                                className="action-btn edit-btn"
+                                                title="수정"
+                                            >
+                                                ✏️
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDeleteMaterial(material.id, material.name);
+                                                }}
+                                                className="action-btn delete-btn"
+                                                title="삭제"
+                                            >
+                                                🗑️
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ) : (
+                    <div className="empty-state">
+                        <div className="empty-icon">📁</div>
+                        <h3>등록된 자료가 없습니다</h3>
+                        <p>수업에 필요한 자료를 업로드해보세요.</p>
+                        <button
+                            onClick={handleUploadMaterial}
+                            className="upload-material-btn-primary"
+                        >
+                            첫 번째 자료 업로드하기
+                        </button>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    // 자료 클릭 핸들러 추가
+    const handleMaterialClick = (materialId) => {
+        navigate(`/professor/course/${courseId}/archive/${materialId}`);
+    };
+
+    // 자료 업로드 버튼 클릭 핸들러
+    const handleUploadMaterial = () => {
+        navigate(`/professor/course/${courseId}/archive/upload`);
+    };
+
+    const getFileTypeColor = (fileName) => {
+        const extension = fileName.split('.').pop().toLowerCase();
+        const colorMap = {
+            'pdf': '#f44336',
+            'doc': '#2196f3',
+            'docx': '#2196f3',
+            'ppt': '#ff9800',
+            'pptx': '#ff9800',
+            'xls': '#4caf50',
+            'xlsx': '#4caf50',
+            'zip': '#9c27b0',
+            'rar': '#9c27b0',
+            'jpg': '#e91e63',
+            'jpeg': '#e91e63',
+            'png': '#e91e63',
+            'mp4': '#3f51b5',
+            'avi': '#3f51b5',
+            'txt': '#795548'
+        };
+        return colorMap[extension] || '#607d8b';
+    };
+
+    const getFileIcon = (fileType) => {
+        const iconMap = {
+            'application/pdf': '📄',
+            'application/msword': '📝',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '📝',
+            'application/vnd.ms-excel': '📊',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '📊',
+            'application/vnd.ms-powerpoint': '📽️',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation': '📽️',
+            'image/jpeg': '🖼️',
+            'image/jpg': '🖼️',
+            'image/png': '🖼️',
+            'image/gif': '🖼️',
+            'application/zip': '🗜️',
+            'application/x-rar-compressed': '🗜️',
+            'video/mp4': '🎥',
+            'video/avi': '🎥',
+            'text/plain': '📄'
+        };
+        return iconMap[fileType] || '📎';
+    };
+
+    const formatFileSize = (bytes) => {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     };
 
     if (loading) {
@@ -680,6 +1041,12 @@ const ProfessorCourseDetailPage = () => {
                             >
                                 <i className="fas fa-bullhorn"></i> 공지사항
                             </button>
+                            <button
+                                className={`tab-button ${activeSection === 'materials' ? 'active' : ''}`}
+                                onClick={() => setActiveSection('materials')}
+                            >
+                                <i className="fas fa-folder"></i> 강의자료
+                            </button>
                         </div>
 
                         {/* 탭 콘텐츠 */}
@@ -688,6 +1055,7 @@ const ProfessorCourseDetailPage = () => {
                             {activeSection === 'students' && renderStudentsSection()}
                             {activeSection === 'assignments' && renderAssignmentsSection()}
                             {activeSection === 'announcements' && renderAnnouncementsSection()}
+                            {activeSection === 'materials' && renderMaterialsSection()}
                         </div>
                     </div>
                 </div>

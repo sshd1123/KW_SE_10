@@ -1,35 +1,94 @@
 /* ProfessorGradesPage.css */
 
+.grades-management-card button,
+.grades-management-card .btn,
+.view-toggle .btn,
+.action-buttons-group .btn,
+.grade-view-btn-new,
+.grade-action-btn-new {
+    transform: none !important;
+    position: relative !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+}
+
 /* 성적 관리 메인 카드 */
 .grades-management-card {
     margin-bottom: 0;
 }
 
+.grades-management-card .card-header {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    padding: 1.5rem !important;
+    gap: 1.5rem !important;
+    min-height: auto !important;
+    border-bottom: 1px solid var(--neutral-medium) !important;
+}
+
+.grades-management-card .card-header h3 {
+    margin: 0 !important;
+    padding: 0 !important;
+    color: var(--primary-color) !important;
+    font-size: 1.25rem !important;
+    flex-shrink: 0 !important;
+}
+
 /* 헤더 액션 영역 */
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-    row-gap: 0.5rem;
+.grades-management-card .header-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 1rem !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: relative !important;
+    z-index: 10 !important;
 }
 
-.header-actions > * {
+.header-actions>* {
     margin-bottom: 0 !important;
+    flex-shrink: 0;
+    min-width: fit-content;
 }
 
-.view-toggle {
-    display: flex;
-    gap: 0.25rem;
-    background-color: var(--neutral-light);
-    border-radius: 4px;
-    padding: 0.25rem;
+.grades-management-card .view-toggle {
+    display: flex !important;
+    width: 100% !important;
+    background-color: var(--neutral-light) !important;
+    border-radius: 6px !important;
+    padding: 4px !important;
+    border: 1px solid var(--neutral-medium) !important;
+    gap: 0 !important;
+    justify-content: stretch !important;
+    position: relative !important;
+    z-index: 11 !important;
+    order: 1 !important;
 }
 
-.view-toggle .btn {
-    border-radius: 2px;
-    margin: 0;
-    white-space: nowrap;
+.grades-management-card .view-toggle .btn {
+    flex: 1 !important;
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 4px !important;
+    padding: 0.6rem 1rem !important;
+    font-size: 0.9rem !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+    transition: all 0.2s ease !important;
+    position: relative !important;
+    overflow: hidden !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    width: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 
 /* 필터 및 검색 영역 */
@@ -231,22 +290,26 @@
     min-width: 35px;
 }
 
-.grade-aplus, .grade-a0 {
+.grade-aplus,
+.grade-a0 {
     background-color: #d4edda;
     color: #155724;
 }
 
-.grade-bplus, .grade-b0 {
+.grade-bplus,
+.grade-b0 {
     background-color: #cff4fc;
     color: #055160;
 }
 
-.grade-cplus, .grade-c0 {
+.grade-cplus,
+.grade-c0 {
     background-color: #fff3cd;
     color: #856404;
 }
 
-.grade-dplus, .grade-d0 {
+.grade-dplus,
+.grade-d0 {
     background-color: #ffe4e1;
     color: #d63384;
 }
@@ -423,17 +486,6 @@
     animation: modalSlideIn 0.3s ease-out;
 }
 
-@keyframes modalSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
 .modal-header {
     display: flex;
     justify-content: space-between;
@@ -594,12 +646,16 @@ input[type="checkbox"] {
     accent-color: var(--primary-color);
 }
 
+.btn-text {
+    margin-left: 0.3rem;
+}
+
 /* 반응형 디자인 */
 @media (max-width: 1200px) {
     .statistics-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .filter-row {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -609,39 +665,45 @@ input[type="checkbox"] {
     .stats-row {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .header-actions {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0.75rem;
+        display: grid !important;
+        grid-template-columns: 1fr;
+        gap: 1rem;
         width: 100%;
     }
-    
+
     .view-toggle {
         order: 2;
         align-self: flex-start;
     }
-    
+
+    .view-toggle,
+    .action-buttons-group {
+        width: 100%;
+        justify-self: stretch;
+    }
+
     .filter-row {
         grid-template-columns: 1fr;
     }
-    
+
     .bulk-actions {
         flex-direction: column;
         gap: 0.75rem;
         align-items: flex-start;
     }
-    
+
     .bulk-buttons {
         width: 100%;
         justify-content: flex-start;
         flex-wrap: wrap;
     }
-    
+
     .grade-inputs {
         grid-template-columns: 1fr;
     }
-    
+
     .preview-info {
         flex-direction: column;
         gap: 0.5rem;
@@ -652,24 +714,24 @@ input[type="checkbox"] {
     .stats-row {
         grid-template-columns: 1fr;
     }
-    
+
     .grades-filters {
         padding: 1rem;
     }
-    
+
     .grades-table-container {
         max-height: 400px;
     }
-    
+
     .grades-table {
         font-size: 0.8rem;
     }
-    
+
     .grades-table th,
     .grades-table td {
         padding: 0.4rem 0.2rem;
     }
-    
+
     /* 모바일에서 일부 컬럼 숨기기 */
     .grades-table th:nth-child(4),
     .grades-table td:nth-child(4),
@@ -679,31 +741,42 @@ input[type="checkbox"] {
     .grades-table td:nth-child(9) {
         display: none;
     }
-    
+
     .modal-content {
         width: 95%;
         margin: 1rem;
     }
-    
+
     .modal-footer {
         flex-direction: column;
     }
-    
+
     .modal-footer .btn {
         width: 100%;
     }
-    
+
     .statistics-view {
         padding: 1rem;
     }
-    
+
     .grade-bar-container {
         grid-template-columns: 25px 1fr 25px;
         gap: 0.5rem;
     }
+
+    .btn-text {
+        display: none;
+        /* 작은 화면에서는 텍스트 숨김 */
+    }
+
+    .view-toggle .btn {
+        min-width: 44px;
+        /* 아이콘만 표시될 때의 최소 크기 */
+    }
 }
 
 @media (max-width: 480px) {
+
     .grades-table th:nth-child(6),
     .grades-table td:nth-child(6),
     .grades-table th:nth-child(7),
@@ -712,22 +785,30 @@ input[type="checkbox"] {
     .grades-table td:nth-child(8) {
         display: none;
     }
-    
+
     .action-buttons {
         flex-direction: column;
     }
-    
+
     .action-buttons .btn {
         width: 100%;
         margin-bottom: 0.25rem;
     }
-    
+
     .grade-bar-container {
         grid-template-columns: 20px 1fr 20px;
     }
-    
+
     .grade-label,
     .grade-count {
         font-size: 0.8rem;
+    }
+
+    .view-toggle .btn i {
+        font-size: 0.9rem;
+    }
+
+    .action-buttons-group .btn i {
+        font-size: 0.9rem;
     }
 }

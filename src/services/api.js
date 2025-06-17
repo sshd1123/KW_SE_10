@@ -149,6 +149,54 @@ export const EnrollmentAPI = {
   // 특정 강의의 수강생 목록 (교수용)
   getCourseEnrollments: async (courseId) => {
     return apiService.get(`/enrollment/course/${courseId}`);
+  },
+
+  // 특정 수강생의 성적 조회
+  getStudentGrade: async (enrollmentId) => {
+    return apiService.get(`/enrollment/${enrollmentId}/grade`);
+  },
+
+  // 강의별 전체 성적 조회 (교수용)
+  getCourseGrades: async (courseId, params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = queryString
+      ? `/course/${courseId}/grades?${queryString}`
+      : `/course/${courseId}/grades`;
+    return apiService.get(endpoint);
+  },
+
+  // 일괄 성적 입력 (교수용)
+  bulkUpdateGrades: async (courseId, gradesData) => {
+    return apiService.post(`/course/${courseId}/grades/bulk`, { grades: gradesData });
+  },
+
+  // 성적 통계 조회
+  getGradeStatistics: async (courseId) => {
+    return apiService.get(`/course/${courseId}/grades/statistics`);
+  },
+
+  // 성적표 내보내기 (엑셀)
+  exportGrades: async (courseId, format = 'xlsx') => {
+    const response = await fetch(`${apiService.baseURL}/course/${courseId}/grades/export?format=${format}`, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${apiService.token}` }
+    });
+
+    if (!response.ok) {
+      throw new Error(`성적표 내보내기 실패: ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `grades_${courseId}.${format}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+
+    return { success: true, message: '성적표 다운로드가 시작되었습니다.' };
   }
 };
 
@@ -157,10 +205,10 @@ export const AnnouncementAPI = {
   // 공지사항 목록 조회
   getAnnouncements: async (courseId, params = {}) => {
     const queryString = new URLSearchParams(params).toString();
-    const endpoint = queryString 
-      ? `/course/${courseId}/announcement?${queryString}` 
+    const endpoint = queryString
+      ? `/course/${courseId}/announcement?${queryString}`
       : `/course/${courseId}/announcement`;
-    
+
     return apiService.get(endpoint);
   },
 
@@ -195,10 +243,10 @@ export const ArchiveAPI = {
   // 자료 목록 조회
   getArchives: async (courseId, params = {}) => {
     const queryString = new URLSearchParams(params).toString();
-    const endpoint = queryString 
-      ? `/course/${courseId}/archive?${queryString}` 
+    const endpoint = queryString
+      ? `/course/${courseId}/archive?${queryString}`
       : `/course/${courseId}/archive`;
-    
+
     return apiService.get(endpoint);
   },
 
@@ -210,7 +258,7 @@ export const ArchiveAPI = {
   // 파일 업로드 (multipart/form-data)
   uploadArchive: async (courseId, formData, options = {}) => {
     const url = `${apiService.baseURL}/course/${courseId}/archive`;
-    
+
     const config = {
       method: 'POST',
       headers: {
@@ -225,7 +273,7 @@ export const ArchiveAPI = {
     if (options.onUploadProgress) {
       return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        
+
         xhr.upload.addEventListener('progress', (e) => {
           if (e.lengthComputable) {
             const progress = Math.round((e.loaded * 100) / e.total);
@@ -242,7 +290,7 @@ export const ArchiveAPI = {
         };
 
         xhr.onerror = () => reject(new Error('Network error'));
-        
+
         xhr.open('POST', url);
         xhr.setRequestHeader('Authorization', `Bearer ${apiService.token}`);
         xhr.send(formData);
@@ -251,11 +299,11 @@ export const ArchiveAPI = {
 
     // 일반 fetch 사용
     const response = await fetch(url, config);
-    
+
     if (!response.ok) {
       throw new Error(`Upload failed: ${response.status}`);
     }
-    
+
     return response.json();
   },
 
@@ -269,27 +317,51 @@ export const ArchiveAPI = {
     return apiService.delete(`/course/${courseId}/archive/${archiveId}`);
   },
 
-  // 파일 다운로드
+  // 자료 다운로드
   downloadArchive: async (courseId, archiveId) => {
-    const url = `${apiService.baseURL}/course/${courseId}/archive/${archiveId}/download`;
-    
-    const response = await fetch(url, {
+    const response = await fetch(`${apiService.baseURL}/course/${courseId}/archive/${archiveId}/download`, {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${apiService.token}`
-      }
+      headers: { 'Authorization': `Bearer ${apiService.token}` }
     });
 
     if (!response.ok) {
-      throw new Error(`Download failed: ${response.status}`);
+      throw new Error(`다운로드 실패: ${response.status}`);
     }
 
-    return response.blob(); // 파일 데이터를 Blob으로 반환
+    const blob = await response.blob();
+    const contentDisposition = response.headers.get('content-disposition');
+    let filename = `archive_${archiveId}`;
+
+    if (contentDisposition) {
+      const match = contentDisposition.match(/filename="(.+)"/);
+      if (match) filename = match[1];
+    }
+
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+
+    return { success: true, message: '다운로드가 시작되었습니다.' };
   },
 
   // 다운로드 카운트 증가
   incrementDownloadCount: async (courseId, archiveId) => {
     return apiService.patch(`/course/${courseId}/archive/${archiveId}/download-count`);
+  },
+
+  // 폴더별 자료 조회
+  getArchivesByFolder: async (courseId, folderId = 'root') => {
+    return apiService.get(`/course/${courseId}/archive/folder/${folderId}`);
+  },
+
+  // 다중 자료 삭제
+  bulkDeleteArchives: async (courseId, archiveIds) => {
+    return apiService.delete(`/course/${courseId}/archive/bulk`, { archiveIds });
   }
 };
 
@@ -298,10 +370,10 @@ export const AssignmentAPI = {
   // 과제 목록 조회
   getAssignments: async (courseId, params = {}) => {
     const queryString = new URLSearchParams(params).toString();
-    const endpoint = queryString 
-      ? `/course/${courseId}/assignment?${queryString}` 
+    const endpoint = queryString
+      ? `/course/${courseId}/assignment?${queryString}`
       : `/course/${courseId}/assignment`;
-    
+
     return apiService.get(endpoint);
   },
 
@@ -333,10 +405,10 @@ export const AssignmentAPI = {
   // 과제 제출 목록 조회 (교수용)
   getSubmissions: async (courseId, assignmentId, params = {}) => {
     const queryString = new URLSearchParams(params).toString();
-    const endpoint = queryString 
-      ? `/course/${courseId}/assignment/${assignmentId}/submissions?${queryString}` 
+    const endpoint = queryString
+      ? `/course/${courseId}/assignment/${assignmentId}/submissions?${queryString}`
       : `/course/${courseId}/assignment/${assignmentId}/submissions`;
-    
+
     return apiService.get(endpoint);
   },
 

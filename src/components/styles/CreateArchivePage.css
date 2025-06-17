@@ -1,0 +1,555 @@
+/* components/styles/CreateArchivePage.css - 고유 접두사 'cap-' 적용 */
+
+/* 메인 색상 변수 정의 */
+:root {
+    --cap-primary-color: #78222D;
+    --cap-primary-light: #A13747;
+    --cap-primary-dark: #5A1923;
+    --cap-secondary-color: #1E3A8A;
+    --cap-neutral-light: #F5F5F5;
+    --cap-neutral-medium: #E0E0E0;
+    --cap-text-dark: #333333;
+    --cap-text-light: #FFFFFF;
+    --cap-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --cap-transition: all 0.3s ease;
+    --cap-success-color: #4caf50;
+    --cap-error-color: #f44336;
+}
+
+/* 페이지 레이아웃 */
+.cap-page {
+    min-height: 100vh;
+    background-color: var(--cap-neutral-light);
+}
+
+.cap-main-layout {
+    display: flex;
+    min-height: calc(100vh - 60px);
+}
+
+.cap-main-content {
+    flex: 1;
+    padding: 2rem;
+    margin-left: 250px;
+}
+
+/* 컨테이너 */
+.cap-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* 헤더 */
+.cap-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--cap-neutral-medium);
+}
+
+.cap-header-left h1 {
+    margin: 0 0 0.5rem 0;
+    color: var(--cap-primary-color);
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+.cap-header-left p {
+    margin: 0;
+    color: #666;
+    font-size: 1rem;
+}
+
+.cap-header-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* 폼 컨테이너 */
+.cap-form-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--cap-shadow);
+    overflow: hidden;
+}
+
+.cap-upload-form {
+    padding: 2rem;
+}
+
+/* 폼 섹션 */
+.cap-form-section {
+    margin-bottom: 2.5rem;
+}
+
+.cap-form-section h3 {
+    margin: 0 0 1.5rem 0;
+    color: var(--cap-primary-color);
+    font-size: 1.2rem;
+    font-weight: 600;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--cap-neutral-medium);
+}
+
+/* 폼 행과 그룹 */
+.cap-form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.cap-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.cap-form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--cap-text-dark);
+    font-size: 0.9rem;
+}
+
+.cap-form-group input,
+.cap-form-group select,
+.cap-form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--cap-neutral-medium);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.cap-form-group input:focus,
+.cap-form-group select:focus,
+.cap-form-group textarea:focus {
+    outline: none;
+    border-color: var(--cap-primary-color);
+    box-shadow: 0 0 0 2px rgba(120, 34, 45, 0.1);
+}
+
+.cap-form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+    line-height: 1.5;
+}
+
+.cap-form-group select {
+    cursor: pointer;
+}
+
+/* 드래그 앤 드롭 영역 */
+.cap-drop-zone {
+    border: 2px dashed var(--cap-neutral-medium);
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    text-align: center;
+    background-color: #fafafa;
+    cursor: pointer;
+    transition: var(--cap-transition);
+    margin-bottom: 1.5rem;
+}
+
+.cap-drop-zone:hover {
+    border-color: var(--cap-primary-color);
+    background-color: rgba(120, 34, 45, 0.02);
+}
+
+.cap-drop-zone.drag-over {
+    border-color: var(--cap-primary-color);
+    background-color: rgba(120, 34, 45, 0.05);
+    transform: scale(1.02);
+}
+
+.cap-drop-content {
+    pointer-events: none;
+}
+
+.cap-drop-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.6;
+}
+
+.cap-drop-content h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--cap-primary-color);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.cap-drop-content p {
+    margin: 0.25rem 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* 선택된 파일 목록 */
+.cap-selected-files {
+    margin-top: 1.5rem;
+}
+
+.cap-selected-files h4 {
+    margin: 0 0 1rem 0;
+    color: var(--cap-text-dark);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.cap-file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.cap-file-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background-color: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    transition: var(--cap-transition);
+}
+
+.cap-file-item:hover {
+    background-color: #f5f5f5;
+    border-color: var(--cap-primary-color);
+}
+
+.cap-file-info {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    gap: 0.75rem;
+}
+
+.cap-file-icon {
+    font-size: 1.5rem;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    flex-shrink: 0;
+}
+
+.cap-file-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.cap-file-name {
+    font-weight: 500;
+    color: var(--cap-text-dark);
+    margin-bottom: 0.25rem;
+    word-break: break-word;
+    font-size: 0.9rem;
+}
+
+.cap-file-size {
+    color: #666;
+    font-size: 0.8rem;
+}
+
+/* 진행률 표시 */
+.cap-progress-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 1rem;
+    min-width: 120px;
+}
+
+.cap-progress-bar {
+    flex: 1;
+    height: 6px;
+    background-color: #e0e0e0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.cap-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--cap-primary-color), var(--cap-primary-light));
+    transition: width 0.3s ease;
+    border-radius: 3px;
+}
+
+.cap-progress-text {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--cap-primary-color);
+    min-width: 35px;
+    text-align: right;
+}
+
+/* 파일 제거 버튼 */
+.cap-remove-file {
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: var(--cap-transition);
+    font-size: 0.9rem;
+    margin-left: 0.5rem;
+}
+
+.cap-remove-file:hover {
+    background-color: #ffebee;
+    color: var(--cap-error-color);
+}
+
+.cap-remove-file:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* 알림 메시지 */
+.cap-alert {
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    animation: slideIn 0.3s ease;
+}
+
+.cap-alert-error {
+    background-color: #ffebee;
+    color: var(--cap-error-color);
+    border: 1px solid #ffcdd2;
+}
+
+.cap-alert-success {
+    background-color: #e8f5e8;
+    color: var(--cap-success-color);
+    border: 1px solid #c8e6c9;
+}
+
+.cap-alert-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+    font-size: 1.1rem;
+    padding: 0.25rem;
+    border-radius: 3px;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.cap-alert-close:hover {
+    opacity: 1;
+}
+
+/* 액션 버튼 */
+.cap-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--cap-neutral-medium);
+}
+
+.cap-cancel-button,
+.cap-submit-button {
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: var(--cap-transition);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 120px;
+    justify-content: center;
+}
+
+.cap-cancel-button {
+    background-color: #f5f5f5;
+    color: var(--cap-text-dark);
+    border: 1px solid var(--cap-neutral-medium);
+}
+
+.cap-cancel-button:hover {
+    background-color: #e0e0e0;
+}
+
+.cap-submit-button {
+    background: linear-gradient(135deg, var(--cap-primary-color), var(--cap-primary-light));
+    color: white;
+}
+
+.cap-submit-button:hover {
+    background: linear-gradient(135deg, var(--cap-primary-dark), var(--cap-primary-color));
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(120, 34, 45, 0.3);
+}
+
+.cap-submit-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* 로딩 스피너 */
+.cap-loading-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* 애니메이션 */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .cap-main-content {
+        margin-left: 0;
+        padding: 1rem;
+    }
+
+    .cap-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    .cap-header-actions {
+        justify-content: flex-end;
+    }
+
+    .cap-form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .cap-drop-zone {
+        padding: 2rem 1rem;
+    }
+
+    .cap-file-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .cap-file-info {
+        width: 100%;
+    }
+
+    .cap-progress-container {
+        width: 100%;
+        margin: 0;
+    }
+
+    .cap-remove-file {
+        align-self: flex-end;
+        margin: 0;
+    }
+
+    .cap-form-actions {
+        flex-direction: column-reverse;
+        gap: 0.75rem;
+    }
+
+    .cap-cancel-button,
+    .cap-submit-button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .cap-container {
+        padding: 0;
+    }
+
+    .cap-upload-form {
+        padding: 1rem;
+    }
+
+    .cap-header-left h1 {
+        font-size: 1.5rem;
+    }
+
+    .cap-drop-zone {
+        padding: 1.5rem 1rem;
+    }
+
+    .cap-drop-icon {
+        font-size: 2rem;
+    }
+
+    .cap-file-icon {
+        width: 35px;
+        height: 35px;
+        font-size: 1.3rem;
+    }
+}
+
+/* 접근성 개선 */
+.cap-form-group input:focus,
+.cap-form-group select:focus,
+.cap-form-group textarea:focus {
+    outline: 2px solid var(--cap-primary-color);
+    outline-offset: 2px;
+}
+
+.cap-drop-zone:focus {
+    outline: 2px solid var(--cap-primary-color);
+    outline-offset: 2px;
+}
+
+/* 고대비 모드 지원 */
+@media (prefers-contrast: high) {
+    .cap-drop-zone {
+        border-width: 3px;
+    }
+
+    .cap-file-item {
+        border-width: 2px;
+    }
+
+    .cap-progress-bar {
+        border: 1px solid var(--cap-text-dark);
+    }
+}

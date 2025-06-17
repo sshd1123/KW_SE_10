@@ -34,6 +34,8 @@ import CreateAssignmentPage from './components/pages/professor/CreateAssignmentP
 import AssignmentDetailPage from './components/pages/student/AssingmentDetailPage';
 import AnnouncementDetailPage from './components/pages/AnnouncementDetailPage';
 import ProtectedRoute from './components/common/ProtectedRoute';
+import ArchiveDetailPage from './components/course/ArchiveDetailPage';
+import CreateArchivePage from './components/pages/professor/CreateArchivePage';
 
 function App() {
   return (
@@ -45,49 +47,55 @@ function App() {
         {/* 학생 */}
         <Route path="/student/*" element={
           // <ProtectedRoute>
-            <Routes>
-              <Route path="dashboard" element={<StudentDashboard />} />
-              <Route path="course/:courseId" element={<CourseDetailPage />} />
-              <Route path="grades" element={<GradesPage />} />
-              <Route path="courses" element={<CoursesPage />} />
-              <Route path="course/:courseId/assignment/:assignmentId/submit" element={<AssignmentDetailPage />} />
-              <Route path="announcements" element={<AnnouncementsPage />} />
-              <Route path="announcement/:announcementId" element={<AnnouncementDetailPage />} />
-              <Route path="course/:courseId/announcement/:announcementId" element={<AnnouncementDetailPage />} />
-              <Route path="registration" element={<CourseRegistrationPage />} />
-              <Route path="settings" element={<AccountSettingsPage />} />
-              <Route path="notifications" element={<NotificationsPage />} />
-              <Route path="graduation" element={<GraduationRequirementsPage />} />
-            </Routes>
+          <Routes>
+            <Route path="dashboard" element={<StudentDashboard />} />
+            <Route path="course/:courseId" element={<CourseDetailPage />} />
+            <Route path="grades" element={<GradesPage />} />
+            <Route path="courses" element={<CoursesPage />} />
+            <Route path="course/:courseId/assignment/:assignmentId/submit" element={<AssignmentDetailPage />} />
+            <Route path="announcements" element={<AnnouncementsPage />} />
+            <Route path="announcement/:announcementId" element={<AnnouncementDetailPage />} />
+            <Route path="course/:courseId/announcement/:announcementId" element={<AnnouncementDetailPage />} />
+            <Route path="registration" element={<CourseRegistrationPage />} />
+            <Route path="settings" element={<AccountSettingsPage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="graduation" element={<GraduationRequirementsPage />} />
+
+            <Route path="course/:courseId/archive/:archiveId" element={<ArchiveDetailPage />} />
+          </Routes>
           // </ProtectedRoute>
         } />
 
         {/* 교수 */}
         <Route path="/professor/*" element={
           // <ProtectedRoute>
-            <Routes>
-              <Route path="dashboard" element={<ProfessorDashboard />} />
-              <Route path="courses" element={<ProfessorCoursesPage />} />
-              <Route path="students" element={<ProfessorStudentsPage />} />
-              <Route path="assignments" element={<ProfessorAssignmentsPage />} />
-              <Route path="assignment/:assignmentId" element={<ProfessorAssignmentDetailPage />} />
-              <Route path="grades" element={<ProfessorGradesPage />} />
-              <Route path="announcements" element={<ProfessorAnnouncementsPage />} />
-              <Route path="schedule" element={<ProfessorSchedulePage />} />
-              <Route path="materials" element={<ProfessorMaterialsPage />} />
-              <Route path="attendance" element={<ProfessorAttendancePage />} />
-              <Route path="settings" element={<ProfessorSettingsPage />} />
+          <Routes>
+            <Route path="dashboard" element={<ProfessorDashboard />} />
+            <Route path="courses" element={<ProfessorCoursesPage />} />
+            <Route path="students" element={<ProfessorStudentsPage />} />
+            <Route path="assignments" element={<ProfessorAssignmentsPage />} />
+            <Route path="assignment/:assignmentId" element={<ProfessorAssignmentDetailPage />} />
+            <Route path="grades" element={<ProfessorGradesPage />} />
+            <Route path="announcements" element={<ProfessorAnnouncementsPage />} />
+            <Route path="schedule" element={<ProfessorSchedulePage />} />
+            <Route path="materials" element={<ProfessorMaterialsPage />} />
+            <Route path="attendance" element={<ProfessorAttendancePage />} />
+            <Route path="settings" element={<ProfessorSettingsPage />} />
 
-              <Route path="course/:courseId" element={<ProfessorCourseDetailPage />} />
-              <Route path="course/:courseId/announcement/create" element={<CreateAnnouncementPage />} />
-              <Route path="announcement/:announcementId" element={<AnnouncementDetailPage />} />
-              <Route path="course/:courseId/announcement/:announcementId" element={<AnnouncementDetailPage />} />
-              <Route path="announcement/edit/:courseId/:announcementId" element={<CreateAnnouncementPage />} />
+            <Route path="course/:courseId" element={<ProfessorCourseDetailPage />} />
+            <Route path="course/:courseId/announcement/create" element={<CreateAnnouncementPage />} />
+            <Route path="announcement/:announcementId" element={<AnnouncementDetailPage />} />
+            <Route path="announcement/create/:courseId" element={<CreateAnnouncementPage />} />
+            <Route path="announcement/edit/:courseId/:announcementId" element={<CreateAnnouncementPage />} />
 
-              <Route path="course/:courseId/assignment/create" element={<CreateAssignmentPage />} />
-              <Route path="assignment/:assignmentId/edit" element={<CreateAssignmentPage />} />
-              <Route path="course/assignment/:assignmentId" element={<AssignmentDetailPage />} />
-            </Routes>
+            <Route path="course/:courseId/assignment/create" element={<CreateAssignmentPage />} />
+            <Route path="assignment/:assignmentId/edit" element={<CreateAssignmentPage />} />
+            <Route path="course/assignment/:assignmentId" element={<AssignmentDetailPage />} />
+
+            <Route path="course/:courseId/archive/:archiveId" element={<ArchiveDetailPage />} />
+            <Route path="course/:courseId/archive/upload" element={<CreateArchivePage />} />
+            <Route path="course/:courseId/archive/:archiveId/edit" element={<CreateArchivePage />} />
+          </Routes>
           // </ProtectedRoute>
         } />
 

@@ -312,12 +312,12 @@ const CreateAnnouncementPage = () => {
                     {/* 콘텐츠 섹션 - className 수정 */}
                     <div className="ca-content">
                         {/* 에러/성공 메시지 */}
-                        {error && (
+                        {/* {error && (
                             <div className="ca-error-container">
                                 <i className="fas fa-exclamation-triangle"></i>
                                 <p>{error}</p>
                             </div>
-                        )}
+                        )} */}
 
                         {success && (
                             <div className="ca-success-container">

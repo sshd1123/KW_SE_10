@@ -1,0 +1,620 @@
+/* components/styles/ArchiveDetailPage.css - 고유 접두사 'adf-' 적용 */
+
+/* 메인 색상 변수 정의 */
+:root {
+    --adf-primary-color: #78222D;
+    --adf-primary-light: #A13747;
+    --adf-primary-dark: #5A1923;
+    --adf-secondary-color: #1E3A8A;
+    --adf-neutral-light: #F5F5F5;
+    --adf-neutral-medium: #E0E0E0;
+    --adf-text-dark: #333333;
+    --adf-text-light: #FFFFFF;
+    --adf-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --adf-transition: all 0.3s ease;
+  }
+  
+  /* 페이지 레이아웃 */
+  .adf-page {
+    min-height: 100vh;
+    background-color: var(--adf-neutral-light);
+  }
+  
+  .adf-main-layout {
+    display: flex;
+    min-height: calc(100vh - 60px);
+  }
+  
+  .adf-main-content {
+    flex: 1;
+    padding: 2rem;
+    margin-left: 250px;
+  }
+  
+  /* 자료 상세 컨테이너 */
+  .adf-archive-detail-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* 네비게이션 */
+  .adf-archive-navigation {
+    margin-bottom: 1.5rem;
+  }
+  
+  .adf-back-button {
+    background: none;
+    border: none;
+    padding: 0.5rem 0;
+    color: var(--adf-primary-color);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s ease;
+  }
+  
+  .adf-back-button:hover {
+    color: var(--adf-primary-dark);
+  }
+  
+  .adf-back-button i {
+    margin-right: 0.5rem;
+  }
+  
+  /* 자료 상세 카드 */
+  .adf-archive-detail-card {
+    margin-bottom: 1.5rem;
+    overflow: visible;
+    border: 1px solid var(--adf-neutral-medium);
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: var(--adf-shadow);
+  }
+  
+  .adf-card-header {
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--adf-neutral-medium);
+    background: linear-gradient(135deg, #fafafa, #f5f5f5);
+  }
+  
+  .adf-archive-title-section {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    flex: 1;
+  }
+  
+  .adf-file-icon-large {
+    font-size: 3rem;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+    flex-shrink: 0;
+  }
+  
+  .adf-title-info {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .adf-archive-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--adf-text-dark);
+    word-break: break-word;
+  }
+  
+  .adf-archive-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: #666;
+  }
+  
+  .adf-archive-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  
+  .adf-course-info {
+    color: var(--adf-primary-color);
+    font-weight: 500;
+  }
+  
+  .adf-action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+  
+  .adf-download-button,
+  .adf-edit-button,
+  .adf-delete-button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: var(--adf-transition);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .adf-download-button {
+    background-color: var(--adf-primary-color);
+    color: white;
+  }
+  
+  .adf-download-button:hover {
+    background-color: var(--adf-primary-dark);
+  }
+  
+  .adf-download-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .adf-edit-button {
+    background-color: #2196f3;
+    color: white;
+  }
+  
+  .adf-edit-button:hover {
+    background-color: #1976d2;
+  }
+  
+  .adf-delete-button {
+    background-color: #f44336;
+    color: white;
+  }
+  
+  .adf-delete-button:hover {
+    background-color: #d32f2f;
+  }
+  
+  /* 카드 본문 */
+  .adf-card-body {
+    padding: 1.5rem;
+  }
+  
+  /* 설명 섹션 */
+  .adf-description-section {
+    margin-bottom: 2rem;
+  }
+  
+  .adf-description-section h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+    color: var(--adf-primary-color);
+    border-bottom: 1px solid var(--adf-neutral-medium);
+    padding-bottom: 0.5rem;
+  }
+  
+  .adf-description-content {
+    background-color: #f9f9f9;
+    padding: 1rem;
+    border-radius: 4px;
+    border-left: 4px solid var(--adf-primary-color);
+  }
+  
+  .adf-description-content p {
+    margin: 0;
+    line-height: 1.6;
+    color: var(--adf-text-dark);
+  }
+  
+  .adf-no-description {
+    font-style: italic;
+    color: #999;
+  }
+  
+  /* 정보 섹션 */
+  .adf-info-section {
+    margin-bottom: 2rem;
+  }
+  
+  .adf-info-section h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+    color: var(--adf-primary-color);
+    border-bottom: 1px solid var(--adf-neutral-medium);
+    padding-bottom: 0.5rem;
+  }
+  
+  .adf-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 0.75rem;
+  }
+  
+  .adf-info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+  }
+  
+  .adf-info-label {
+    font-weight: 500;
+    color: var(--adf-text-dark);
+  }
+  
+  .adf-info-value {
+    color: #666;
+    font-family: monospace;
+    font-size: 0.9rem;
+  }
+  
+  /* 카테고리 섹션 */
+  .adf-category-section {
+    margin-bottom: 2rem;
+  }
+  
+  .adf-category-section h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+    color: var(--adf-primary-color);
+    border-bottom: 1px solid var(--adf-neutral-medium);
+    padding-bottom: 0.5rem;
+  }
+  
+  .adf-category-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: white;
+  }
+  
+  .category-lecture {
+    background-color: #2196f3;
+  }
+  
+  .category-assignment {
+    background-color: #ff9800;
+  }
+  
+  .category-exam {
+    background-color: #f44336;
+  }
+  
+  .category-reference {
+    background-color: #4caf50;
+  }
+  
+  /* 다운로드 섹션 */
+  .adf-download-section {
+    margin-top: 2rem;
+  }
+  
+  .adf-download-card {
+    background: linear-gradient(135deg, var(--adf-primary-color), var(--adf-primary-light));
+    color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--adf-shadow);
+  }
+  
+  .adf-download-info h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.3rem;
+  }
+  
+  .adf-download-info p {
+    margin: 0 0 1rem 0;
+    opacity: 0.9;
+  }
+  
+  .adf-download-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.9rem;
+    opacity: 0.8;
+  }
+  
+  .adf-main-download-button {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    padding: 1rem 2rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: var(--adf-transition);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    backdrop-filter: blur(10px);
+  }
+  
+  .adf-main-download-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+  }
+  
+  .adf-main-download-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  /* 모달 스타일 */
+  .adf-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease;
+  }
+  
+  .adf-modal-content {
+    background: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease;
+  }
+  
+  .adf-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--adf-neutral-medium);
+  }
+  
+  .adf-modal-header h2 {
+    margin: 0;
+    color: var(--adf-primary-color);
+  }
+  
+  .adf-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #666;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: var(--adf-transition);
+  }
+  
+  .adf-modal-close:hover {
+    background-color: #f0f0f0;
+    color: var(--adf-primary-color);
+  }
+  
+  /* 수정 폼 */
+  .adf-edit-form {
+    padding: 1.5rem;
+  }
+  
+  .adf-form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .adf-form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--adf-text-dark);
+  }
+  
+  .adf-form-group input,
+  .adf-form-group textarea,
+  .adf-form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--adf-neutral-medium);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+  }
+  
+  .adf-form-group input:focus,
+  .adf-form-group textarea:focus,
+  .adf-form-group select:focus {
+    outline: none;
+    border-color: var(--adf-primary-color);
+    box-shadow: 0 0 0 2px rgba(120, 34, 45, 0.1);
+  }
+  
+  .adf-form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+  
+  .adf-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--adf-neutral-medium);
+  }
+  
+  .adf-cancel-button,
+  .adf-save-button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: var(--adf-transition);
+  }
+  
+  .adf-cancel-button {
+    background-color: #f5f5f5;
+    color: var(--adf-text-dark);
+    border: 1px solid var(--adf-neutral-medium);
+  }
+  
+  .adf-cancel-button:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .adf-save-button {
+    background-color: var(--adf-primary-color);
+    color: white;
+  }
+  
+  .adf-save-button:hover {
+    background-color: var(--adf-primary-dark);
+  }
+  
+  /* 로딩 및 에러 상태 */
+  .adf-loading-container,
+  .adf-error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    text-align: center;
+  }
+  
+  .adf-loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid var(--adf-primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+  }
+  
+  .adf-error-container h2 {
+    color: var(--adf-primary-color);
+    margin-bottom: 1rem;
+  }
+  
+  .adf-error-container p {
+    color: #666;
+    margin-bottom: 2rem;
+  }
+  
+  /* 애니메이션 */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  
+  /* 반응형 디자인 */
+  @media (max-width: 768px) {
+    .adf-main-content {
+      margin-left: 0;
+      padding: 1rem;
+    }
+  
+    .adf-archive-title-section {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+  
+    .adf-action-buttons {
+      flex-direction: column;
+      width: 100%;
+    }
+  
+    .adf-download-card {
+      flex-direction: column;
+      gap: 1rem;
+      text-align: center;
+    }
+  
+    .adf-info-grid {
+      grid-template-columns: 1fr;
+    }
+  
+    .adf-archive-meta {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+  
+    .adf-download-meta {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .adf-archive-detail-container {
+      padding: 0;
+    }
+  
+    .adf-card-header {
+      padding: 1rem;
+    }
+  
+    .adf-card-body {
+      padding: 1rem;
+    }
+  
+    .adf-archive-title {
+      font-size: 1.2rem;
+    }
+  
+    .adf-file-icon-large {
+      font-size: 2rem;
+      width: 50px;
+      height: 50px;
+    }
+  }

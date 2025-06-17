@@ -25,7 +25,6 @@ const CourseDetailPage = () => {
     const { courseId } = useParams();
     const navigate = useNavigate();
 
-    // ✅ 백업 방식: 로컬 데이터 사용
     const loadCourseFromLocalData = () => {
         try {
             console.log('🔄 로컬 데이터에서 강의 정보 로드 시도...');
@@ -71,7 +70,6 @@ const CourseDetailPage = () => {
         }
     };
 
-    // ✅ API를 통한 강의 정보 로드 (에러 처리 강화)
     const loadCourseDetail = async () => {
         try {
             setLoading(true);
@@ -120,7 +118,6 @@ const CourseDetailPage = () => {
         }
     };
 
-    // ✅ 공지사항 로드 (에러 무시)
     const loadAnnouncements = async () => {
         try {
             setAnnouncementsLoading(true);
@@ -143,7 +140,6 @@ const CourseDetailPage = () => {
         }
     };
 
-    // ✅ 과제 목록 로드 (에러 무시)
     const loadAssignments = async () => {
         try {
             setAssignmentsLoading(true);
@@ -166,7 +162,6 @@ const CourseDetailPage = () => {
         }
     };
 
-    // ✅ 자료실 목록 로드 (에러 무시)
     const loadMaterials = async () => {
         try {
             setMaterialsLoading(true);
@@ -259,6 +254,62 @@ const CourseDetailPage = () => {
             console.error('파일 다운로드 실패:', error);
             alert('파일 다운로드에 실패했습니다.');
         }
+    };
+
+    const handleMaterialClick = (materialId) => {
+        navigate(`/student/course/${courseId}/archive/${materialId}`);
+    };
+
+    const getFileTypeColor = (fileName) => {
+        const extension = fileName.split('.').pop().toLowerCase();
+        const colorMap = {
+            'pdf': '#f44336',
+            'doc': '#2196f3',
+            'docx': '#2196f3',
+            'ppt': '#ff9800',
+            'pptx': '#ff9800',
+            'xls': '#4caf50',
+            'xlsx': '#4caf50',
+            'zip': '#9c27b0',
+            'rar': '#9c27b0',
+            'jpg': '#e91e63',
+            'jpeg': '#e91e63',
+            'png': '#e91e63',
+            'mp4': '#3f51b5',
+            'avi': '#3f51b5',
+            'txt': '#795548'
+        };
+        return colorMap[extension] || '#607d8b';
+    };
+
+    const getFileIcon = (fileType) => {
+        const iconMap = {
+            'application/pdf': '📄',
+            'application/msword': '📝',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '📝',
+            'application/vnd.ms-excel': '📊',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '📊',
+            'application/vnd.ms-powerpoint': '📽️',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation': '📽️',
+            'image/jpeg': '🖼️',
+            'image/jpg': '🖼️',
+            'image/png': '🖼️',
+            'image/gif': '🖼️',
+            'application/zip': '🗜️',
+            'application/x-rar-compressed': '🗜️',
+            'video/mp4': '🎥',
+            'video/avi': '🎥',
+            'text/plain': '📄'
+        };
+        return iconMap[fileType] || '📎';
+    };
+
+    const formatFileSize = (bytes) => {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     };
 
     // 컴포넌트 마운트시 데이터 로드
@@ -501,39 +552,76 @@ const CourseDetailPage = () => {
                                                 <p>자료를 불러오고 있습니다...</p>
                                             </div>
                                         ) : materials.length > 0 ? (
-                                            materials.map(material => (
-                                                <div key={material.id} className="cdp-material-item">
-                                                    <div className="cdp-material-left">
-                                                        <div className="cdp-material-icon">📄</div>
-                                                        <div>
-                                                            <h4 className="cdp-material-title">{material.title || material.name}</h4>
-                                                            <div className="cdp-material-meta">
-                                                                <span className="cdp-material-date">
-                                                                    {new Date(material.createdAt || material.date).toLocaleDateString()}
-                                                                </span>
-                                                                <span>크기: {material.size || '알 수 없음'}</span>
+                                            <div className="cdp-materials-list">
+                                                {materials.map(material => (
+                                                    <div
+                                                        key={material.id}
+                                                        className="cdp-material-item"
+                                                        onClick={() => handleMaterialClick(material.id)}
+                                                        style={{ cursor: 'pointer' }}
+                                                    >
+                                                        <div className="cdp-material-left">
+                                                            <div
+                                                                className="cdp-material-icon"
+                                                                style={{ color: getFileTypeColor(material.name) }}
+                                                            >
+                                                                {getFileIcon(material.type)}
                                                             </div>
-                                                            <div className="cdp-notice-content">
-                                                                {material.description}
+                                                            <div className="cdp-material-info">
+                                                                <h4 className="cdp-material-title">{material.name}</h4>
+                                                                <div className="cdp-material-meta">
+                                                                    <span className="cdp-material-date">
+                                                                        {new Date(material.uploadDate || material.createdAt).toLocaleDateString('ko-KR')}
+                                                                    </span>
+                                                                    <span className="cdp-material-size">
+                                                                        {formatFileSize(material.size)}
+                                                                    </span>
+                                                                    <span className="cdp-material-downloads">
+                                                                        다운로드 {material.downloads || 0}회
+                                                                    </span>
+                                                                    {material.category && (
+                                                                        <span className={`cdp-material-category category-${material.category}`}>
+                                                                            {material.category === 'lecture' ? '강의자료' :
+                                                                                material.category === 'assignment' ? '과제자료' :
+                                                                                    material.category === 'exam' ? '시험자료' :
+                                                                                        material.category === 'reference' ? '참고자료' :
+                                                                                            material.category}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                {material.description && (
+                                                                    <p className="cdp-material-description">{material.description}</p>
+                                                                )}
                                                             </div>
                                                         </div>
+                                                        <div className="cdp-material-actions">
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleMaterialDownload(material.id, material.name);
+                                                                }}
+                                                                className="cdp-download-btn"
+                                                                title="다운로드"
+                                                            >
+                                                                💾
+                                                            </button>
+                                                            <span className="cdp-view-detail">
+                                                                자세히 보기 →
+                                                            </span>
+                                                        </div>
                                                     </div>
-                                                    <button
-                                                        className="cdp-btn cdp-btn-outline cdp-btn-sm"
-                                                        onClick={() => handleMaterialDownload(material.id, material.fileName || material.name)}
-                                                    >
-                                                        다운로드
-                                                    </button>
-                                                </div>
-                                            ))
+                                                ))}
+                                            </div>
                                         ) : (
-                                            <div className="cdp-empty-message">
-                                                등록된 자료가 없습니다.
+                                            <div className="cdp-empty-state">
+                                                <div className="cdp-empty-icon">📁</div>
+                                                <h3>등록된 자료가 없습니다</h3>
+                                                <p>아직 업로드된 강의자료가 없습니다.</p>
+                                                <p>교수님께서 자료를 업로드하시면 여기에 표시됩니다.</p>
                                             </div>
                                         )}
                                     </div>
                                 )}
-
                                 {/* 강의계획서 탭 */}
                                 {activeCourseTab === '강의계획서' && (
                                     <div>

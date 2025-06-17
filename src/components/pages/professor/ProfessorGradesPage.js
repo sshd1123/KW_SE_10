@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../../dashboard/Header';
 import ProfessorSidebar from '../../dashboard/ProfessorSidebar';
 import { getDashboardData, getCurrentUser } from '../../../data/authUtils';
+import { EnrollmentAPI } from '../../../services/api'; // 상단에 import 추가
 import '../../styles/ProfessorGradesPage.css';
 
 const ProfessorGradesPage = () => {
@@ -20,6 +21,29 @@ const ProfessorGradesPage = () => {
     const [showBulkModal, setShowBulkModal] = useState(false);
     const [selectedStudents, setSelectedStudents] = useState([]);
     const [gradeDistribution, setGradeDistribution] = useState({});
+
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState(null);
+    const [students, setStudents] = useState([]);
+
+    const gradeOptions = [
+        { value: '', label: '등급 선택' },
+        { value: 'A+', label: 'A+' },
+        { value: 'A0', label: 'A0' },
+        { value: 'B+', label: 'B+' },
+        { value: 'B0', label: 'B0' },
+        { value: 'C+', label: 'C+' },
+        { value: 'C0', label: 'C0' },
+        { value: 'D+', label: 'D+' },
+        { value: 'D0', label: 'D0' },
+        { value: 'F', label: 'F' },
+        { value: 'P', label: 'P (Pass)' },
+        { value: 'NP', label: 'NP (None Pass)' },
+        { value: 'I', label: 'I (Incomplete)' },
+        { value: 'W', label: 'W (Withdraw)' }
+    ];
+
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -41,6 +65,17 @@ const ProfessorGradesPage = () => {
         setLoading(false);
     }, [navigate]);
 
+    useEffect(() => {
+        if (selectedCourse && professorData) {
+            loadStudentList();
+        }
+    }, [selectedCourse]);
+
+    const getLetterGrade = (student) => {
+        // 학생 객체에서 직접 입력된 등급 반환, 없으면 '-'
+        return student?.letterGrade || student?.grade || '-';
+    };
+
     // 성적 분포 계산
     const calculateGradeDistribution = (data) => {
         if (!data.students) return;
@@ -49,7 +84,7 @@ const ProfessorGradesPage = () => {
         data.courses?.forEach(course => {
             const courseStudents = data.students.filter(s => s.courseId === course.id);
             const grades = { 'A+': 0, 'A0': 0, 'B+': 0, 'B0': 0, 'C+': 0, 'C0': 0, 'D+': 0, 'D0': 0, 'F': 0 };
-            
+
             courseStudents.forEach(student => {
                 const totalScore = calculateTotalScore(student);
                 const letterGrade = getLetterGrade(totalScore);
@@ -72,41 +107,28 @@ const ProfessorGradesPage = () => {
     // 총점 계산
     const calculateTotalScore = (student) => {
         if (!student.midterm && !student.final && !student.assignments?.[0]?.score) return '-';
-        
+
         const midterm = student.midterm || 0;
         const final = student.final || 0;
         const assignment = student.assignments?.[0]?.score || 0;
         const attendance = (student.attendance || 0) * 0.1;
-        
+
         // 중간 30%, 기말 40%, 과제 20%, 출석 10%
         const total = (midterm * 0.3) + (final * 0.4) + (assignment * 0.2) + attendance;
         return Math.round(total);
     };
 
-    // 등급 계산
-    const getLetterGrade = (score) => {
-        if (score === '-') return '-';
-        if (score >= 95) return 'A+';
-        if (score >= 90) return 'A0';
-        if (score >= 85) return 'B+';
-        if (score >= 80) return 'B0';
-        if (score >= 75) return 'C+';
-        if (score >= 70) return 'C0';
-        if (score >= 65) return 'D+';
-        if (score >= 60) return 'D0';
-        return 'F';
-    };
-
     // 학생 목록 필터링 및 정렬
     const getFilteredStudents = () => {
-        if (!professorData?.students) return [];
+        const sourceStudents = students.length > 0 ? students : (professorData?.students || []);
 
-        let filteredStudents = [...professorData.students];
+        let filteredStudents = [...sourceStudents];
 
         // 강의별 필터링
         if (selectedCourse !== 'all') {
             filteredStudents = filteredStudents.filter(student => student.courseId === selectedCourse);
         }
+
 
         // 성적 상태별 필터링
         if (gradeFilter !== 'all') {
@@ -170,7 +192,7 @@ const ProfessorGradesPage = () => {
 
     // 학생 선택 토글
     const toggleStudentSelection = (studentId) => {
-        setSelectedStudents(prev => 
+        setSelectedStudents(prev =>
             prev.includes(studentId)
                 ? prev.filter(id => id !== studentId)
                 : [...prev, studentId]
@@ -181,7 +203,7 @@ const ProfessorGradesPage = () => {
     const toggleAllSelection = () => {
         const filteredStudents = getFilteredStudents();
         const allSelected = filteredStudents.every(student => selectedStudents.includes(student.id));
-        
+
         if (allSelected) {
             setSelectedStudents([]);
         } else {
@@ -204,25 +226,141 @@ const ProfessorGradesPage = () => {
         setShowBulkModal(true);
     };
 
-    // 성적 저장
-    const saveGrade = (gradeData) => {
-        alert('성적이 저장되었습니다.');
-        setShowGradeModal(false);
-        setSelectedStudent(null);
+    // 성적 저장 함수 - 개별 학생
+    const saveGrade = async (formData) => {
+        try {
+            setSaving(true);
+            setError(null);
+
+            // 폼에서 성적 데이터 수집 (등급 포함)
+            const gradeData = {
+                midterm: formData.midterm || null,
+                final: formData.final || null,
+                assignment: formData.assignment || null,
+                attendance: formData.attendance || null,
+                quiz: formData.quiz || null,
+                participation: formData.participation || null,
+                letterGrade: formData.letterGrade || null, // ✅ 등급 추가
+                totalScore: formData.totalScore || calculateTotalScore({
+                    midterm: formData.midterm,
+                    final: formData.final,
+                    assignments: [{ score: formData.assignment }],
+                    attendance: formData.attendance
+                })
+            };
+
+            console.log('성적 저장 요청:', selectedStudent.enrollmentId, gradeData);
+
+            // API 호출
+            const response = await EnrollmentAPI.updateGrade(
+                selectedStudent.enrollmentId,
+                gradeData
+            );
+
+            if (response.success) {
+                alert('성적이 저장되었습니다.');
+                setShowGradeModal(false);
+                setSelectedStudent(null);
+                await loadStudentList();
+            } else {
+                throw new Error(response.message || '성적 저장에 실패했습니다.');
+            }
+
+        } catch (error) {
+            console.error('성적 저장 오류:', error);
+
+            let errorMessage = '성적 저장 중 오류가 발생했습니다.';
+            if (error.message.includes('401')) {
+                errorMessage = '로그인이 만료되었습니다. 다시 로그인해주세요.';
+            } else if (error.message.includes('403')) {
+                errorMessage = '성적 입력 권한이 없습니다.';
+            } else if (error.message.includes('404')) {
+                errorMessage = '해당 수강 정보를 찾을 수 없습니다.';
+            }
+
+            setError(errorMessage);
+            alert(errorMessage);
+        } finally {
+            setSaving(false);
+        }
     };
 
-    // 일괄 성적 저장
-    const saveBulkGrades = (gradeData) => {
-        alert(`${selectedStudents.length}명의 성적이 저장되었습니다.`);
-        setShowBulkModal(false);
-        setSelectedStudents([]);
-    };
+    // 일괄 성적 저장 함수
+    const saveBulkGrades = async (formData) => {
+        try {
+            setSaving(true);
+            setError(null);
 
-    // 성적 내보내기
-    const exportGrades = () => {
-        const filteredStudents = getFilteredStudents();
-        console.log('성적 내보내기:', filteredStudents);
-        alert('성적이 Excel 파일로 내보내집니다.');
+            const gradeData = {
+                midterm: formData.midterm || null,
+                final: formData.final || null,
+                assignment: formData.assignment || null,
+                attendance: formData.attendance || null,
+                quiz: formData.quiz || null,
+                participation: formData.participation || null,
+                letterGrade: formData.letterGrade || null, // ✅ 등급 추가
+                preserveExisting: formData.preserveExisting || false
+            };
+
+            console.log('일괄 성적 저장 요청:', selectedStudents.length, '명');
+
+            const results = [];
+            let successCount = 0;
+            let failCount = 0;
+
+            for (const studentId of selectedStudents) {
+                try {
+                    const student = getFilteredStudents().find(s => s.id === studentId);
+                    if (!student?.enrollmentId) {
+                        results.push({
+                            studentId,
+                            success: false,
+                            error: 'enrollmentId가 없습니다.'
+                        });
+                        failCount++;
+                        continue;
+                    }
+
+                    // 기존 값 유지 옵션 처리
+                    const finalGradeData = { ...gradeData };
+                    if (gradeData.preserveExisting) {
+                        Object.keys(finalGradeData).forEach(key => {
+                            if (key !== 'preserveExisting' && student[key] && !finalGradeData[key]) {
+                                delete finalGradeData[key]; // 기존 값이 있고 새 값이 없으면 업데이트하지 않음
+                            }
+                        });
+                    }
+
+                    const response = await EnrollmentAPI.updateGrade(student.enrollmentId, finalGradeData);
+
+                    if (response.success) {
+                        results.push({ studentId, success: true });
+                        successCount++;
+                    } else {
+                        results.push({ studentId, success: false, error: response.message });
+                        failCount++;
+                    }
+                } catch (error) {
+                    results.push({ studentId, success: false, error: error.message });
+                    failCount++;
+                }
+            }
+
+            const message = `일괄 성적 입력 완료\n성공: ${successCount}명\n실패: ${failCount}명`;
+            alert(message);
+
+            if (successCount > 0) {
+                setShowBulkModal(false);
+                setSelectedStudents([]);
+                await loadStudentList();
+            }
+
+        } catch (error) {
+            console.error('일괄 성적 저장 오류:', error);
+            alert('일괄 성적 저장 중 오류가 발생했습니다.');
+        } finally {
+            setSaving(false);
+        }
     };
 
     // 통계 계산
@@ -230,7 +368,7 @@ const ProfessorGradesPage = () => {
         const filteredStudents = getFilteredStudents();
         const totalStudents = filteredStudents.length;
         const gradedStudents = filteredStudents.filter(s => calculateTotalScore(s) !== '-').length;
-        const avgScore = gradedStudents > 0 
+        const avgScore = gradedStudents > 0
             ? Math.round(filteredStudents
                 .filter(s => calculateTotalScore(s) !== '-')
                 .reduce((sum, s) => sum + calculateTotalScore(s), 0) / gradedStudents)
@@ -264,22 +402,147 @@ const ProfessorGradesPage = () => {
         );
     }
 
+    const handleGradeSubmit = (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(e.target);
+        const gradeData = {
+            midterm: parseFloat(formData.get('midterm')) || null,
+            final: parseFloat(formData.get('final')) || null,
+            assignment: parseFloat(formData.get('assignment')) || null,
+            attendance: parseFloat(formData.get('attendance')) || null,
+            quiz: parseFloat(formData.get('quiz')) || null,
+            participation: parseFloat(formData.get('participation')) || null,
+            letterGrade: formData.get('letterGrade') || null // ✅ 등급 추가
+        };
+
+        // 유효성 검사
+        const errors = validateGradeData(gradeData);
+        if (errors.length > 0) {
+            alert('입력 오류:\n' + errors.join('\n'));
+            return;
+        }
+
+        saveGrade(gradeData);
+    };
+
+    // 일괄 성적 입력 폼 제출 핸들러  
+    const handleBulkGradeSubmit = (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(e.target);
+        const gradeData = {
+            midterm: parseFloat(formData.get('midterm')) || null,
+            final: parseFloat(formData.get('final')) || null,
+            assignment: parseFloat(formData.get('assignment')) || null,
+            attendance: parseFloat(formData.get('attendance')) || null,
+            quiz: parseFloat(formData.get('quiz')) || null,
+            participation: parseFloat(formData.get('participation')) || null,
+            letterGrade: formData.get('letterGrade') || null, // ✅ 등급 추가
+            preserveExisting: formData.get('preserveExisting') === 'on'
+        };
+
+        // 유효성 검사
+        const errors = validateGradeData(gradeData);
+        if (errors.length > 0) {
+            alert('입력 오류:\n' + errors.join('\n'));
+            return;
+        }
+
+        const confirmMessage = `${selectedStudents.length}명의 학생에게 동일한 성적을 입력하시겠습니까?`;
+        if (window.confirm(confirmMessage)) {
+            saveBulkGrades(gradeData);
+        }
+    };
+
+    // 성적 데이터 유효성 검사 함수
+    const validateGradeData = (gradeData) => {
+        const errors = [];
+
+        // 점수 유효성 검사
+        Object.entries(gradeData).forEach(([key, value]) => {
+            if (key !== 'letterGrade' && key !== 'preserveExisting' && value !== null) {
+                if (value < 0 || value > 100) {
+                    errors.push(`${key}: 0-100 사이의 값을 입력해주세요.`);
+                }
+            }
+        });
+
+        // 등급 유효성 검사
+        if (gradeData.letterGrade) {
+            const validGrades = gradeOptions.map(option => option.value).filter(v => v !== '');
+            if (!validGrades.includes(gradeData.letterGrade)) {
+                errors.push('올바른 등급을 선택해주세요.');
+            }
+        }
+
+        return errors;
+    };
+
+    const loadStudentList = async () => {
+        try {
+            setLoading(true);
+
+            // selectedCourse가 'all'이면 모든 강의의 학생을 로드
+            if (selectedCourse === 'all') {
+                // 더미 데이터 사용하거나 전체 강의 조회 API 호출
+                // 현재는 더미 데이터 사용
+                const allStudents = professorData?.students || [];
+                setStudents(allStudents);
+                return;
+            }
+
+            // 특정 강의의 수강생 목록 조회 API 호출
+            const response = await EnrollmentAPI.getCourseEnrollments(selectedCourse);
+
+            if (response.success) {
+                // 학생 데이터 업데이트
+                const updatedStudents = response.data.enrollments.map(enrollment => ({
+                    id: enrollment.student.id,
+                    enrollmentId: enrollment.id, // ⭐ enrollmentId 매핑 중요!
+                    name: enrollment.student.name,
+                    department: enrollment.student.department,
+                    email: enrollment.student.email,
+                    courseId: selectedCourse, // 강의 ID 추가
+                    // 성적 정보
+                    midterm: enrollment.grades?.midterm || null,
+                    final: enrollment.grades?.final || null,
+                    assignment: enrollment.grades?.assignment || null,
+                    attendance: enrollment.grades?.attendance || null,
+                    quiz: enrollment.grades?.quiz || null,
+                    participation: enrollment.grades?.participation || null,
+                    totalScore: enrollment.grades?.totalScore || null,
+                    letterGrade: enrollment.grades?.letterGrade || null
+                }));
+
+                setStudents(updatedStudents);
+            } else {
+                throw new Error(response.message || '학생 목록을 불러올 수 없습니다.');
+            }
+        } catch (error) {
+            console.error('학생 목록 로드 오류:', error);
+            setError('학생 목록을 불러오는 중 오류가 발생했습니다.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const filteredStudents = getFilteredStudents();
     const statistics = getStatistics();
 
     return (
         <div className="professor-dashboard">
             <Header username={userData?.name || '교수님'} role="교수" />
-            
+
             <div className="dashboard-main">
-                <ProfessorSidebar 
-                    activeTab={activeTab} 
+                <ProfessorSidebar
+                    activeTab={activeTab}
                     setActiveTab={setActiveTab}
                     professorName={userData?.name || ''}
                     professorId={userData?.professorId || ''}
                     department={userData?.department || ''}
                 />
-                
+
                 <div className="dashboard-content">
                     <div className="welcome-banner">
                         <h2>성적 관리</h2>
@@ -331,26 +594,25 @@ const ProfessorGradesPage = () => {
                         <div className="card-header">
                             <h3>성적 관리</h3>
                             <div className="header-actions">
+                                {/* 뷰 모드 토글 그룹 */}
                                 <div className="view-toggle">
-                                    <button 
+                                    <button
                                         className={`btn btn-sm ${viewMode === 'table' ? 'btn-primary' : 'btn-outline'}`}
                                         onClick={() => setViewMode('table')}
+                                        type="button"
                                     >
-                                        <i className="fas fa-table"></i> 성적표
+                                        <i className="fas fa-table"></i>
+                                        <span className="btn-text">성적표</span>
                                     </button>
-                                    <button 
+                                    <button
                                         className={`btn btn-sm ${viewMode === 'statistics' ? 'btn-primary' : 'btn-outline'}`}
                                         onClick={() => setViewMode('statistics')}
+                                        type="button"
                                     >
-                                        <i className="fas fa-chart-bar"></i> 통계
+                                        <i className="fas fa-chart-bar"></i>
+                                        <span className="btn-text">통계</span>
                                     </button>
                                 </div>
-                                <button 
-                                    className="btn btn-outline btn-sm"
-                                    onClick={exportGrades}
-                                >
-                                    <i className="fas fa-download"></i> Excel 내보내기
-                                </button>
                             </div>
                         </div>
 
@@ -359,8 +621,8 @@ const ProfessorGradesPage = () => {
                             <div className="filter-row">
                                 <div className="filter-group">
                                     <label>강의 선택:</label>
-                                    <select 
-                                        value={selectedCourse} 
+                                    <select
+                                        value={selectedCourse}
                                         onChange={(e) => setSelectedCourse(e.target.value)}
                                         className="filter-select"
                                     >
@@ -375,8 +637,8 @@ const ProfessorGradesPage = () => {
 
                                 <div className="filter-group">
                                     <label>성적 필터:</label>
-                                    <select 
-                                        value={gradeFilter} 
+                                    <select
+                                        value={gradeFilter}
                                         onChange={(e) => setGradeFilter(e.target.value)}
                                         className="filter-select"
                                     >
@@ -392,8 +654,8 @@ const ProfessorGradesPage = () => {
 
                                 <div className="filter-group">
                                     <label>정렬 기준:</label>
-                                    <select 
-                                        value={sortBy} 
+                                    <select
+                                        value={sortBy}
                                         onChange={(e) => setSortBy(e.target.value)}
                                         className="filter-select"
                                     >
@@ -427,17 +689,11 @@ const ProfessorGradesPage = () => {
                                         {selectedStudents.length}명 선택됨
                                     </span>
                                     <div className="bulk-buttons">
-                                        <button 
+                                        <button
                                             className="btn btn-primary btn-sm"
                                             onClick={openBulkModal}
                                         >
                                             <i className="fas fa-edit"></i> 일괄 성적 입력
-                                        </button>
-                                        <button 
-                                            className="btn btn-outline btn-sm"
-                                            onClick={exportGrades}
-                                        >
-                                            <i className="fas fa-download"></i> 선택 내보내기
                                         </button>
                                     </div>
                                 </div>
@@ -478,7 +734,7 @@ const ProfessorGradesPage = () => {
                                                     const totalScore = calculateTotalScore(student);
                                                     const letterGrade = getLetterGrade(totalScore);
                                                     const courseName = professorData.courses?.find(c => c.id === student.courseId)?.name || '-';
-                                                    
+
                                                     return (
                                                         <tr key={index}>
                                                             <td>
@@ -502,8 +758,8 @@ const ProfessorGradesPage = () => {
                                                             <td className="score-cell">{student.assignments?.[0]?.score || '-'}</td>
                                                             <td className="total-score">{totalScore}</td>
                                                             <td>
-                                                                <span className={`grade-badge grade-${letterGrade?.toLowerCase()?.replace('+', 'plus')}`}>
-                                                                    {letterGrade}
+                                                                <span className={`grade-badge grade-${getLetterGrade(student)?.toLowerCase()?.replace('+', 'plus')}`}>
+                                                                    {getLetterGrade(student)}
                                                                 </span>
                                                             </td>
                                                             <td className="action-buttons">
@@ -534,7 +790,7 @@ const ProfessorGradesPage = () => {
                                     <div className="statistics-grid">
                                         {Object.entries(gradeDistribution).map(([courseId, data]) => {
                                             if (selectedCourse !== 'all' && selectedCourse !== courseId) return null;
-                                            
+
                                             return (
                                                 <div key={courseId} className="statistics-card">
                                                     <div className="statistics-header">
@@ -544,17 +800,17 @@ const ProfessorGradesPage = () => {
                                                             <span>채점: {data.gradedStudents}명</span>
                                                         </div>
                                                     </div>
-                                                    
+
                                                     <div className="grade-distribution">
                                                         <div className="grade-chart">
                                                             {Object.entries(data.grades).map(([grade, count]) => (
                                                                 <div key={grade} className="grade-bar-container">
                                                                     <div className="grade-label">{grade}</div>
                                                                     <div className="grade-bar-wrapper">
-                                                                        <div 
+                                                                        <div
                                                                             className={`grade-bar grade-${grade.toLowerCase().replace('+', 'plus')}`}
-                                                                            style={{ 
-                                                                                width: data.gradedStudents > 0 ? `${(count / data.gradedStudents) * 100}%` : '0%' 
+                                                                            style={{
+                                                                                width: data.gradedStudents > 0 ? `${(count / data.gradedStudents) * 100}%` : '0%'
                                                                             }}
                                                                         ></div>
                                                                     </div>
@@ -563,12 +819,12 @@ const ProfessorGradesPage = () => {
                                                             ))}
                                                         </div>
                                                     </div>
-                                                    
+
                                                     <div className="statistics-footer">
                                                         <div className="avg-info">
-                                                            평균: {data.gradedStudents > 0 
+                                                            평균: {data.gradedStudents > 0
                                                                 ? Math.round(Object.entries(data.grades).reduce((sum, [grade, count]) => {
-                                                                    const gradePoint = {'A+': 95, 'A0': 92, 'B+': 87, 'B0': 82, 'C+': 77, 'C0': 72, 'D+': 67, 'D0': 62, 'F': 50}[grade] || 0;
+                                                                    const gradePoint = { 'A+': 95, 'A0': 92, 'B+': 87, 'B0': 82, 'C+': 77, 'C0': 72, 'D+': 67, 'D0': 62, 'F': 50 }[grade] || 0;
                                                                     return sum + (gradePoint * count);
                                                                 }, 0) / data.gradedStudents)
                                                                 : 0}점
@@ -591,92 +847,126 @@ const ProfessorGradesPage = () => {
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3>{selectedStudent.name} 성적 입력</h3>
-                            <button 
-                                className="modal-close"
-                                onClick={() => setShowGradeModal(false)}
-                            >
+                            <button className="modal-close" onClick={() => setShowGradeModal(false)}>
                                 <i className="fas fa-times"></i>
                             </button>
                         </div>
-                        <div className="modal-body">
-                            <div className="grade-form">
-                                <div className="student-info">
-                                    <p><strong>학번:</strong> {selectedStudent.id}</p>
-                                    <p><strong>이름:</strong> {selectedStudent.name}</p>
-                                    <p><strong>학과:</strong> {selectedStudent.department}</p>
-                                    <p><strong>강의:</strong> {professorData.courses?.find(c => c.id === selectedStudent.courseId)?.name}</p>
-                                </div>
-                                
-                                <div className="grade-inputs">
-                                    <div className="input-group">
-                                        <label>중간고사 (30%)</label>
-                                        <input 
-                                            type="number" 
-                                            min="0" 
-                                            max="100"
-                                            defaultValue={selectedStudent.midterm || ''}
-                                            placeholder="점수 입력"
-                                            id="midterm-score"
-                                        />
+
+                        <form onSubmit={handleGradeSubmit}>
+                            <div className="modal-body">
+                                <div className="grade-form">
+                                    <div className="student-info">
+                                        <p><strong>학번:</strong> {selectedStudent.id}</p>
+                                        <p><strong>이름:</strong> {selectedStudent.name}</p>
+                                        <p><strong>학과:</strong> {selectedStudent.department}</p>
+                                        <p><strong>강의:</strong> {professorData.courses?.find(c => c.id === selectedStudent.courseId)?.name}</p>
                                     </div>
-                                    <div className="input-group">
-                                        <label>기말고사 (40%)</label>
-                                        <input 
-                                            type="number" 
-                                            min="0" 
-                                            max="100"
-                                            defaultValue={selectedStudent.final || ''}
-                                            placeholder="점수 입력"
-                                            id="final-score"
-                                        />
+
+                                    <div className="grade-inputs">
+                                        <div className="input-group">
+                                            <label>중간고사 (30%)</label>
+                                            <input
+                                                type="number"
+                                                name="midterm"
+                                                min="0"
+                                                max="100"
+                                                step="0.1"
+                                                defaultValue={selectedStudent.midterm || ''}
+                                                placeholder="점수 입력"
+                                                disabled={saving}
+                                            />
+                                        </div>
+                                        <div className="input-group">
+                                            <label>기말고사 (40%)</label>
+                                            <input
+                                                type="number"
+                                                name="final"
+                                                min="0"
+                                                max="100"
+                                                step="0.1"
+                                                defaultValue={selectedStudent.final || ''}
+                                                placeholder="점수 입력"
+                                                disabled={saving}
+                                            />
+                                        </div>
+                                        <div className="input-group">
+                                            <label>과제 (20%)</label>
+                                            <input
+                                                type="number"
+                                                name="assignment"
+                                                min="0"
+                                                max="100"
+                                                step="0.1"
+                                                defaultValue={selectedStudent.assignments?.[0]?.score || ''}
+                                                placeholder="점수 입력"
+                                                disabled={saving}
+                                            />
+                                        </div>
+                                        <div className="input-group">
+                                            <label>출석률 (10%)</label>
+                                            <input
+                                                type="number"
+                                                name="attendance"
+                                                min="0"
+                                                max="100"
+                                                step="0.1"
+                                                defaultValue={selectedStudent.attendance || ''}
+                                                placeholder="출석률 입력"
+                                                disabled={saving}
+                                            />
+                                        </div>
+
+                                        {/* ✅ 등급 직접 선택 추가 */}
+                                        <div className="input-group" style={{ gridColumn: 'span 2' }}>
+                                            <label>최종 등급 <span style={{ color: '#dc3545' }}>*</span></label>
+                                            <select
+                                                name="letterGrade"
+                                                defaultValue={selectedStudent.letterGrade || selectedStudent.grade || ''}
+                                                disabled={saving}
+                                                className="filter-select"
+                                                style={{ width: '100%' }}
+                                            >
+                                                {gradeOptions.map(option => (
+                                                    <option key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <small style={{ color: '#666', marginTop: '0.25rem' }}>
+                                                점수와 관계없이 최종 등급을 직접 선택하세요
+                                            </small>
+                                        </div>
                                     </div>
-                                    <div className="input-group">
-                                        <label>과제 (20%)</label>
-                                        <input 
-                                            type="number" 
-                                            min="0" 
-                                            max="100"
-                                            defaultValue={selectedStudent.assignments?.[0]?.score || ''}
-                                            placeholder="점수 입력"
-                                            id="assignment-score"
-                                        />
+
+                                    <div className="grade-preview">
+                                        <h4>성적 미리보기</h4>
+                                        <div className="preview-info">
+                                            <p>총점: <span className="preview-score">{calculateTotalScore(selectedStudent)}</span></p>
+                                            <p>현재 등급: <span className="preview-grade">{getLetterGrade(selectedStudent)}</span></p>
+                                        </div>
+                                        <small style={{ color: '#666' }}>
+                                            💡 총점은 참고용이며, 최종 등급은 위에서 직접 선택한 값이 적용됩니다.
+                                        </small>
                                     </div>
-                                    <div className="input-group">
-                                        <label>출석률 (10%)</label>
-                                        <input 
-                                            type="number" 
-                                            min="0" 
-                                            max="100"
-                                            defaultValue={selectedStudent.attendance || ''}
-                                            placeholder="출석률 입력"
-                                            id="attendance-rate"
-                                        />
-                                    </div>
-                                </div>
-                                
-                                <div className="grade-preview">
-                                    <h4>성적 미리보기</h4>
-                                    <div className="preview-info">
-                                        <p>총점: <span className="preview-score">{calculateTotalScore(selectedStudent)}</span></p>
-                                        <p>등급: <span className="preview-grade">{getLetterGrade(calculateTotalScore(selectedStudent))}</span></p>
-                                    </div>
+
+                                    {error && (
+                                        <div className="error-message">
+                                            <i className="fas fa-exclamation-triangle"></i>
+                                            {error}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
-                        </div>
-                        <div className="modal-footer">
-                            <button 
-                                className="btn btn-outline"
-                                onClick={() => setShowGradeModal(false)}
-                            >
-                                취소
-                            </button>
-                            <button 
-                                className="btn btn-primary"
-                                onClick={() => saveGrade({})}
-                            >
-                                저장
-                            </button>
-                        </div>
+
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-outline" onClick={() => setShowGradeModal(false)} disabled={saving}>
+                                    취소
+                                </button>
+                                <button type="submit" className={`btn btn-primary ${saving ? 'loading' : ''}`} disabled={saving}>
+                                    {saving ? '저장 중...' : '저장'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}
@@ -687,57 +977,72 @@ const ProfessorGradesPage = () => {
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3>일괄 성적 입력</h3>
-                            <button 
-                                className="modal-close"
-                                onClick={() => setShowBulkModal(false)}
-                            >
+                            <button className="modal-close" onClick={() => setShowBulkModal(false)}>
                                 <i className="fas fa-times"></i>
                             </button>
                         </div>
-                        <div className="modal-body">
-                            <div className="bulk-grade-form">
-                                <p>{selectedStudents.length}명의 학생에게 동일한 성적을 입력합니다.</p>
-                                
-                                <div className="grade-inputs">
-                                    <div className="input-group">
-                                        <label>중간고사</label>
+
+                        <form onSubmit={handleBulkGradeSubmit}>
+                            <div className="modal-body">
+                                <div className="bulk-grade-form">
+                                    <p>{selectedStudents.length}명의 학생에게 동일한 성적을 입력합니다.</p>
+
+                                    <div className="grade-inputs">
+                                        <div className="input-group">
+                                            <label>중간고사</label>
+                                            <input type="number" name="midterm" min="0" max="100" step="0.1" placeholder="점수 입력" disabled={saving} />
+                                        </div>
+                                        <div className="input-group">
+                                            <label>기말고사</label>
+                                            <input type="number" name="final" min="0" max="100" step="0.1" placeholder="점수 입력" disabled={saving} />
+                                        </div>
+                                        <div className="input-group">
+                                            <label>과제</label>
+                                            <input type="number" name="assignment" min="0" max="100" step="0.1" placeholder="점수 입력" disabled={saving} />
+                                        </div>
+                                        <div className="input-group">
+                                            <label>출석률</label>
+                                            <input type="number" name="attendance" min="0" max="100" step="0.1" placeholder="출석률 입력" disabled={saving} />
+                                        </div>
+
+                                        {/* 등급 직접 선택 */}
+                                        <div className="input-group" style={{ gridColumn: 'span 2' }}>
+                                            <label>최종 등급</label>
+                                            <select name="letterGrade" disabled={saving} className="filter-select" style={{ width: '100%' }}>
+                                                {gradeOptions.map(option => (
+                                                    <option key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
                                     </div>
-                                    <div className="input-group">
-                                        <label>기말고사</label>
-                                        <input type="number" min="0" max="100" placeholder="점수 입력" />
+
+                                    <div className="bulk-options">
+                                        <label className="checkbox-label">
+                                            <input type="checkbox" name="preserveExisting" />
+                                            <span>빈 값만 업데이트 (기존 값 유지)</span>
+                                        </label>
                                     </div>
-                                    <div className="input-group">
-                                        <label>과제</label>
-                                        <input type="number" min="0" max="100" placeholder="점수 입력" />
-                                    </div>
-                                    <div className="input-group">
-                                        <label>출석률</label>
-                                        <input type="number" min="0" max="100" placeholder="출석률 입력" />
-                                    </div>
-                                </div>
-                                
-                                <div className="bulk-options">
-                                    <label className="checkbox-label">
-                                        <input type="checkbox" />
-                                        <span>빈 값만 업데이트 (기존 값 유지)</span>
-                                    </label>
+
+                                    {error && (
+                                        <div className="error-message">
+                                            <i className="fas fa-exclamation-triangle"></i>
+                                            {error}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
-                        </div>
-                        <div className="modal-footer">
-                            <button 
-                                className="btn btn-outline"
-                                onClick={() => setShowBulkModal(false)}
-                            >
-                                취소
-                            </button>
-                            <button 
-                                className="btn btn-primary"
-                                onClick={() => saveBulkGrades({})}
-                            >
-                                일괄 저장
-                            </button>
-                        </div>
+
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-outline" onClick={() => setShowBulkModal(false)} disabled={saving}>
+                                    취소
+                                </button>
+                                <button type="submit" className={`btn btn-primary ${saving ? 'loading' : ''}`} disabled={saving}>
+                                    {saving ? '일괄 저장 중...' : '일괄 저장'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

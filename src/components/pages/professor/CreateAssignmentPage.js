@@ -3,16 +3,17 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../../dashboard/Header';
 import ProfessorSidebar from '../../dashboard/ProfessorSidebar';
 import { getDashboardData, getCurrentUser } from '../../../data/authUtils';
+import { AssignmentAPI, CourseAPI } from '../../../services/api';
 import '../../styles/CreateAssignmentPage.css';
 
 const CreateAssignmentPage = () => {
     const [userData, setUserData] = useState(null);
-    const [professorData, setProfessorData] = useState(null);
     const [courseData, setCourseData] = useState(null);
     const [originalAssignment, setOriginalAssignment] = useState(null);
     const [activeTab, setActiveTab] = useState('assignments');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [courses, setCourses] = useState([]);
 
     // 과제 폼 데이터
     const [assignment, setAssignment] = useState({
@@ -30,6 +31,8 @@ const CreateAssignmentPage = () => {
     });
 
     const [errors, setErrors] = useState({});
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
     const [previewMode, setPreviewMode] = useState(false);
     const [hasChanges, setHasChanges] = useState(false);
 
@@ -39,69 +42,76 @@ const CreateAssignmentPage = () => {
     // 수정 모드인지 확인
     const isEditMode = !!assignmentId;
 
-    useEffect(() => {
-        const user = getCurrentUser();
-        if (!user) {
-            navigate('/login');
-            return;
-        }
+    const loadProfessorCourses = async () => {
+        try {
+            setLoading(true);
 
-        const dashboardData = getDashboardData();
-        if (!dashboardData) {
-            navigate('/professor/dashboard');
-            return;
-        }
-
-        setUserData(user);
-        setProfessorData(dashboardData);
-
-        // 수정 모드인 경우 기존 과제 찾기
-        if (isEditMode) {
-            const foundAssignment = dashboardData.assignments?.find(assign =>
-                assign.id == assignmentId || assign.id === parseInt(assignmentId)
-            );
-            if (!foundAssignment) {
-                alert('과제를 찾을 수 없습니다.');
-                navigate('/professor/courses');
-                return;
-            }
-
-            // 권한 확인 (작성자만 수정 가능)
-            if (foundAssignment.authorId && foundAssignment.authorId !== user.professorId) {
-                alert('이 과제를 수정할 권한이 없습니다.');
-                navigate('/professor/assignments');
-                return;
-            }
-
-            setOriginalAssignment(foundAssignment);
-
-            // 기존 데이터로 폼 초기화
-            setAssignment({
-                title: foundAssignment.title || '',
-                description: foundAssignment.description || '',
-                instructions: foundAssignment.instructions || '',
-                maxScore: foundAssignment.maxScore || 100,
-                deadline: foundAssignment.deadline ? foundAssignment.deadline.substring(0, 16) : '',
-                submissionType: foundAssignment.submissionType || 'file',
-                allowLateSubmission: foundAssignment.allowLateSubmission || false,
-                latePenalty: foundAssignment.latePenalty || 10,
-                teamAssignment: foundAssignment.teamAssignment || false,
-                maxTeamSize: foundAssignment.maxTeamSize || 4,
-                attachments: foundAssignment.attachments || [],
+            const response = await CourseAPI.searchCourses({
+                professorId: userData?.id || userData?.professorId,
+                semester: '2025-1'
             });
-        }
 
-        // 강의 데이터 찾기
-        const course = dashboardData.courses?.find(c => c.id === courseId);
-        if (!course) {
-            alert('강의를 찾을 수 없습니다.');
-            navigate('/professor/courses');
-            return;
-        }
+            if (response.success) {
+                setCourses(response.data.courses || []);
 
-        setCourseData(course);
-        setLoading(false);
-    }, [navigate, courseId, assignmentId, isEditMode]);
+                if (courseId) {
+                    const course = response.data.courses.find(c => c.id === courseId);
+                    if (course) {
+                        setCourseData(course);
+                    }
+                }
+            } else {
+                setError('담당 강의 목록을 불러올 수 없습니다.');
+            }
+        } catch (error) {
+            console.error('담당 강의 목록 로드 실패:', error);
+            setError('담당 강의 목록을 불러오는 중 오류가 발생했습니다.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const loadExistingAssignment = async () => {
+        if (!isEditMode || !courseId || !assignmentId) return;
+
+        try {
+            setLoading(true);
+
+            console.log('기존 과제 로드:', courseId, assignmentId);
+
+            // API 호출 (GET /api/course/:courseId/assignment/:assignmentId)
+            const response = await AssignmentAPI.getAssignment(courseId, assignmentId);
+
+            if (response.success) {
+                const assignment = response.data;
+
+                setAssignment({
+                    title: assignment.title || '',
+                    description: assignment.description || '',
+                    instructions: '',
+                    maxScore: assignment.maxScore || 100,
+                    deadline: assignment.deadline ?
+                        new Date(assignment.deadline).toISOString().slice(0, 16) : '',
+                    submissionType: assignment.submissionType || 'file',
+                    allowLateSubmission: assignment.allowLateSubmission || false,
+                    latePenalty: assignment.latePenalty || 10,
+                    teamAssignment: false,
+                    maxTeamSize: 4,
+                    attachments: [],
+
+                });
+
+                console.log('기존 과제 로드 성공:', assignment);
+            } else {
+                setErrors(response.message || '과제를 찾을 수 없습니다.');
+            }
+        } catch (error) {
+            console.error('과제 로드 실패:', error);
+            setErrors('과제를 불러오는 중 오류가 발생했습니다.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // 변경사항 감지
     useEffect(() => {
@@ -123,20 +133,50 @@ const CreateAssignmentPage = () => {
         setHasChanges(hasChanged);
     }, [assignment, originalAssignment, isEditMode]);
 
-    // 폼 데이터 변경 핸들러
+    // 컴포넌트 마운트시 데이터 로드
+    useEffect(() => {
+        const user = getCurrentUser();
+        if (!user || user.role !== 'professor') {
+            navigate('/login');
+            return;
+        }
+
+        setUserData(user);
+    }, [navigate]);
+
+    useEffect(() => {
+        if (userData) {
+            loadProfessorCourses();
+            if (isEditMode) {
+                loadExistingAssignment();
+            }
+        }
+    }, [userData, isEditMode, courseId, assignmentId]);
+
+    // 폼 입력 핸들러
     const handleInputChange = (field, value) => {
         setAssignment(prev => ({
             ...prev,
             [field]: value
         }));
 
-        // 에러 메시지 제거
+        // 개별 필드 에러 제거
         if (errors[field]) {
             setErrors(prev => ({
                 ...prev,
                 [field]: ''
             }));
         }
+    };
+
+    // 허용 파일 형식 변경 핸들러
+    const handleFileTypesChange = (fileType) => {
+        setAssignment(prev => ({
+            ...prev,
+            allowedFileTypes: prev.allowedFileTypes.includes(fileType)
+                ? prev.allowedFileTypes.filter(type => type !== fileType)
+                : [...prev.allowedFileTypes, fileType]
+        }));
     };
 
     // 폼 유효성 검사
@@ -187,63 +227,101 @@ const CreateAssignmentPage = () => {
 
     // 과제 출제/수정
     const handlePublish = async () => {
-        if (!validateForm()) {
-            return;
-        }
+        if (!validateForm()) return;
 
-        if (isEditMode && !hasChanges) {
-            alert('변경된 내용이 없습니다.');
-            return;
-        }
-
-        setSaving(true);
+        const targetCourseId = courseData?.id || courseId;
 
         try {
+            setSaving(true);
+            setErrors(null);
+            // setSuccess(null);
+
+            // API 요청 데이터 구성
+            const submitData = {
+                title: assignment.title.trim(),
+                description: assignment.description.trim(),
+                instructions: assignment.instructions.trim(),
+                maxScore: assignment.maxScore,
+                deadline: new Date(assignment.deadline).toISOString(),
+                allowLateSubmission: assignment.allowLateSubmission,
+                latePenalty: assignment.allowLateSubmission ? assignment.latePenalty : 0,
+                submissionType: assignment.submissionType,
+            };
+
+            console.log(isEditMode ? '과제 수정 요청:' : '과제 작성 요청:', submitData);
+
+            let response;
+
             if (isEditMode) {
-                // 수정 모드
-                const updatedAssignment = {
-                    ...originalAssignment,
-                    ...assignment,
-                    deadline: assignment.deadline + ':00.000Z',
-                    updatedAt: new Date().toISOString(),
-                    status: 'published'
-                };
-
-                console.log('수정된 과제:', updatedAssignment);
-                alert('과제가 성공적으로 수정되었습니다.');
-
-                navigate(`/professor/assignment/${assignmentId}`);
+                // 과제 수정 (PATCH /api/course/:courseId/assignment/:assignmentId)
+                response = await AssignmentAPI.updateAssignment(
+                    targetCourseId,
+                    assignmentId,
+                    submitData
+                );
             } else {
-                // 새 작성 모드
-                const newAssignment = {
-                    id: Date.now().toString(),
-                    ...assignment,
-                    courseId: courseData.id,
-                    courseName: courseData.name,
-                    authorId: userData.professorId,
-                    authorName: userData.name,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                    deadline: assignment.deadline + ':00.000Z',
-                    submissions: [],
-                    status: 'published'
-                };
-
-                console.log('새 과제:', newAssignment);
-                alert('과제가 성공적으로 출제되었습니다.');
-
-                navigate(`/professor/course/${courseId}`);
+                // 과제 작성 (POST /api/course/:courseId/assignment)
+                response = await AssignmentAPI.createAssignment(
+                    targetCourseId,
+                    submitData
+                );
             }
 
-            // 임시저장 데이터 삭제
-            const draftKey = isEditMode
-                ? `assignment_edit_draft_${assignmentId}`
-                : `assignment_draft_${courseId}`;
-            localStorage.removeItem(draftKey);
+            if (response.success) {
+                const successMessage = isEditMode ? '과제가 수정되었습니다.' : '과제가 등록되었습니다.';
+                // setSuccess(successMessage);
+
+                console.log(isEditMode ? '과제 수정 성공:' : '과제 작성 성공:', response.data);
+
+                // 2초 후 강의 상세 페이지로 이동
+                setTimeout(() => {
+                    navigate(`/professor/course/${assignment.courseId}`);
+                }, 2000);
+
+            } else {
+                setError(response.message || (isEditMode ? '과제 수정에 실패했습니다.' : '과제 등록에 실패했습니다.'));
+            }
 
         } catch (error) {
-            console.error('과제 처리 실패:', error);
-            alert(`과제 ${isEditMode ? '수정' : '출제'} 중 오류가 발생했습니다. 다시 시도해주세요.`);
+            console.error(isEditMode ? '과제 수정 오류:' : '과제 작성 오류:', error);
+
+            let errorMessage = isEditMode ? '과제 수정 중 오류가 발생했습니다.' : '과제 등록 중 오류가 발생했습니다.';
+            if (error.message.includes('403')) {
+                errorMessage = '해당 강의의 과제를 작성할 권한이 없습니다.';
+            } else if (error.message.includes('404')) {
+                errorMessage = isEditMode ? '수정할 과제를 찾을 수 없습니다.' : '강의를 찾을 수 없습니다.';
+            }
+
+            setError(errorMessage);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!isEditMode) return;
+
+        if (!window.confirm('정말로 이 과제를 삭제하시겠습니까?\n제출된 모든 과제물도 함께 삭제됩니다.')) return;
+
+        try {
+            setSaving(true);
+            setErrors(null);
+
+            console.log('과제 삭제 요청:', courseId, assignmentId);
+
+            // API 호출 (DELETE /api/course/:courseId/assignment/:assignmentId)
+            const response = await AssignmentAPI.deleteAssignment(courseId, assignmentId);
+
+            if (response.success) {
+                alert('과제가 삭제되었습니다.');
+                navigate(`/professor/course/${courseId}`);
+            } else {
+                setErrors(response.message || '과제 삭제에 실패했습니다.');
+            }
+
+        } catch (error) {
+            console.error('과제 삭제 오류:', error);
+            setErrors('과제 삭제 중 오류가 발생했습니다.');
         } finally {
             setSaving(false);
         }

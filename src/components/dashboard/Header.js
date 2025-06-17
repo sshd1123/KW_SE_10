@@ -28,6 +28,13 @@ const Header = ({ username, role }) => {
     } else if (role === '학생' || role === 'student') {
       return '/student/dashboard';
     } 
+
+    const currentPath = window.location.pathname;
+    if (currentPath.includes('/professor/')) {
+      return '/professor/dashboard';
+    } else if (currentPath.includes('/student/')) {
+      return '/student/dashboard';
+    }
     // 기본값은 학생 대시보드
     return '/student/dashboard';
   };
