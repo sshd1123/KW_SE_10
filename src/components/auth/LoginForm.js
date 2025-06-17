@@ -7,7 +7,7 @@ const LoginForm = () => {
   const navigate = useNavigate();
 
   const [loginData, setLoginData] = useState({
-    userId: '',
+    loginId: '',
     password: ''
   });
 
@@ -29,7 +29,7 @@ const LoginForm = () => {
     setError('');
     setIsLoading(true);
 
-    if (!loginData.userId.trim()) {
+    if (!loginData.loginId.trim()) {
       setError('ID를 입력해주세요.');
       return;
     }
@@ -42,7 +42,7 @@ const LoginForm = () => {
 
     try {
       const response = await AuthAPI.login({
-        userId: loginData.userId,
+        loginId: loginData.loginId,
         password: loginData.password
       });
 
@@ -66,12 +66,12 @@ const LoginForm = () => {
   return (
     <form className="login-form" onSubmit={handleSubmit}>
       <div className="form-group">
-        <label htmlFor="userId">아이디</label>
+        <label htmlFor="loginId">아이디</label>
         <input
           type="text"
-          id="userId"
-          name="userId"
-          value={loginData.userId}
+          id="loginId"
+          name="loginId"
+          value={loginData.loginId}
           onChange={handleChange}
           placeholder="ID(학번 또는 사번)"
           required
