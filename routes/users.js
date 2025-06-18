@@ -9,24 +9,63 @@ const {
   optionalAuth
 } = require('../middlewares/auth');
 
-// 모든 사용자 목록 조회 (관리자만)
+// 모든 사용자 목록 조회 (관리자만) - 실제 DB 연동
 router.get('/', requireAuth, requireAdmin, async (req, res, next) => {
   try {
-    // TODO: 실제 사용자 목록 조회 로직
+    const { page = 1, limit = 10, search = '', role = '' } = req.query;
+    const offset = (parseInt(page) - 1) * parseInt(limit);
     
-    // 임시 데이터
-    const users = [
-      { id: 1, email: 'user1@example.com', name: '사용자1', role: 'user' },
-      { id: 2, email: 'admin@example.com', name: '관리자', role: 'admin' },
-      { id: 3, email: 'user2@example.com', name: '사용자2', role: 'user' }
-    ];
+    let sql = `
+      SELECT user_id, login_id, username, role, is_approved, created_at, updated_at
+      FROM tb_users 
+      WHERE 1=1
+    `;
+    let params = [];
+    
+    // 검색 조건 추가 (username 컬럼 사용)
+    if (search) {
+      sql += ` AND (login_id LIKE ? OR username LIKE ?)`;
+      params.push(`%${search}%`, `%${search}%`);
+    }
+    
+    // 역할 필터 추가
+    if (role) {
+      sql += ` AND role = ?`;
+      params.push(role);
+    }
+    
+    sql += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+    params.push(parseInt(limit), offset);
+    
+    const users = await req.db.query(sql, params);
+    
+    // 전체 개수 조회
+    let countSql = `SELECT COUNT(*) as total FROM tb_users WHERE 1=1`;
+    let countParams = [];
+    
+    if (search) {
+      countSql += ` AND (login_id LIKE ? OR username LIKE ?)`;
+      countParams.push(`%${search}%`, `%${search}%`);
+    }
+    
+    if (role) {
+      countSql += ` AND role = ?`;
+      countParams.push(role);
+    }
+    
+    const [{ total }] = await req.db.query(countSql, countParams);
     
     res.json({
       success: true,
       message: '사용자 목록 조회 성공',
       data: {
         users,
-        total: users.length
+        pagination: {
+          current_page: parseInt(page),
+          total_items: total,
+          total_pages: Math.ceil(total / parseInt(limit)),
+          limit: parseInt(limit)
+        }
       }
     });
   } catch (error) {
@@ -70,7 +109,7 @@ router.put('/:id', requireAuth, requireOwnerOrAdmin, async (req, res, next) => {
     
     // 본인 정보 수정 시 세션도 업데이트
     if (req.user.id == userId) {
-      req.session.user.name = name;
+      req.session.user.name = name; // 세션의 name은 username에서 온 값
       req.session.user.email = email;
     }
     

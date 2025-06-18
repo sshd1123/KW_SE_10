@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 기능 종합 테스트</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .badge {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid #007bff;
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .form-row > * {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        input, select, textarea, button {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+        
+        button {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,123,255,0.3);
+        }
+        
+        button.danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+        }
+        
+        button.success {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+        }
+        
+        button.warning {
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-indicator.online {
+            background: #28a745;
+        }
+        
+        .status-indicator.offline {
+            background: #dc3545;
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .quick-actions button {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #dee2e6;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            background: #f8f9fa;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-weight: 600;
+            width: auto;
+            margin: 0;
+        }
+        
+        .tab.active {
+            background: white;
+            border-bottom-color: #007bff;
+            color: #007bff;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .login-status {
+            background: #e3f2fd;
+            border-left: 5px solid #2196f3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .emoji {
+            font-size: 1.2em;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛠️ 관리자 기능 종합 테스트</h1>
+            <div class="badge">Admin Function Testing Suite</div>
+        </div>
+        
+        <div class="content">
+            <!-- 로그인 상태 표시 -->
+            <div class="login-status" id="loginStatus">
+                <span class="status-indicator offline" id="statusIndicator"></span>
+                <span id="statusText">로그인이 필요합니다</span>
+                <button onclick="checkAuthStatus()" style="width: auto; margin-left: 10px;">상태 새로고침</button>
+            </div>
+            
+            <!-- 빠른 작업 -->
+            <div class="section">
+                <h2><span class="emoji">⚡</span>빠른 작업</h2>
+                <div class="quick-actions">
+                    <button onclick="adminLogin()" class="success">관리자 로그인</button>
+                    <button onclick="checkAuthStatus()">로그인 상태 확인</button>
+                    <button onclick="getDashboard()">대시보드 조회</button>
+                    <button onclick="logout()" class="danger">로그아웃</button>
+                </div>
+            </div>
+
+            <!-- 관리자 로그인 -->
+            <div class="section">
+                <h2><span class="emoji">🔐</span>관리자 로그인</h2>
+                <div class="form-row">
+                    <div>
+                        <label>관리자 이메일</label>
+                        <input type="email" id="adminEmail" value="admin@example.com">
+                    </div>
+                    <div>
+                        <label>비밀번호</label>
+                        <input type="password" id="adminPassword" value="admin123">
+                    </div>
+                </div>
+                <button onclick="adminLogin()">로그인</button>
+                <button onclick="createAdminAccount()" class="warning">관리자 계정 생성</button>
+                <div id="loginResult" class="result" style="display:none;"></div>
+            </div>
+
+            <!-- 탭 메뉴 -->
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('dashboard')">📊 대시보드</button>
+                <button class="tab" onclick="showTab('users')">👥 사용자 관리</button>
+                <button class="tab" onclick="showTab('announcements')">📢 공지사항</button>
+                <button class="tab" onclick="showTab('courses')">📚 강의 관리</button>
+                <button class="tab" onclick="showTab('graduation')">🎓 졸업 관리</button>
+            </div>
+
+            <!-- 대시보드 탭 -->
+            <div id="dashboard" class="tab-content active">
+                <div class="section">
+                    <h2><span class="emoji">📊</span>관리자 대시보드</h2>
+                    <button onclick="getDashboard()">통계 조회</button>
+                    <div id="dashboardResult" class="result" style="display:none;"></div>
+                </div>
+            </div>
+
+            <!-- 사용자 관리 탭 -->
+            <div id="users" class="tab-content">
+                <div class="section">
+                    <h2><span class="emoji">👥</span>사용자 관리</h2>
+                    
+                    <h3>사용자 목록 조회</h3>
+                    <div class="form-row">
+                        <input type="number" id="userPage" placeholder="페이지" value="1" min="1">
+                        <input type="number" id="userLimit" placeholder="페이지당 개수" value="10" min="1">
+                        <input type="text" id="userSearch" placeholder="검색어">
+                        <select id="userRole">
+                            <option value="">모든 역할</option>
+                            <option value="student">학생</option>
+                            <option value="professor">교수</option>
+                            <option value="admin">관리자</option>
+                        </select>
+                    </div>
+                    <button onclick="getUsers()">사용자 목록 조회</button>
+                    
+                    <h3 style="margin-top: 30px;">사용자 관리</h3>
+                    <div class="form-row">
+                        <input type="number" id="targetUserId" placeholder="사용자 ID" min="1">
+                        <select id="newUserRole">
+                            <option value="student">학생</option>
+                            <option value="professor">교수</option>
+                            <option value="admin">관리자</option>
+                        </select>
+                    </div>
+                    <button onclick="changeUserRole()">역할 변경</button>
+                    <button onclick="deleteUser()" class="danger">사용자 삭제</button>
+                    
+                    <div id="usersResult" class="result" style="display:none;"></div>
+                </div>
+            </div>
+
+            <!-- 공지사항 관리 탭 -->
+            <div id="announcements" class="tab-content">
+                <div class="section">
+                    <h2><span class="emoji">📢</span>공지사항 관리</h2>
+                    
+                    <h3>공지사항 목록 조회</h3>
+                    <div class="form-row">
+                        <input type="number" id="announcePage" placeholder="페이지" value="1" min="1">
+                        <input type="number" id="announceLimit" placeholder="페이지당 개수" value="10" min="1">
+                        <input type="text" id="announceSearch" placeholder="검색어">
+                        <input type="number" id="announceDeptFilter" placeholder="학과 ID" min="1">
+                    </div>
+                    <button onclick="getAnnouncements()">공지사항 조회</button>
+                    
+                    <h3 style="margin-top: 30px;">공지사항 생성</h3>
+                    <div class="form-group">
+                        <label>제목</label>
+                        <input type="text" id="announceTitle" placeholder="공지사항 제목">
+                    </div>
+                    <div class="form-group">
+                        <label>내용</label>
+                        <textarea id="announceContent" placeholder="공지사항 내용" rows="4"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <input type="number" id="announceDeptId" placeholder="학과 ID (전체 공지는 비워두세요)" min="1">
+                        <label style="display: flex; align-items: center; width: auto;">
+                            <input type="checkbox" id="announceImportant" style="width: auto; margin-right: 8px;">
+                            중요 공지사항
+                        </label>
+                    </div>
+                    <button onclick="createAnnouncement()" class="success">공지사항 생성</button>
+                    
+                    <h3 style="margin-top: 30px;">공지사항 수정/삭제</h3>
+                    <div class="form-row">
+                        <input type="number" id="announceId" placeholder="공지사항 ID" min="1">
+                    </div>
+                    <button onclick="getAnnouncement()">조회</button>
+                    <button onclick="updateAnnouncement()" class="warning">수정</button>
+                    <button onclick="deleteAnnouncement()" class="danger">삭제</button>
+                    
+                    <div id="announcementsResult" class="result" style="display:none;"></div>
+                </div>
+            </div>
+
+            <!-- 강의 관리 탭 -->
+            <div id="courses" class="tab-content">
+                <div class="section">
+                    <h2><span class="emoji">📚</span>강의 관리</h2>
+                    
+                    <h3>강의 생성</h3>
+                    <div class="form-row">
+                        <input type="text" id="courseCode" placeholder="강의 코드 (예: CS101)">
+                        <input type="text" id="courseName" placeholder="강의명">
+                    </div>
+                    <div class="form-row">
+                        <input type="text" id="courseSemester" placeholder="학기 (예: 2024-1)">
+                        <input type="text" id="courseDept" placeholder="학과명">
+                    </div>
+                    <div class="form-row">
+                        <input type="text" id="courseProfessor" placeholder="담당 교수명">
+                        <input type="text" id="courseType" placeholder="강의 유형">
+                    </div>
+                    <div class="form-row">
+                        <input type="number" id="courseCredits" placeholder="학점" min="1">
+                        <input type="number" id="courseHours" placeholder="시수" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>강의 시간</label>
+                        <input type="text" id="courseLectureTime" placeholder="강의 시간">
+                    </div>
+                    <div class="form-group">
+                        <label>비고</label>
+                        <textarea id="courseRemarks" placeholder="비고" rows="3"></textarea>
+                    </div>
+                    <button onclick="createCourse()" class="success">강의 생성</button>
+                    
+                    <h3 style="margin-top: 30px;">강의 삭제</h3>
+                    <input type="number" id="deleteCourseId" placeholder="삭제할 강의 ID" min="1">
+                    <button onclick="deleteCourse()" class="danger">강의 삭제</button>
+                    
+                    <div id="coursesResult" class="result" style="display:none;"></div>
+                </div>
+            </div>
+
+            <!-- 졸업 관리 탭 -->
+            <div id="graduation" class="tab-content">
+                <div class="section">
+                    <h2><span class="emoji">🎓</span>졸업 요건 관리</h2>
+                    
+                    <h3>졸업 조건 관리</h3>
+                    <div class="form-row">
+                        <input type="number" id="gradConditionDeptId" placeholder="학과 ID" min="1">
+                        <button onclick="getGraduationConditions()">졸업 조건 조회</button>
+                    </div>
+                    
+                    <h3 style="margin-top: 30px;">졸업 조건 생성</h3>
+                    <div class="form-row">
+                        <input type="text" id="conditionName" placeholder="조건명 (예: 전공필수)">
+                        <select id="conditionType">
+                            <option value="credit">학점 조건</option>
+                            <option value="non_credit">비학점 조건</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>조건 설명</label>
+                        <textarea id="conditionDescription" placeholder="조건 설명" rows="3"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <input type="number" id="conditionDeptId" placeholder="학과 ID" min="1">
+                        <label style="display: flex; align-items: center; width: auto;">
+                            <input type="checkbox" id="conditionActive" checked style="width: auto; margin-right: 8px;">
+                            활성화
+                        </label>
+                    </div>
+                    <button onclick="createGraduationCondition()" class="success">졸업 조건 생성</button>
+                    
+                    <h3 style="margin-top: 30px;">학생 졸업 진도</h3>
+                    <div class="form-row">
+                        <input type="text" id="studentId" placeholder="학생 ID">
+                        <button onclick="getStudentGraduationProgress()">졸업 진도 조회</button>
+                    </div>
+                    
+                    <div id="graduationResult" class="result" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = '/api';
+        
+        // 탭 전환
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        // 결과 표시
+        function showResult(elementId, data, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `result ${isSuccess ? 'success' : 'error'}`;
+            
+            if (typeof data === 'object') {
+                element.textContent = JSON.stringify(data, null, 2);
+            } else {
+                element.textContent = data;
+            }
+        }
+        
+        // API 요청
+        async function apiRequest(url, options = {}) {
+            try {
+                const response = await fetch(BASE_URL + url, {
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || `HTTP ${response.status}`);
+                }
+
+                return { success: true, data };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+        
+        // 로그인 상태 업데이트
+        function updateLoginStatus(user, isAuthenticated) {
+            const statusIndicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            
+            if (isAuthenticated && user) {
+                statusIndicator.className = 'status-indicator online';
+                statusText.textContent = `로그인됨: ${user.email} (${user.role})`;
+            } else {
+                statusIndicator.className = 'status-indicator offline';
+                statusText.textContent = '로그인이 필요합니다';
+            }
+        }
+        
+        // 관리자 계정 생성
+        async function createAdminAccount() {
+            const result = await apiRequest('/auth/register', {
+                method: 'POST',
+                body: JSON.stringify({
+                    email: 'admin@example.com',
+                    password: 'admin123',
+                    name: '관리자',
+                    role: 'admin'
+                })
+            });
+            
+            showResult('loginResult', result.data || result.error, result.success);
+        }
+        
+        // 관리자 로그인
+        async function adminLogin() {
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+
+            const result = await apiRequest('/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({ email, password, rememberMe: true })
+            });
+
+            showResult('loginResult', result.data || result.error, result.success);
+            
+            if (result.success) {
+                updateLoginStatus(result.data.user, true);
+            }
+        }
+
+        // 로그인 상태 확인
+        async function checkAuthStatus() {
+            const result = await apiRequest('/auth/status');
+            
+            if (result.success) {
+                updateLoginStatus(result.data.user, result.data.isAuthenticated);
+            }
+            
+            return result;
+        }
+        
+        // 로그아웃
+        async function logout() {
+            const result = await apiRequest('/auth/logout', { method: 'POST' });
+            showResult('loginResult', result.data || result.error, result.success);
+            updateLoginStatus(null, false);
+        }
+
+        // 대시보드 조회
+        async function getDashboard() {
+            const result = await apiRequest('/admin/dashboard');
+            showResult('dashboardResult', result.data || result.error, result.success);
+        }
+
+        // 사용자 관리
+        async function getUsers() {
+            const page = document.getElementById('userPage').value;
+            const limit = document.getElementById('userLimit').value;
+            const search = document.getElementById('userSearch').value;
+            const role = document.getElementById('userRole').value;
+            
+            const params = new URLSearchParams();
+            if (page) params.append('page', page);
+            if (limit) params.append('limit', limit);
+            if (search) params.append('search', search);
+            if (role) params.append('role', role);
+            
+            const result = await apiRequest(`/admin/users?${params}`);
+            showResult('usersResult', result.data || result.error, result.success);
+        }
+
+        async function changeUserRole() {
+            const userId = document.getElementById('targetUserId').value;
+            const role = document.getElementById('newUserRole').value;
+            
+            if (!userId) {
+                showResult('usersResult', '사용자 ID를 입력하세요.', false);
+                return;
+            }
+            
+            const result = await apiRequest(`/admin/users/${userId}/role`, {
+                method: 'PATCH',
+                body: JSON.stringify({ role })
+            });
+            
+            showResult('usersResult', result.data || result.error, result.success);
+        }
+
+        async function deleteUser() {
+            const userId = document.getElementById('targetUserId').value;
+            
+            if (!userId) {
+                showResult('usersResult', '사용자 ID를 입력하세요.', false);
+                return;
+            }
+            
+            if (!confirm('정말로 이 사용자를 삭제하시겠습니까?')) {
+                return;
+            }
+            
+            const result = await apiRequest(`/admin/users/${userId}`, {
+                method: 'DELETE'
+            });
+            
+            showResult('usersResult', result.data || result.error, result.success);
+        }
+
+        // 공지사항 관리
+        async function getAnnouncements() {
+            const page = document.getElementById('announcePage').value;
+            const limit = document.getElementById('announceLimit').value;
+            const search = document.getElementById('announceSearch').value;
+            const dept_id = document.getElementById('announceDeptFilter').value;
+            
+            const params = new URLSearchParams();
+            if (page) params.append('page', page);
+            if (limit) params.append('limit', limit);
+            if (search) params.append('search', search);
+            if (dept_id) params.append('dept_id', dept_id);
+            
+            const result = await apiRequest(`/admin/announcements?${params}`);
+            showResult('announcementsResult', result.data || result.error, result.success);
+        }
+
+        async function createAnnouncement() {
+            const title = document.getElementById('announceTitle').value;
+            const content = document.getElementById('announceContent').value;
+            const dept_id = document.getElementById('announceDeptId').value;
+            const is_important = document.getElementById('announceImportant').checked;
+            
+            if (!title || !content) {
+                showResult('announcementsResult', '제목과 내용을 입력하세요.', false);
+                return;
+            }
+            
+            const body = { title, content, is_important };
+            if (dept_id) body.dept_id = parseInt(dept_id);
+            
+            const result = await apiRequest('/admin/announcements', {
+                method: 'POST',
+                body: JSON.stringify(body)
+            });
+            
+            showResult('announcementsResult', result.data || result.error, result.success);
+        }
+
+        async function getAnnouncement() {
+            const id = document.getElementById('announceId').value;
+            
+            if (!id) {
+                showResult('announcementsResult', '공지사항 ID를 입력하세요.', false);
+                return;
+            }
+            
+            const result = await apiRequest(`/admin/announcements/${id}`);
+            showResult('announcementsResult', result.data || result.error, result.success);
+        }
+
+        async function updateAnnouncement() {
+            const id = document.getElementById('announceId').value;
+            const title = document.getElementById('announceTitle').value;
+            const content = document.getElementById('announceContent').value;
+            
+            if (!id || !title || !content) {
+                showResult('announcementsResult', 'ID, 제목, 내용을 모두 입력하세요.', false);
+                return;
+            }
+            
+            const result = await apiRequest(`/admin/announcements/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify({ title, content })
+            });
+            
+            showResult('announcementsResult', result.data || result.error, result.success);
+        }
+
+        async function deleteAnnouncement() {
+            const id = document.getElementById('announceId').value;
+            
+            if (!id) {
+                showResult('announcementsResult', '공지사항 ID를 입력하세요.', false);
+                return;
+            }
+            
+            if (!confirm('정말로 이 공지사항을 삭제하시겠습니까?')) {
+                return;
+            }
+            
+            const result = await apiRequest(`/admin/announcements/${id}`, {
+                method: 'DELETE'
+            });
+            
+            showResult('announcementsResult', result.data || result.error, result.success);
+        }
+
+        // 강의 관리
+        async function createCourse() {
+            const course_code = document.getElementById('courseCode').value;
+            const course_name = document.getElementById('courseName').value;
+            const semester = document.getElementById('courseSemester').value;
+            const department = document.getElementById('courseDept').value;
+            const professor_name = document.getElementById('courseProfessor').value;
+            const course_type = document.getElementById('courseType').value;
+            const credits = document.getElementById('courseCredits').value;
+            const hours = document.getElementById('courseHours').value;
+            const lecture_time = document.getElementById('courseLectureTime').value;
+            const remarks = document.getElementById('courseRemarks').value;
+            
+            if (!course_code || !course_name || !semester || !department) {
+                showResult('coursesResult', '필수 항목을 모두 입력하세요.', false);
+                return;
+            }
+            
+            const body = {
+                course_code, course_name, semester, department,
+                professor_name, course_type, lecture_time, remarks
+            };
+            
+            if (credits) body.credits = parseInt(credits);
+            if (hours) body.hours = parseInt(hours);
+            
+            const result = await apiRequest('/courses', {
+                method: 'POST',
+                body: JSON.stringify(body)
+            });
+            
+            showResult('coursesResult', result.data || result.error, result.success);
+        }
+
+        async function deleteCourse() {
+            const courseId = document.getElementById('deleteCourseId').value;
+            
+            if (!courseId) {
+                showResult('coursesResult', '강의 ID를 입력하세요.', false);
+                return;
+            }
+            
+            if (!confirm('정말로 이 강의를 삭제하시겠습니까?')) {
+                return;
+            }
+            
+            const result = await apiRequest(`/courses/${courseId}`, {
+                method: 'DELETE'
+            });
+            
+            showResult('coursesResult', result.data || result.error, result.success);
+        }
+
+        // 졸업 관리
+        async function getGraduationConditions() {
+            const dept_id = document.getElementById('gradConditionDeptId').value;
+            
+            const params = new URLSearchParams();
+            if (dept_id) params.append('dept_id', dept_id);
+            
+            const result = await apiRequest(`/admin/graduation-conditions?${params}`);
+            showResult('graduationResult', result.data || result.error, result.success);
+        }
+
+        async function createGraduationCondition() {
+            const condition_name = document.getElementById('conditionName').value;
+            const condition_type = document.getElementById('conditionType').value;
+            const description = document.getElementById('conditionDescription').value;
+            const dept_id = document.getElementById('conditionDeptId').value;
+            const is_active = document.getElementById('conditionActive').checked;
+            
+            if (!condition_name || !description || !dept_id) {
+                showResult('graduationResult', '모든 필수 항목을 입력하세요.', false);
+                return;
+            }
+            
+            const result = await apiRequest('/admin/graduation-conditions', {
+                method: 'POST',
+                body: JSON.stringify({
+                    condition_name,
+                    condition_type,
+                    description,
+                    dept_id: parseInt(dept_id),
+                    is_active
+                })
+            });
+            
+            showResult('graduationResult', result.data || result.error, result.success);
+        }
+
+        async function getStudentGraduationProgress() {
+            const student_id = document.getElementById('studentId').value;
+            
+            if (!student_id) {
+                showResult('graduationResult', '학생 ID를 입력하세요.', false);
+                return;
+            }
+            
+            const result = await apiRequest(`/admin/graduation-progress/${student_id}`);
+            showResult('graduationResult', result.data || result.error, result.success);
+        }
+
+        // 페이지 로드 시 로그인 상태 확인
+        window.onload = function() {
+            checkAuthStatus();
+        };
+    </script>
+</body>
+</html>
