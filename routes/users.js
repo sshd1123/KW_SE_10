@@ -6,7 +6,8 @@ const {
   requireAuth, 
   requireAdmin, 
   requireOwnerOrAdmin,
-  optionalAuth
+  optionalAuth,
+  createSession //여기서는 AppError만 사용
 } = require('../middlewares/auth');
 
 // 모든 사용자 목록 조회 (관리자만)
@@ -109,13 +110,31 @@ router.delete('/:id', requireAuth, requireAdmin, async (req, res, next) => {
       return next(new AppError('존재하지 않는 사용자입니다.', 404));
     }
 
-    // 삭제 수행
-    const result = await query('DELETE FROM tb_users WHERE user_id = ?', [userId]);
+    // 트랜잭션 시작
+    await req.db.transaction(async (connection) => {
+      // 1. tb_professors 테이블에서 해당 user_id 참조 레코드 삭제
+      await connection.query('DELETE FROM tb_professors WHERE user_id = ?', [userId]);
+      console.log(`[User Delete] tb_professors에서 user_id ${userId} 관련 레코드 삭제 시도 완료`);
 
-    res.json({
-      success: true,
-      message: `사용자 ${userId}가 삭제되었습니다.`
+      // 2. tb_students 테이블에서 해당 user_id 참조 레코드 삭제
+      await connection.query('DELETE FROM tb_students WHERE user_id = ?', [userId]);
+      console.log(`[User Delete] tb_students에서 user_id ${userId} 관련 레코드 삭제 시도 완료`);
+      
+      // 3. tb_notifications 테이블에서 해당 user_id 참조 레코드 삭제
+      await connection.query('DELETE FROM tb_notifications WHERE user_id = ?', [userId]);
+      console.log(`[User Delete] tb_notifications에서 user_id ${userId} 관련 레코드 삭제 시도 완료`);
+
+      // 4. tb_board 테이블에서 해당 creator_id 참조 레코드 삭제 (또는 creator_id를 NULL로 설정 - 정책에 따라)
+      // 여기서는 게시물도 함께 삭제하는 것으로 가정
+      await connection.query('DELETE FROM tb_board WHERE creator_id = ?', [userId]);
+      console.log(`[User Delete] tb_board에서 creator_id ${userId} 관련 레코드 삭제 시도 완료`);
+
+      // 5. tb_users 테이블에서 사용자 삭제
+      await connection.query('DELETE FROM tb_users WHERE user_id = ?', [userId]);
+      console.log(`[User Delete] tb_users에서 user_id ${userId} 사용자 삭제 완료`);
     });
+
+    res.json({ success: true, message: `사용자 ID ${userId}가 성공적으로 삭제되었습니다.` });
   } catch (error) {
     next(error);
   }
@@ -180,5 +199,57 @@ router.patch('/:id/approve', requireAuth, requireAdmin, async (req, res, next) =
   }
 });
 
+// --- 알림 관련 API ---
+
+// 현재 로그인한 사용자의 모든 알림 조회
+// GET /api/users/me/notifications
+router.get('/me/notifications', requireAuth, async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { query } = req.db;
+
+    const notifications = await query(
+      'SELECT notification_id, message, link_url, is_read, created_at FROM tb_notifications WHERE user_id = ? ORDER BY created_at DESC',
+      [userId]
+    );
+
+    res.json({
+      success: true,
+      message: '내 알림 목록입니다.',
+      data: { notifications }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// 특정 알림 읽음 처리
+// PATCH /api/users/me/notifications/:notificationId/read
+router.patch('/me/notifications/:notificationId/read', requireAuth, async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const notificationId = parseInt(req.params.notificationId);
+    const { query } = req.db;
+
+    if (isNaN(notificationId)) {
+      const AppError = require('../utils/AppError');
+      return next(new AppError('유효하지 않은 알림 ID입니다.', 400));
+    }
+
+    const result = await query(
+      'UPDATE tb_notifications SET is_read = TRUE WHERE notification_id = ? AND user_id = ?',
+      [notificationId, userId]
+    );
+
+    if (result.affectedRows === 0) {
+      const AppError = require('../utils/AppError');
+      return next(new AppError('알림을 찾을 수 없거나 권한이 없습니다.', 404));
+    }
+
+    res.json({ success: true, message: '알림을 읽음 처리했습니다.' });
+  } catch (error) {
+    next(error);
+  }
+});
 
 module.exports = router; 

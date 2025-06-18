@@ -7,7 +7,9 @@ const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const path = require('path');
 const userRouter = require('./routes/users');
-const coursesRouter = require('./routes/course');
+const courseRouter = require('./routes/course'); // 강의계획서 및 강의별 공지사항 라우터
+const boardRouter = require('./routes/boards');   // 일반 공지사항, 자료실, 과제용 라우터
+const gradesRouter = require('./routes/grades');  // 성적 관리 라우터
 const { createSession, requireAuth } = require('./middlewares/auth');
 
 // 데이터베이스 연결 import
@@ -59,8 +61,9 @@ app.use(session({
 }));
 
 app.use('/api/users', userRouter);
-app.use('/api/courses', coursesRouter);
-
+app.use('/api/course', courseRouter); // 강의계획서 및 강의별 공지사항 API 경로
+app.use('/api/board', boardRouter);   // 일반 공지사항, 자료실, 과제 API 경로
+app.use('/api/grades', gradesRouter); // 성적 관련 API 경로
 // 서버 시작시 데이터베이스 연결 테스트 (개발용 이후 주석 처리)
 (async () => {
   try {
@@ -111,7 +114,8 @@ app.get('/api', async (req, res) => {
 
 // 회원가입 라우터 - 중앙화된 에러 처리 적용
 app.post('/api/auth/register', asyncErrorCatcher(async (req, res) => {
-  const { email, password, name, role } = req.body;
+  const { email, password, role } = req.body; // name 필드는 사용하지 않음
+  // const name = req.body.name || null; // name 필드는 사용하지 않음
   
   const allowedRoles = ['student', 'professor', 'admin'];
   const finalRole = allowedRoles.includes(role) ? role : 'student';
@@ -123,8 +127,8 @@ app.post('/api/auth/register', asyncErrorCatcher(async (req, res) => {
   }
 
   // 입력 검증
-  if (!email || !password || !name) {
-    const error = new Error('모든 필드를 입력해주세요.');
+  if (!email || !password) { // name은 선택 사항이므로 검증에서 제외
+    const error = new Error('이메일과 비밀번호는 필수입니다.');
     error.status = 400;
     throw error;
   }
@@ -140,20 +144,35 @@ app.post('/api/auth/register', asyncErrorCatcher(async (req, res) => {
   
   // 새 사용자 생성 
   // 참고: 실제로는 password를 bcrypt로 해싱해야 함
-  // TODO: tb_users name 컬럼 추가 이후 name 필드, 값 복원
   const result = await req.db.query(
     'INSERT INTO tb_users (login_id, password_hash, role) VALUES (?, ?, ?)',
-    [email, password, finalRole] 
+    [email, password, finalRole]
   );
+  const newUserId = result.insertId;
+
+  // 역할에 따라 tb_students 또는 tb_professors 테이블에도 레코드 추가
+  if (finalRole === 'student') {
+    // student_name, birth_date, dept_id 등은 NULL 허용 또는 추가 정보 입력 필요
+    await req.db.query(
+      'INSERT INTO tb_students (user_id, email) VALUES (?, ?)',
+      [newUserId, email]
+    );
+  } else if (finalRole === 'professor') {
+    // professor_name, dept_id 등은 NULL 허용 또는 추가 정보 입력 필요
+    await req.db.query(
+      'INSERT INTO tb_professors (user_id, email) VALUES (?, ?)',
+      [newUserId, email]
+    );
+  }
   
   res.status(201).json({
     success: true,
     message: `${finalRole} 회원가입이 완료되었습니다.`,
     data: {
       user: {
-        user_id: result.insertId,
+        user_id: newUserId,
         login_id: email,
-        name: name, // tb_user에 name 컬럼 추가 필요
+        // name: name, // name 필드 응답에서 제거
         role: finalRole
       }
     }
@@ -165,9 +184,8 @@ app.post('/api/auth/login', asyncErrorCatcher(async (req, res) => {
   const { email, password, rememberMe } = req.body;
   
   // 실제 테이블 구조에 맞게 수정
-  // TODO: tb_users name 컬럼 추가 이후 name 컬럼 SELECT 하도록 변경
   const users = await req.db.query(
-    'SELECT user_id, login_id, role FROM tb_users WHERE login_id = ? AND password_hash = ?',
+    'SELECT user_id, login_id, role FROM tb_users WHERE login_id = ? AND password_hash = ?',  // name 컬럼 조회 제거
     [email, password] // 실제로는 bcrypt.compare() 사용
   );
   
