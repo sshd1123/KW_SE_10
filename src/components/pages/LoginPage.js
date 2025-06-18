@@ -8,6 +8,10 @@ const LoginPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
+    const handleNavigateToRegister = () => {
+        navigate('/register');
+    };
+
     return (
         <div className="login-page">
             <div className="login-panel">
@@ -24,7 +28,12 @@ const LoginPage = () => {
 
                     <div className="login-footer">
                         <div className="auth-links">
-                            <a href="/register" className="forgot-password-link">회원가입</a>
+                            <button
+                                onClick={handleNavigateToRegister}
+                                className="register-link-button"
+                            >
+                                회원가입
+                            </button>
                         </div>
                     </div>
                 </div>

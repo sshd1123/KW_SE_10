@@ -27,13 +27,17 @@ const Header = ({ username, role }) => {
       return '/professor/dashboard';
     } else if (role === '학생' || role === 'student') {
       return '/student/dashboard';
-    } 
+    } else if (role === '관리자' || role === 'admin') {
+      return '/admin/dashboard';
+    }
 
     const currentPath = window.location.pathname;
     if (currentPath.includes('/professor/')) {
       return '/professor/dashboard';
     } else if (currentPath.includes('/student/')) {
       return '/student/dashboard';
+    }else if (currentPath.includes('/admin/')) {
+      return '/admin/dashboard';
     }
     // 기본값은 학생 대시보드
     return '/student/dashboard';
@@ -42,6 +46,8 @@ const Header = ({ username, role }) => {
   const getRoleInKorean = (role) => {
     if (role === 'student') return '학생';
     if (role === 'professor') return '교수';
+    if (role === 'admin') return '관리자';
+    if (role === '관리자') return '관리자';
     if (role === '교수') return '교수';
     if (role === '학생') return '학생';
     return '학생';

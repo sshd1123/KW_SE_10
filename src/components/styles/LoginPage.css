@@ -165,15 +165,19 @@ body {
     text-align: center;
 }
 
-.auth-links a {
+.register-link-button {
+    background: none;
+    border: none;
     color: var(--primary-color);
     text-decoration: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
     transition: var(--transition);
 }
 
-.auth-links a:hover {
+.register-link-button:hover {
     color: var(--primary-light);
-    text-decoration: underline;
 }
 
 /* 반응형 디자인 */

@@ -3,7 +3,37 @@ import { apiService } from "./api";
 export const AuthAPI = {
     // 회원가입
     register: async (userData) => {
-        return apiService.post('/auth/register', userData);
+        try {
+            const response = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(userData),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                // HTTP 상태 코드가 에러인 경우
+                throw new Error(data.message || `HTTP ${response.status}: 회원가입에 실패했습니다.`);
+            }
+
+            return {
+                success: true,
+                message: '회원가입이 완료되었습니다.',
+                data: data
+            };
+        } catch (error) {
+            console.error('Register API Error:', error);
+
+            // 네트워크 에러나 기타 에러
+            if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                throw new Error('네트워크 연결을 확인해주세요.');
+            }
+
+            throw error;
+        }
     },
 
     // 로그인

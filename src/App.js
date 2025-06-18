@@ -4,6 +4,8 @@ import './App.css';
 
 // pages
 import LoginPage from './components/pages/LoginPage';
+import RegisterPage from './components/pages/RegisterPage';
+
 import StudentDashboard from './components/pages/student/Dashboard';
 import CourseDetailPage from './components/pages/student/CourseDetailPage';
 import GradesPage from './components/pages/student/GradesPage';
@@ -31,11 +33,14 @@ import ProfessorAssignmentDetailPage from './components/pages/professor/Professo
 import CreateAnnouncementPage from './components/pages/professor/CreateAnnouncementPage';
 import CreateAssignmentPage from './components/pages/professor/CreateAssignmentPage';
 
+import AdminDashboard from './components/pages/admin/AdminDashboard';
+
 import AssignmentDetailPage from './components/pages/student/AssingmentDetailPage';
 import AnnouncementDetailPage from './components/pages/AnnouncementDetailPage';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import ArchiveDetailPage from './components/course/ArchiveDetailPage';
 import CreateArchivePage from './components/pages/professor/CreateArchivePage';
+
 
 function App() {
   return (
@@ -43,6 +48,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LoginPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
 
         {/* 학생 */}
         <Route path="/student/*" element={
@@ -97,6 +103,12 @@ function App() {
             <Route path="course/:courseId/archive/:archiveId/edit" element={<CreateArchivePage />} />
           </Routes>
           // </ProtectedRoute>
+        } />
+
+        <Route path="/admin/*" element={
+          <Routes>
+            <Route path="dashboard" element={<AdminDashboard />} />
+          </Routes>
         } />
 
         {/* <Route path="*" element={<Navigate to="/login" replace />} /> */}
