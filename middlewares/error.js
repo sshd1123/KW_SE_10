@@ -161,7 +161,7 @@ const errorHandlers = {
     console.error('일반 에러 발생:', error.message);
     
     return {
-      statusCode: error.status || 500,
+      statusCode: error.statusCode || 500,
       message: error.message || '서버 내부 오류가 발생했습니다.',
       type: 'GENERIC_ERROR'
     };
@@ -196,10 +196,10 @@ const identifyErrorType = (error) => {
   }
   
   // HTTP 상태 코드가 있는 경우
-  if (error.status) {
-    if (error.status === 401) return 'auth';
-    if (error.status === 403) return 'authorization';
-    if (error.status === 400) return 'validation';
+  if (error.statusCode) {
+    if (error.statusCode === 401) return 'auth';
+    if (error.statusCode === 403) return 'authorization';
+    if (error.statusCode === 400) return 'validation';
   }
   
   return 'generic';

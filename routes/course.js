@@ -14,7 +14,7 @@ router.get('/search', requireAuth, asyncErrorCatcher(async (req, res) => {
             c.course_id, c.course_code, c.course_name, c.professor_name,
             c.semester, c.dept_name, c.dept_id, c.college_id, c.course_type, 
             c.credits, c.hours, c.lecture_time, c.remarks
-        FROM tb_course c  -- 테이블명 tb_course로 수정
+        FROM tb_course c 
         WHERE 1=1
     `;
     const queryParams = [];
@@ -55,8 +55,8 @@ router.get('/:courseId', requireAuth, asyncErrorCatcher(async (req, res, next) =
         return next(new AppError('유효하지 않은 강의 ID입니다.', 400));
     }
 
-    const courseQuery = `SELECT * FROM tb_course WHERE course_id = ?`; // 테이블명 tb_course로 수정
-    const [course] = await req.db.query(courseQuery, [courseId]); // courseId (number) 사용
+    const courseQuery = `SELECT * FROM tb_course WHERE course_id = ?`; 
+    const [course] = await req.db.query(courseQuery, [courseId]); 
 
     if (!course) {
         return next(new AppError('해당 강의를 찾을 수 없습니다.', 404));
@@ -69,8 +69,8 @@ router.get('/:courseId', requireAuth, asyncErrorCatcher(async (req, res, next) =
     });
 }));
 
-// 강의계획서 추가 (교수만)
-router.post('/', requireAuth, requireRole('professor'), asyncErrorCatcher(async (req, res, next) => {
+// 강의계획서 추가 (교수 또는 관리자만)
+router.post('/', requireAuth, requireRole('professor', 'admin'), asyncErrorCatcher(async (req, res, next) => {
     const {
         course_code, course_name, semester, dept_name, dept_id, college_id,
         course_type, credits, hours, lecture_time, remarks
@@ -93,8 +93,14 @@ router.post('/', requireAuth, requireRole('professor'), asyncErrorCatcher(async 
         return next(new AppError('단과대학 ID는 숫자여야 합니다.', 400));
     }
 
-    // 담당 교수 이름은 현재 로그인한 교수 정보에서 가져옴
-    const professor_name = req.user.name || null; // 간소화 및 req.user.name이 없을 경우 null 처리
+    // 담당 교수 이름은 현재 로그인한 사용자 정보에서 가져옴
+    // 관리자의 경우 별도로 교수명을 입력받을 수 있도록 수정
+    let professor_name;
+    if (req.user.role === 'admin' && req.body.professor_name) {
+      professor_name = req.body.professor_name;
+    } else {
+      professor_name = req.user.name || null; 
+    }
 
     const insertQuery = `
         INSERT INTO tb_course (
@@ -116,8 +122,8 @@ router.post('/', requireAuth, requireRole('professor'), asyncErrorCatcher(async 
         success: true,
         message: '강의계획서가 성공적으로 추가되었습니다.',
         data: {
-            course_id: result.insertId, // 새로 생성된 강의 ID
-            professor_name // 담당 교수 이름 포함
+            course_id: result.insertId, 
+            professor_name 
         }
     });
 }));
@@ -127,7 +133,7 @@ router.post('/', requireAuth, requireRole('professor'), asyncErrorCatcher(async 
 router.post('/:courseId/enroll', requireAuth, requireRole('student'), asyncErrorCatcher(async (req, res, next) => {
     const courseIdParam = req.params.courseId;
     const courseId = parseInt(courseIdParam);
-    const studentUserId = req.user.id; // 현재 로그인한 학생의 user_id
+    const studentUserId = req.user.id; 
 
     if (isNaN(courseId)) {
         return next(new AppError('유효하지 않은 강의 ID입니다.', 400));
@@ -154,7 +160,7 @@ router.post('/:courseId/enroll', requireAuth, requireRole('student'), asyncError
 
     if (existingEnrollment) {
         if (existingEnrollment.status === 'enrolled') {
-            return next(new AppError('이미 수강 신청한 강의입니다.', 409)); // 409 Conflict
+            return next(new AppError('이미 수강 신청한 강의입니다.', 409)); 
         } else if (existingEnrollment.status === 'withdrawn') {
             // 철회했던 강의를 다시 신청하는 경우, 상태를 'enrolled'로 업데이트
             await req.db.query('UPDATE tb_enrollments SET status = "enrolled", enroll_date = CURRENT_TIMESTAMP WHERE enrollment_id = ?', [existingEnrollment.enrollment_id]);
@@ -173,6 +179,137 @@ router.post('/:courseId/enroll', requireAuth, requireRole('student'), asyncError
         message: '강의 수강 신청이 완료되었습니다.',
         data: { enrollment_id: result.insertId, course_id: courseId, student_id: student_id }
     });
+}));
+
+// 강의 삭제 (관리자만)
+router.delete('/:courseId', requireAuth, requireRole('admin'), asyncErrorCatcher(async (req, res, next) => {
+    const { courseId } = req.params;
+    
+    if (isNaN(parseInt(courseId))) {
+        return next(new AppError('유효하지 않은 강의 ID입니다.', 400));
+    }
+
+    // 강의 존재 여부 확인
+    const [existingCourse] = await req.db.query(
+        'SELECT course_id, course_name, course_code FROM tb_course WHERE course_id = ?', 
+        [courseId]
+    );
+
+    if (!existingCourse) {
+        return next(new AppError('존재하지 않는 강의입니다.', 404));
+    }
+
+    // TODO: 강의 삭제 시 관련 공지사항, 수강신청 등도 함께 처리할지 결정 (현재 코드에는 주석으로만 처리됨)
+    
+    // 강의 삭제
+    await req.db.query('DELETE FROM tb_course WHERE course_id = ?', [courseId]);
+
+    res.json({
+        success: true,
+        message: `강의 '${existingCourse.course_name} (${existingCourse.course_code})'가 성공적으로 삭제되었습니다.`,
+        data: {
+            deleted_course_id: parseInt(courseId),
+            deleted_course_name: existingCourse.course_name,
+            deleted_course_code: existingCourse.course_code
+        }
+    });
+}));
+
+// 강의 수정 (교수 본인 또는 관리자만)
+router.put('/:courseId', requireAuth, asyncErrorCatcher(async (req, res, next) => {
+    const { courseId } = req.params;
+    const {
+        course_code, course_name, semester, dept_name,
+        course_type, credits, hours, lecture_time, remarks, professor_name 
+    } = req.body;
+
+    if (isNaN(parseInt(courseId))) {
+        return next(new AppError('유효하지 않은 강의 ID입니다.', 400));
+    }
+
+    // 필수 필드 검증
+    if (!course_code || !course_name || !semester) {
+        return next(new AppError('강의 코드, 강의명, 학기는 필수 입력 항목입니다.', 400));
+    }
+
+    // 강의 존재 여부 확인
+    const [existingCourse] = await req.db.query(
+        'SELECT course_id, professor_name FROM tb_course WHERE course_id = ?', 
+        [courseId]
+    );
+
+    if (!existingCourse) {
+        return next(new AppError('존재하지 않는 강의입니다.', 404));
+    }
+
+    // 권한 확인: 관리자이거나 해당 강의의 담당 교수인 경우만 수정 가능
+    if (req.user.role !== 'admin' && req.user.role !== 'professor') {
+        return next(new AppError('강의를 수정할 권한이 없습니다.', 403));
+    }
+
+    // 교수의 경우 본인 강의만 수정 가능 (TODO: 실제 교수 매칭 로직 구현 필요)
+    // 현재는 req.user.name과 existingCourse.professor_name을 비교.
+    // 실제 시스템에서는 professor_id를 이용해 tb_professors와 tb_users 테이블을 조인하여 확인할 수 있음.
+    if (req.user.role === 'professor' && existingCourse.professor_name !== req.user.name) {
+        return next(new AppError('본인이 담당하는 강의만 수정할 수 있습니다.', 403));
+    }
+
+    // 교수명 처리
+    let finalProfessorName;
+    if (req.user.role === 'admin' && professor_name) {
+        finalProfessorName = professor_name;
+    } else {
+        finalProfessorName = req.user.name || existingCourse.professor_name;
+    }
+
+    const updateQuery = `
+        UPDATE tb_course SET
+            course_code = ?, course_name = ?, professor_name = ?, semester = ?, 
+            dept_name = ?, course_type = ?, credits = ?, hours = ?, 
+            lecture_time = ?, remarks = ?
+        WHERE course_id = ?
+    `;
+    const queryParams = [
+        course_code, course_name, finalProfessorName, semester, dept_name || null,
+        course_type || null, credits ? parseInt(credits) : null, hours ? parseInt(hours) : null,
+        lecture_time || null, remarks || null, courseId
+    ];
+
+    await req.db.query(updateQuery, queryParams);
+
+    res.json({
+        success: true,
+        message: '강의 정보가 성공적으로 수정되었습니다.',
+        data: {
+            course_id: parseInt(courseId),
+            updated_fields: {
+                course_code, course_name, professor_name: finalProfessorName, semester
+            }
+        }
+    });
+}));
+
+// 특정 강의의 모든 공지사항 조회
+// GET /api/course/:courseId/announcements
+router.get('/:courseId/announcements', requireAuth, asyncErrorCatcher(async (req, res, next) => {
+    const { courseId } = req.params;
+
+    if (isNaN(parseInt(courseId))) {
+        return next(new AppError('유효하지 않은 강의 ID입니다.', 400));
+    }
+
+    // tb_board 테이블에서 해당 강의의 공지사항 (board_type이 'notice'인 경우)을 가져옴
+    // tb_board 테이블의 creator_id가 tb_users의 user_id를 참조하므로, 조인하여 사용자 정보 가져올 수 있음
+    const announcements = await req.db.query(
+        `SELECT b.*, u.login_id as creator_login_id 
+         FROM tb_board b
+         JOIN tb_users u ON b.creator_id = u.user_id 
+         WHERE b.board_type = 'notice' AND b.dept_id IS NULL AND b.title LIKE ? 
+         ORDER BY b.created_at DESC`,
+        [`%${courseId}%`] // courseId를 제목에 포함된 형태로 검색 (이 부분은 요구사항에 따라 수정 필요)
+    );
+
+    res.json({ success: true, message: '강의 공지사항 목록입니다.', data: { announcements } });
 }));
 
 module.exports = router;

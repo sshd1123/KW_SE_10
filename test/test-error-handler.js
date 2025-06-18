@@ -4,7 +4,7 @@ const http = require('http');
 function waitForServer() {
   return new Promise((resolve) => {
     const checkServer = () => {
-      const req = http.get('http://localhost:3000/', (res) => {
+      const req = http.get('http://localhost:8000/', (res) => {
         console.log('서버가 시작되었습니다. 테스트를 시작합니다...\n');
         resolve();
       });
@@ -25,7 +25,7 @@ async function testAPI(method, path, body = null) {
     
     const options = {
       hostname: 'localhost',
-      port: 3002,
+      port: 8000,
       path: path,
       method: method,
       headers: {
@@ -140,7 +140,7 @@ async function runTests() {
   
   console.log('\n' + '='.repeat(50));
   console.log('모든 테스트 완료! 서버 콘솔에서 에러 로깅을 확인하세요.');
-  console.log('브라우저에서 http://localhost:3000/test 를 열어서 더 자세한 테스트를 진행할 수 있습니다.');
+  console.log('브라우저에서 http://localhost:8000/test 를 열어서 더 자세한 테스트를 진행할 수 있습니다.');
 }
 
 // 테스트 실행
